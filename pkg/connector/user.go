@@ -108,11 +108,23 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		return nil, "", nil, err
 	}
 
+	// annotations for rate limits
+	annos := WithRateLimitAnnotations(
+		NewRateLimitInfo(
+			userIds.XRateLimitLimit,
+			userIds.XRateLimitRemaining,
+		),
+		NewRateLimitInfo(
+			userDetails.XRateLimitLimit,
+			userDetails.XRateLimitRemaining,
+		),
+	)
+
 	if isLastPage {
-		return rv, "", nil, nil
+		return rv, "", annos, nil
 	}
 
-	return rv, nextPage, nil, nil
+	return rv, nextPage, annos, nil
 }
 
 func (u *userResourceType) Entitlements(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Entitlement, string, annotations.Annotations, error) {

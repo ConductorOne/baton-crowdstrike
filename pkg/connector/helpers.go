@@ -69,3 +69,31 @@ func convertPageToken(token string) (int64, error) {
 
 	return page, nil
 }
+
+type RateLimitInfo struct {
+	Limit     int64
+	Remaining int64
+}
+
+func NewRateLimitInfo(limit, remaining int64) RateLimitInfo {
+	return RateLimitInfo{
+		Limit:     limit,
+		Remaining: remaining,
+	}
+}
+
+func WithRateLimitAnnotations(rateLimitInfo ...RateLimitInfo) annotations.Annotations {
+	annos := annotations.Annotations{}
+
+	for _, info := range rateLimitInfo {
+		annos.Append(
+			&v2.RateLimitDescription{
+				Limit:     info.Limit,
+				Remaining: info.Remaining,
+				ResetAt:   nil,
+			},
+		)
+	}
+
+	return annos
+}

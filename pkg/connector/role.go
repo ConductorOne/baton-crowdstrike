@@ -89,7 +89,19 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		rv = append(rv, ur)
 	}
 
-	return rv, "", nil, nil
+	// annotations for rate limits
+	annos := WithRateLimitAnnotations(
+		NewRateLimitInfo(
+			roleIds.XRateLimitLimit,
+			roleIds.XRateLimitRemaining,
+		),
+		NewRateLimitInfo(
+			roleDetails.XRateLimitLimit,
+			roleDetails.XRateLimitRemaining,
+		),
+	)
+
+	return rv, "", annos, nil
 }
 
 func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Entitlement, string, annotations.Annotations, error) {
@@ -110,9 +122,10 @@ func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 	return rv, "", nil, nil
 }
 
-func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIds []string, roleId string) ([]string, error) {
-	var users []string
+func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIds []string, roleId string) ([]string, []RateLimitInfo, error) {
+	rateLimitInfo := make([]RateLimitInfo, len(userIds))
 
+	var users []string
 	for _, userId := range userIds {
 		userRoles, err := r.client.UserManagement.CombinedUserRolesV1(
 			&user_management.CombinedUserRolesV1Params{
@@ -121,8 +134,16 @@ func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIds []stri
 			},
 		)
 		if err != nil {
-			return nil, fmt.Errorf("crowdstrike-connector: failed to get user roles: %w", err)
+			return nil, nil, fmt.Errorf("crowdstrike-connector: failed to get user roles: %w", err)
 		}
+
+		rateLimitInfo = append(
+			rateLimitInfo,
+			NewRateLimitInfo(
+				userRoles.XRateLimitLimit,
+				userRoles.XRateLimitRemaining,
+			),
+		)
 
 		// check if user has role
 		for _, role := range userRoles.Payload.Resources {
@@ -132,10 +153,11 @@ func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIds []stri
 		}
 	}
 
-	return users, nil
+	return users, rateLimitInfo, nil
 }
 
 func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt *pagination.Token) ([]*v2.Grant, string, annotations.Annotations, error) {
+	rateLimitInfo := make([]RateLimitInfo, 0)
 	bag, offset, err := parsePageToken(pt.Token, &v2.ResourceId{ResourceType: resourceTypeUser.Id})
 	if err != nil {
 		return nil, "", nil, err
@@ -153,6 +175,15 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to list users: %w", err)
 	}
 
+	// add rate limit info from listing users
+	rateLimitInfo = append(
+		rateLimitInfo,
+		NewRateLimitInfo(
+			userIds.XRateLimitLimit,
+			userIds.XRateLimitRemaining,
+		),
+	)
+
 	nextPage, err := handleNextPage(bag, offset+ResourcesPageSize)
 	if err != nil {
 		return nil, "", nil, err
@@ -168,13 +199,18 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	}
 
 	// 2. find users that have this role
-	targetUserIds, err := r.FindUsersWithRole(ctx, userIds.Payload.Resources, resource.Id.Resource)
+	targetUserIds, rlInfo, err := r.FindUsersWithRole(ctx, userIds.Payload.Resources, resource.Id.Resource)
 	if err != nil {
 		return nil, "", nil, err
 	}
 
+	// add rate limit info from listing user roles
+	rateLimitInfo = append(rateLimitInfo, rlInfo...)
+
 	if len(targetUserIds) == 0 {
-		return nil, nextPage, nil, nil
+		annos := WithRateLimitAnnotations(rateLimitInfo...)
+
+		return nil, nextPage, annos, nil
 	}
 
 	// 3. get details for users under fetched ids
@@ -189,6 +225,15 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	if err != nil {
 		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to get user details: %w", err)
 	}
+
+	// add rate limit info from listing user details
+	rateLimitInfo = append(
+		rateLimitInfo,
+		NewRateLimitInfo(
+			users.XRateLimitLimit,
+			users.XRateLimitRemaining,
+		),
+	)
 
 	// 4. create grants for users
 	var rv []*v2.Grant
@@ -210,7 +255,10 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		)
 	}
 
-	return rv, nextPage, nil, nil
+	// annotations for rate limits
+	annos := WithRateLimitAnnotations(rateLimitInfo...)
+
+	return rv, nextPage, annos, nil
 }
 
 func roleBuilder(client *fClient.CrowdStrikeAPISpecification) *roleResourceType {
