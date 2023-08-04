@@ -22,7 +22,7 @@ func (u *userResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 	return u.resourceType
 }
 
-// Create a new connector resource for an OneLogin User.
+// Create a new connector resource for an CrowdStrike User.
 func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, error) {
 	// user `uid` is represented as a username which can also be an email address
 	// unique identifier for the user is under `uuid`
@@ -103,15 +103,13 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		rv = append(rv, ur)
 	}
 
-	// len(userIds) + (offset)
-
 	isLastPage, err := userIds.Payload.Meta.Pagination.LastPage()
 	if err != nil {
 		return nil, "", nil, err
 	}
 
 	if isLastPage {
-		nextPage = ""
+		return rv, "", nil, nil
 	}
 
 	return rv, nextPage, nil, nil
