@@ -19,6 +19,13 @@ var (
 		},
 		Annotations: annotationsForUserResourceType(),
 	}
+	resourceTypeRole = &v2.ResourceType{
+		Id:          "role",
+		DisplayName: "Role",
+		Traits: []v2.ResourceType_Trait{
+			v2.ResourceType_TRAIT_ROLE,
+		},
+	}
 )
 
 type CrowdStrike struct {
@@ -28,6 +35,7 @@ type CrowdStrike struct {
 func (o *CrowdStrike) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
 	return []connectorbuilder.ResourceSyncer{
 		userBuilder(o.client),
+		roleBuilder(o.client),
 	}
 }
 
