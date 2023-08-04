@@ -35,6 +35,7 @@ func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, e
 
 	userTraitOptions := []rs.UserTraitOption{
 		rs.WithUserProfile(profile),
+		rs.WithStatus(v2.UserTrait_Status_STATUS_UNSPECIFIED),
 	}
 
 	// check if `uid` is an email address
