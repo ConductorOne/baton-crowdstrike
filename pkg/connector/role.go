@@ -13,6 +13,8 @@ import (
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
 	"github.com/crowdstrike/gofalcon/falcon/models"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
+	"go.uber.org/zap"
 )
 
 const (
@@ -259,6 +261,93 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	annos := WithRateLimitAnnotations(rateLimitInfo...)
 
 	return rv, nextPage, annos, nil
+}
+
+func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, entitlement *v2.Entitlement) (annotations.Annotations, error) {
+	l := ctxzap.Extract(ctx)
+
+	if principal.Id.ResourceType != resourceTypeUser.Id {
+		l.Warn(
+			"crowdstrike-connector: only users can be granted role membership",
+			zap.String("principal_id", principal.Id.Resource),
+			zap.String("principal_type", principal.Id.ResourceType),
+		)
+
+		return nil, fmt.Errorf("crowdstrike-connector: only users can be granted role membership")
+	}
+
+	roleId, err := extractResourceId(entitlement.Id)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: failed to extract role id from entitlement id: %w", err)
+	}
+
+	// grant role membershipm
+	grantResponse, err := r.client.UserManagement.GrantUserRoleIds(
+		&user_management.GrantUserRoleIdsParams{
+			UserUUID: principal.Id.Resource,
+			Body: &models.DomainRoleIDs{
+				RoleIds: []string{roleId},
+			},
+			Context: ctx,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: failed to grant role membership: %w", err)
+	}
+
+	// annotations for rate limits
+	annos := WithRateLimitAnnotations(
+		NewRateLimitInfo(
+			grantResponse.XRateLimitLimit,
+			grantResponse.XRateLimitRemaining,
+		),
+	)
+
+	return annos, nil
+}
+
+func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotations.Annotations, error) {
+	l := ctxzap.Extract(ctx)
+
+	entitlement := grant.Entitlement
+	principal := grant.Principal
+
+	if principal.Id.ResourceType != resourceTypeUser.Id {
+		l.Warn(
+			"crowdstrike-connector: only users can have role membership revoked",
+			zap.String("principal_id", principal.Id.Resource),
+			zap.String("principal_type", principal.Id.ResourceType),
+		)
+
+		return nil, fmt.Errorf("crowdstrike-connector: only users can have role membership revoked")
+	}
+
+	roleId, err := extractResourceId(entitlement.Id)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: failed to extract role id from entitlement id: %w", err)
+	}
+
+	// revoke role membership
+	revokeResponse, err := r.client.UserManagement.RevokeUserRoleIds(
+		&user_management.RevokeUserRoleIdsParams{
+			UserUUID: principal.Id.Resource,
+			Ids:      []string{roleId},
+			Context:  ctx,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: failed to revoke role membership: %w", err)
+	}
+
+	// annotations for rate limits
+	annos := WithRateLimitAnnotations(
+		NewRateLimitInfo(
+			revokeResponse.XRateLimitLimit,
+			revokeResponse.XRateLimitRemaining,
+		),
+	)
+
+	return annos, nil
 }
 
 func roleBuilder(client *fClient.CrowdStrikeAPISpecification) *roleResourceType {
