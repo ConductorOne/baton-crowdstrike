@@ -14,6 +14,7 @@ type config struct {
 
 	ClientId     string `mapstructure:"client_id"`
 	ClientSecret string `mapstructure:"client_secret"`
+	Region       string `mapstructure:"region"`
 }
 
 // validateConfig is run after the configuration is loaded, and should return an error if it isn't valid.
@@ -29,4 +30,5 @@ func validateConfig(ctx context.Context, cfg *config) error {
 func cmdFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().String("client_id", "", "CrowdStrike client ID used to generate the access token. ($BATON_CLIENT_ID)")
 	cmd.PersistentFlags().String("client_secret", "", "CrowdStrike client secret used to generate the access token. ($BATON_CLIENT_SECRET)")
+	cmd.PersistentFlags().String("region", "us-1", "CrowdStrike region to connect to. ($BATON_REGION)")
 }

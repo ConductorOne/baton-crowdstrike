@@ -14,6 +14,8 @@ After you have obtained client id and secret, you can use them with connector. Y
 
 # Getting Started
 
+Along with credentials, you can also specify region that you want to use. By default, connector will use `us-1` region. You can change this by setting `BATON_REGION` environment variable or by passing `--region` flag to `baton-crowdstrike` command.
+
 ## brew
 
 ```

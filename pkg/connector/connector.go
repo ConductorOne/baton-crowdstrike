@@ -102,10 +102,25 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 }
 
 // New returns the CrowdStrike connector.
-func New(ctx context.Context, clientId, clientSecret string) (*CrowdStrike, error) {
+func New(ctx context.Context, clientId, clientSecret string, region string) (*CrowdStrike, error) {
+	var cloudRegion falcon.CloudType
+	switch region {
+	case "us-1":
+		cloudRegion = falcon.CloudUs1
+	case "us-2":
+		cloudRegion = falcon.CloudUs2
+	case "eu-1":
+		cloudRegion = falcon.CloudEu1
+	case "us-gov-1":
+		cloudRegion = falcon.CloudUsGov1
+	default:
+		return nil, fmt.Errorf("crowdstrike-connector: invalid region: %s", region)
+	}
+
 	client, err := falcon.NewClient(&falcon.ApiConfig{
 		ClientId:     clientId,
 		ClientSecret: clientSecret,
+		Cloud:        cloudRegion,
 		Context:      ctx,
 	})
 	if err != nil {

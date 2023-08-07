@@ -38,7 +38,7 @@ func main() {
 func getConnector(ctx context.Context, cfg *config) (types.ConnectorServer, error) {
 	l := ctxzap.Extract(ctx)
 
-	crowdstrikeConnector, err := connector.New(ctx, cfg.ClientId, cfg.ClientSecret)
+	crowdstrikeConnector, err := connector.New(ctx, cfg.ClientId, cfg.ClientSecret, cfg.Region)
 	if err != nil {
 		l.Error("error creating connector", zap.Error(err))
 		return nil, err
