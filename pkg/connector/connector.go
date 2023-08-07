@@ -49,7 +49,7 @@ func (o *CrowdStrike) Metadata(ctx context.Context) (*v2.ConnectorMetadata, erro
 	}, nil
 }
 
-// Validates that the user has read access to all relevant tables (more information in the readme).
+// Validates that the user has access to all relevant endpoints.
 func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, error) {
 	var limit int64 = 1
 

@@ -281,7 +281,7 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 		return nil, fmt.Errorf("crowdstrike-connector: failed to extract role id from entitlement id: %w", err)
 	}
 
-	// grant role membershipm
+	// grant role membership
 	grantResponse, err := r.client.UserManagement.GrantUserRoleIds(
 		&user_management.GrantUserRoleIdsParams{
 			UserUUID: principal.Id.Resource,
