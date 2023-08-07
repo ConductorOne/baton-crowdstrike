@@ -77,6 +77,7 @@ Flags:
   -h, --help                   help for baton-crowdstrike
       --log-format string      The output format for logs: json, console ($BATON_LOG_FORMAT) (default "json")
       --log-level string       The log level: debug, info, warn, error ($BATON_LOG_LEVEL) (default "info")
+      --region string          CrowdStrike region to connect to. ($BATON_REGION) (default "us-1")
   -v, --version                version for baton-crowdstrike
 
 Use "baton-crowdstrike [command] --help" for more information about a command.
