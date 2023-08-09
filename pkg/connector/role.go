@@ -276,10 +276,7 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 		return nil, fmt.Errorf("crowdstrike-connector: only users can be granted role membership")
 	}
 
-	roleId, err := extractResourceId(entitlement.Id)
-	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: failed to extract role id from entitlement id: %w", err)
-	}
+	roleId := entitlement.Resource.Id.Resource
 
 	// grant role membership
 	grantResponse, err := r.client.UserManagement.GrantUserRoleIds(
@@ -322,10 +319,7 @@ func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotat
 		return nil, fmt.Errorf("crowdstrike-connector: only users can have role membership revoked")
 	}
 
-	roleId, err := extractResourceId(entitlement.Id)
-	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: failed to extract role id from entitlement id: %w", err)
-	}
+	roleId := entitlement.Resource.Id.Resource
 
 	// revoke role membership
 	revokeResponse, err := r.client.UserManagement.RevokeUserRoleIds(
