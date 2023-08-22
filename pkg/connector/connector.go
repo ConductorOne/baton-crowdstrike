@@ -5,36 +5,129 @@ import (
 	"fmt"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
+	"github.com/conductorone/baton-sdk/pkg/annotations"
+	"github.com/conductorone/baton-sdk/pkg/connectorbuilder"
+	"github.com/crowdstrike/gofalcon/falcon"
+	fClient "github.com/crowdstrike/gofalcon/falcon/client"
+	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
+	"github.com/crowdstrike/gofalcon/falcon/models"
 )
 
-// TODO: implement your connector here
-type connectorImpl struct {
+var (
+	resourceTypeUser = &v2.ResourceType{
+		Id:          "user",
+		DisplayName: "User",
+		Traits: []v2.ResourceType_Trait{
+			v2.ResourceType_TRAIT_USER,
+		},
+		Annotations: annotationsForUserResourceType(),
+	}
+	resourceTypeRole = &v2.ResourceType{
+		Id:          "role",
+		DisplayName: "Role",
+		Traits: []v2.ResourceType_Trait{
+			v2.ResourceType_TRAIT_ROLE,
+		},
+	}
+)
+
+type CrowdStrike struct {
+	client *fClient.CrowdStrikeAPISpecification
 }
 
-func (c *connectorImpl) ListResourceTypes(ctx context.Context, req *v2.ResourceTypesServiceListResourceTypesRequest) (*v2.ResourceTypesServiceListResourceTypesResponse, error) {
-	return nil, fmt.Errorf("not implemented")
+func (o *CrowdStrike) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
+	return []connectorbuilder.ResourceSyncer{
+		userBuilder(o.client),
+		roleBuilder(o.client),
+	}
 }
 
-func (c *connectorImpl) ListResources(ctx context.Context, req *v2.ResourcesServiceListResourcesRequest) (*v2.ResourcesServiceListResourcesResponse, error) {
-	return nil, fmt.Errorf("not implemented")
+func (o *CrowdStrike) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
+	return &v2.ConnectorMetadata{
+		DisplayName: "CrowdStrike",
+		Description: "Connector syncing CrowdStrike users and their roles to Baton.",
+	}, nil
 }
 
-func (c *connectorImpl) ListEntitlements(ctx context.Context, req *v2.EntitlementsServiceListEntitlementsRequest) (*v2.EntitlementsServiceListEntitlementsResponse, error) {
-	return nil, fmt.Errorf("not implemented")
+// Validates that the user has access to all relevant endpoints.
+func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, error) {
+	var limit int64 = 1
+
+	// get user ids
+	userIds, err := o.client.UserManagement.QueryUserV1(
+		&user_management.QueryUserV1Params{
+			Limit:   &limit,
+			Context: ctx,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to query user ids: %w", err)
+	}
+
+	// get user details
+	_, err = o.client.UserManagement.RetrieveUsersGETV1(
+		&user_management.RetrieveUsersGETV1Params{
+			Body: &models.MsaIdsRequest{
+				Ids: userIds.Payload.Resources,
+			},
+			Context: ctx,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to retrieve user details: %w", err)
+	}
+
+	// get role ids
+	roleIds, err := o.client.UserManagement.QueriesRolesV1(
+		&user_management.QueriesRolesV1Params{
+			Context: ctx,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to query role ids: %w", err)
+	}
+
+	// get role details
+	_, err = o.client.UserManagement.EntitiesRolesV1(
+		&user_management.EntitiesRolesV1Params{
+			Ids:     roleIds.Payload.Resources,
+			Context: ctx,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to retrieve role details: %w", err)
+	}
+
+	return nil, nil
 }
 
-func (c *connectorImpl) ListGrants(ctx context.Context, req *v2.GrantsServiceListGrantsRequest) (*v2.GrantsServiceListGrantsResponse, error) {
-	return nil, fmt.Errorf("not implemented")
-}
+// New returns the CrowdStrike connector.
+func New(ctx context.Context, clientId, clientSecret string, region string) (*CrowdStrike, error) {
+	var cloudRegion falcon.CloudType
+	switch region {
+	case "us-1":
+		cloudRegion = falcon.CloudUs1
+	case "us-2":
+		cloudRegion = falcon.CloudUs2
+	case "eu-1":
+		cloudRegion = falcon.CloudEu1
+	case "us-gov-1":
+		cloudRegion = falcon.CloudUsGov1
+	default:
+		return nil, fmt.Errorf("crowdstrike-connector: invalid region: %s", region)
+	}
 
-func (c *connectorImpl) GetMetadata(ctx context.Context, req *v2.ConnectorServiceGetMetadataRequest) (*v2.ConnectorServiceGetMetadataResponse, error) {
-	return nil, fmt.Errorf("not implemented")
-}
+	client, err := falcon.NewClient(&falcon.ApiConfig{
+		ClientId:     clientId,
+		ClientSecret: clientSecret,
+		Cloud:        cloudRegion,
+		Context:      ctx,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-func (c *connectorImpl) Validate(ctx context.Context, req *v2.ConnectorServiceValidateRequest) (*v2.ConnectorServiceValidateResponse, error) {
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (c *connectorImpl) GetAsset(req *v2.AssetServiceGetAssetRequest, server v2.AssetService_GetAssetServer) error {
-	return fmt.Errorf("not implemented")
+	return &CrowdStrike{
+		client: client,
+	}, nil
 }
