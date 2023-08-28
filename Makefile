@@ -10,9 +10,7 @@ endif
 
 .PHONY: build
 build:
-	rm -f ${OUTPUT_PATH}
-	mkdir -p ${BUILD_DIR}
-	go build -o ${OUTPUT_PATH} cmd/baton-crowdstrike/*.go
+	go build -o ${OUTPUT_PATH} ./cmd/baton-crowdstrike
 
 .PHONY: update-deps
 update-deps:
