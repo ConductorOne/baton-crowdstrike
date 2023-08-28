@@ -71,8 +71,8 @@ Available Commands:
 Flags:
       --client-id string                   The client ID used to authenticate with ConductorOne ($BATON_CLIENT_ID)
       --client-secret string               The client secret used to authenticate with ConductorOne ($BATON_CLIENT_SECRET)
-      --crowdstrike_client_id string       CrowdStrike client ID used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_ID)
-      --crowdstrike_client_secret string   CrowdStrike client secret used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_SECRET)
+      --crowdstrike-client-id string       CrowdStrike client ID used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_ID)
+      --crowdstrike-client-secret string   CrowdStrike client secret used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_SECRET)
   -f, --file string                        The path to the c1z file to sync with ($BATON_FILE) (default "sync.c1z")
   -h, --help                               help for baton-crowdstrike
       --log-format string                  The output format for logs: json, console ($BATON_LOG_FORMAT) (default "json")
@@ -81,5 +81,4 @@ Flags:
   -v, --version                            version for baton-crowdstrike
 
 Use "baton-crowdstrike [command] --help" for more information about a command.
-
 ```
