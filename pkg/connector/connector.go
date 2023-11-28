@@ -67,7 +67,7 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 	// get user details
 	_, err = o.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaIdsRequest{
+			Body: &models.MsaspecIdsRequest{
 				Ids: userIds.Payload.Resources,
 			},
 			Context: ctx,
