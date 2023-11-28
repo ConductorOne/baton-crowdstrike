@@ -31,7 +31,7 @@ func (r *roleResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 }
 
 // Create a new connector resource for an CrowdStrike Role.
-func roleResource(ctx context.Context, role *models.DomainUserRole) (*v2.Resource, error) {
+func roleResource(ctx context.Context, role *models.DomainRole) (*v2.Resource, error) {
 	id, displayName, description := *role.ID, *role.DisplayName, *role.Description
 
 	profile := map[string]interface{}{
@@ -218,7 +218,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// 3. get details for users under fetched ids
 	users, err := r.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaIdsRequest{
+			Body: &models.MsaspecIdsRequest{
 				Ids: targetUserIds,
 			},
 			Context: ctx,

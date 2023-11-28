@@ -82,7 +82,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	// get details for users under fetched ids
 	userDetails, err := u.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaIdsRequest{
+			Body: &models.MsaspecIdsRequest{
 				Ids: userIds.Payload.Resources,
 			},
 			Context: ctx,
