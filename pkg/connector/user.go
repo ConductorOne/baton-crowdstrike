@@ -27,7 +27,7 @@ func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, e
 	// user `uid` is represented as a username which can also be an email address
 	// unique identifier for the user is under `uuid`
 	profile := map[string]interface{}{
-		"login":      user.UID,
+		"cid":        user.Cid,
 		"user_id":    user.UUID,
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
@@ -39,12 +39,12 @@ func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, e
 	}
 
 	// check if `uid` is an email address
-	if validateEmail(user.UID) {
-		userTraitOptions = append(userTraitOptions, rs.WithEmail(user.UID, true))
+	if validateEmail(user.Email) {
+		userTraitOptions = append(userTraitOptions, rs.WithEmail(user.Email, true))
 	}
 
 	resource, err := rs.NewUserResource(
-		user.UID,
+		user.Email,
 		resourceTypeUser,
 		user.UUID,
 		userTraitOptions,
