@@ -99,8 +99,14 @@ type DomainDiscoverAPIHost struct {
 	// The asset role or roles assigned to the asset automatically (Jump host, Highly connected, Highly active, Server by behavior, DHCP server, DNS server, FTP server, SSH server, or Web server).
 	ComputedAssetRoles []string `json:"computed_asset_roles"`
 
-	// Whether the asset is exposed to the internet as determined automatically (Yes, No, or Unknown).
+	// Whether the asset is exposed to the internet as determined automatically (Yes, No, or Pending).
 	ComputedInternetExposure string `json:"computed_internet_exposure,omitempty"`
+
+	// External IP exposed to the internet.
+	ComputedInternetExposureExternalIP string `json:"computed_internet_exposure_external_ip,omitempty"`
+
+	// When the asset was last seen as internet exposed.
+	ComputedInternetExposureLastSeen string `json:"computed_internet_exposure_last_seen,omitempty"`
 
 	// The level of confidence that the asset is a corporate asset (25 = low confidence, 50 = medium confidence, 75 = high confidence).
 	Confidence int32 `json:"confidence,omitempty"`
@@ -135,6 +141,9 @@ type DomainDiscoverAPIHost struct {
 	// The last seen local IPv4 address of the asset.
 	CurrentLocalIP string `json:"current_local_ip,omitempty"`
 
+	// The last seen network prefix of the asset.
+	CurrentNetworkPrefix string `json:"current_network_prefix,omitempty"`
+
 	// Where the data about the asset came from (such as CrowdStrike, ServiceNow, or Active Directory).
 	DataProviders []string `json:"data_providers"`
 
@@ -152,6 +161,9 @@ type DomainDiscoverAPIHost struct {
 
 	// The number of sources that discovered the asset.
 	DiscovererCount int32 `json:"discoverer_count,omitempty"`
+
+	// The criticalities of the sources that discovered the asset
+	DiscovererCriticalities []string `json:"discoverer_criticalities"`
 
 	// The hostnames of the sources that discovered the asset.
 	DiscovererHostnames []string `json:"discoverer_hostnames"`
@@ -214,7 +226,7 @@ type DomainDiscoverAPIHost struct {
 	// Required: true
 	ID *string `json:"id"`
 
-	// Whether the asset is exposed to the internet (Yes or Unknown).
+	// Whether the asset is exposed to the internet (Yes, No or Pending).
 	InternetExposure string `json:"internet_exposure,omitempty"`
 
 	// The description the user entered when manually assigning a internet exposure level
@@ -378,6 +390,12 @@ type DomainDiscoverAPIHost struct {
 
 	// What the asset is used for, such as production, staging, or QA.
 	UsedFor string `json:"used_for,omitempty"`
+
+	// The asset role or roles manually assigned to the asset.
+	UserAssetRoles []string `json:"user_asset_roles"`
+
+	// The internet exposure manually assigned to the asset
+	UserInternetExposure string `json:"user_internet_exposure,omitempty"`
 }
 
 // Validate validates this domain discover API host
