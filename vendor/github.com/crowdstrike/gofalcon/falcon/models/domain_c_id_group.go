@@ -19,12 +19,18 @@ import (
 // swagger:model domain.CIDGroup
 type DomainCIDGroup struct {
 
+	// cid
+	Cid string `json:"cid,omitempty"`
+
 	// cid group id
 	// Required: true
 	CidGroupID *string `json:"cid_group_id"`
 
 	// description
 	Description string `json:"description,omitempty"`
+
+	// is default
+	IsDefault bool `json:"is_default,omitempty"`
 
 	// name
 	// Required: true
