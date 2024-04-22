@@ -31,7 +31,7 @@ func (r *roleResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 }
 
 // Create a new connector resource for an CrowdStrike Role.
-func roleResource(ctx context.Context, role *models.DomainRole) (*v2.Resource, error) {
+func roleResource(ctx context.Context, role *models.DomainUserRole) (*v2.Resource, error) {
 	id, displayName, description := *role.ID, *role.DisplayName, *role.Description
 
 	profile := map[string]interface{}{
@@ -93,11 +93,11 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 
 	// annotations for rate limits
 	annos := WithRateLimitAnnotations(
-		NewRateLimitInfo(
+		*NewRateLimitInfo(
 			roleIds.XRateLimitLimit,
 			roleIds.XRateLimitRemaining,
 		),
-		NewRateLimitInfo(
+		*NewRateLimitInfo(
 			roleDetails.XRateLimitLimit,
 			roleDetails.XRateLimitRemaining,
 		),
@@ -141,7 +141,7 @@ func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIds []stri
 
 		rateLimitInfo = append(
 			rateLimitInfo,
-			NewRateLimitInfo(
+			*NewRateLimitInfo(
 				userRoles.XRateLimitLimit,
 				userRoles.XRateLimitRemaining,
 			),
@@ -165,7 +165,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		return nil, "", nil, err
 	}
 
-	// 1. get all users
+	// 1. get all user ids
 	userIds, err := r.client.UserManagement.QueryUserV1(
 		&user_management.QueryUserV1Params{
 			Limit:   &ResourcesPageSize,
@@ -177,14 +177,21 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to list users: %w", err)
 	}
 
-	// add rate limit info from listing users
+	// add rate limit info from listing user ids
 	rateLimitInfo = append(
 		rateLimitInfo,
-		NewRateLimitInfo(
+		*NewRateLimitInfo(
 			userIds.XRateLimitLimit,
 			userIds.XRateLimitRemaining,
 		),
 	)
+
+	// continue syncing if no users are found
+	if len(userIds.Payload.Resources) == 0 {
+		annos := WithRateLimitAnnotations(rateLimitInfo...)
+
+		return nil, "", annos, nil
+	}
 
 	nextPage, err := handleNextPage(bag, offset+ResourcesPageSize)
 	if err != nil {
@@ -218,7 +225,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// 3. get details for users under fetched ids
 	users, err := r.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaspecIdsRequest{
+			Body: &models.MsaIdsRequest{
 				Ids: targetUserIds,
 			},
 			Context: ctx,
@@ -231,7 +238,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// add rate limit info from listing user details
 	rateLimitInfo = append(
 		rateLimitInfo,
-		NewRateLimitInfo(
+		*NewRateLimitInfo(
 			users.XRateLimitLimit,
 			users.XRateLimitRemaining,
 		),
@@ -294,7 +301,7 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 
 	// annotations for rate limits
 	annos := WithRateLimitAnnotations(
-		NewRateLimitInfo(
+		*NewRateLimitInfo(
 			grantResponse.XRateLimitLimit,
 			grantResponse.XRateLimitRemaining,
 		),
@@ -335,7 +342,7 @@ func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotat
 
 	// annotations for rate limits
 	annos := WithRateLimitAnnotations(
-		NewRateLimitInfo(
+		*NewRateLimitInfo(
 			revokeResponse.XRateLimitLimit,
 			revokeResponse.XRateLimitRemaining,
 		),

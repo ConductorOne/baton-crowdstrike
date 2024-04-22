@@ -27,6 +27,7 @@ func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, e
 	// user `uid` is represented as a username which can also be an email address
 	// unique identifier for the user is under `uuid`
 	profile := map[string]interface{}{
+		"cid":        user.Cid,
 		"login":      user.UID,
 		"user_id":    user.UUID,
 		"first_name": user.FirstName,
@@ -39,6 +40,7 @@ func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, e
 	}
 
 	// check if `uid` is an email address
+	// TODO: use .Email when library fixes this
 	if validateEmail(user.UID) {
 		userTraitOptions = append(userTraitOptions, rs.WithEmail(user.UID, true))
 	}
@@ -74,6 +76,24 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to list users: %w", err)
 	}
 
+	var rateLimitInfo []RateLimitInfo
+
+	// annotations for rate limits - user ids
+	rateLimitInfo = append(
+		rateLimitInfo,
+		*NewRateLimitInfo(
+			userIds.XRateLimitLimit,
+			userIds.XRateLimitRemaining,
+		),
+	)
+
+	// continue syncing other resources if no users are found
+	if len(userIds.Payload.Resources) == 0 {
+		annos := WithRateLimitAnnotations(rateLimitInfo...)
+
+		return nil, "", annos, nil
+	}
+
 	nextPage, err := handleNextPage(bag, offset+ResourcesPageSize)
 	if err != nil {
 		return nil, "", nil, err
@@ -82,7 +102,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	// get details for users under fetched ids
 	userDetails, err := u.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaspecIdsRequest{
+			Body: &models.MsaIdsRequest{
 				Ids: userIds.Payload.Resources,
 			},
 			Context: ctx,
@@ -109,17 +129,16 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		return nil, "", nil, err
 	}
 
-	// annotations for rate limits
-	annos := WithRateLimitAnnotations(
-		NewRateLimitInfo(
-			userIds.XRateLimitLimit,
-			userIds.XRateLimitRemaining,
-		),
-		NewRateLimitInfo(
+	// annotations for rate limits - user details
+	rateLimitInfo = append(
+		rateLimitInfo,
+		*NewRateLimitInfo(
 			userDetails.XRateLimitLimit,
 			userDetails.XRateLimitRemaining,
 		),
 	)
+
+	annos := WithRateLimitAnnotations(rateLimitInfo...)
 
 	if isLastPage {
 		return rv, "", annos, nil

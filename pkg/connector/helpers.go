@@ -75,8 +75,8 @@ type RateLimitInfo struct {
 	Remaining int64
 }
 
-func NewRateLimitInfo(limit, remaining int64) RateLimitInfo {
-	return RateLimitInfo{
+func NewRateLimitInfo(limit, remaining int64) *RateLimitInfo {
+	return &RateLimitInfo{
 		Limit:     limit,
 		Remaining: remaining,
 	}
