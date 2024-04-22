@@ -65,7 +65,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		return nil, "", nil, err
 	}
 
-	userIds, err := u.client.UserManagement.QueryUserV1(
+	userIDs, err := u.client.UserManagement.QueryUserV1(
 		&user_management.QueryUserV1Params{
 			Limit:   &ResourcesPageSize,
 			Offset:  &offset,
@@ -82,13 +82,13 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	rateLimitInfo = append(
 		rateLimitInfo,
 		*NewRateLimitInfo(
-			userIds.XRateLimitLimit,
-			userIds.XRateLimitRemaining,
+			userIDs.XRateLimitLimit,
+			userIDs.XRateLimitRemaining,
 		),
 	)
 
 	// continue syncing other resources if no users are found
-	if len(userIds.Payload.Resources) == 0 {
+	if len(userIDs.Payload.Resources) == 0 {
 		annos := WithRateLimitAnnotations(rateLimitInfo...)
 
 		return nil, "", annos, nil
@@ -103,7 +103,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	userDetails, err := u.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
 			Body: &models.MsaIdsRequest{
-				Ids: userIds.Payload.Resources,
+				Ids: userIDs.Payload.Resources,
 			},
 			Context: ctx,
 		},
@@ -124,7 +124,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		rv = append(rv, ur)
 	}
 
-	isLastPage, err := userIds.Payload.Meta.Pagination.LastPage()
+	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
 	if err != nil {
 		return nil, "", nil, err
 	}

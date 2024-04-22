@@ -59,7 +59,7 @@ func roleResource(ctx context.Context, role *models.DomainUserRole) (*v2.Resourc
 }
 
 func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagination.Token) ([]*v2.Resource, string, annotations.Annotations, error) {
-	roleIds, err := r.client.UserManagement.QueriesRolesV1(
+	roleIDs, err := r.client.UserManagement.QueriesRolesV1(
 		&user_management.QueriesRolesV1Params{
 			Context: ctx,
 		},
@@ -71,7 +71,7 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	// get details for roles under fetched ids
 	roleDetails, err := r.client.UserManagement.EntitiesRolesV1(
 		&user_management.EntitiesRolesV1Params{
-			Ids:     roleIds.Payload.Resources,
+			Ids:     roleIDs.Payload.Resources,
 			Context: ctx,
 		},
 	)
@@ -94,8 +94,8 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	// annotations for rate limits
 	annos := WithRateLimitAnnotations(
 		*NewRateLimitInfo(
-			roleIds.XRateLimitLimit,
-			roleIds.XRateLimitRemaining,
+			roleIDs.XRateLimitLimit,
+			roleIDs.XRateLimitRemaining,
 		),
 		*NewRateLimitInfo(
 			roleDetails.XRateLimitLimit,
@@ -124,11 +124,11 @@ func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 	return rv, "", nil, nil
 }
 
-func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIds []string, roleId string) ([]string, []RateLimitInfo, error) {
-	rateLimitInfo := make([]RateLimitInfo, len(userIds))
+func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIDs []string, roleId string) ([]string, []RateLimitInfo, error) {
+	rateLimitInfo := make([]RateLimitInfo, len(userIDs))
 
 	var users []string
-	for _, userId := range userIds {
+	for _, userId := range userIDs {
 		userRoles, err := r.client.UserManagement.CombinedUserRolesV1(
 			&user_management.CombinedUserRolesV1Params{
 				UserUUID: userId,
@@ -166,7 +166,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	}
 
 	// 1. get all user ids
-	userIds, err := r.client.UserManagement.QueryUserV1(
+	userIDs, err := r.client.UserManagement.QueryUserV1(
 		&user_management.QueryUserV1Params{
 			Limit:   &ResourcesPageSize,
 			Offset:  &offset,
@@ -181,13 +181,13 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	rateLimitInfo = append(
 		rateLimitInfo,
 		*NewRateLimitInfo(
-			userIds.XRateLimitLimit,
-			userIds.XRateLimitRemaining,
+			userIDs.XRateLimitLimit,
+			userIDs.XRateLimitRemaining,
 		),
 	)
 
 	// continue syncing if no users are found
-	if len(userIds.Payload.Resources) == 0 {
+	if len(userIDs.Payload.Resources) == 0 {
 		annos := WithRateLimitAnnotations(rateLimitInfo...)
 
 		return nil, "", annos, nil
@@ -198,7 +198,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		return nil, "", nil, err
 	}
 
-	isLastPage, err := userIds.Payload.Meta.Pagination.LastPage()
+	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -208,7 +208,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	}
 
 	// 2. find users that have this role
-	targetUserIds, rlInfo, err := r.FindUsersWithRole(ctx, userIds.Payload.Resources, resource.Id.Resource)
+	targetUserIDs, rlInfo, err := r.FindUsersWithRole(ctx, userIDs.Payload.Resources, resource.Id.Resource)
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -216,7 +216,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// add rate limit info from listing user roles
 	rateLimitInfo = append(rateLimitInfo, rlInfo...)
 
-	if len(targetUserIds) == 0 {
+	if len(targetUserIDs) == 0 {
 		annos := WithRateLimitAnnotations(rateLimitInfo...)
 
 		return nil, nextPage, annos, nil
@@ -226,7 +226,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	users, err := r.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
 			Body: &models.MsaIdsRequest{
-				Ids: targetUserIds,
+				Ids: targetUserIDs,
 			},
 			Context: ctx,
 		},

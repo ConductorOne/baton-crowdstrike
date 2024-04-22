@@ -64,7 +64,7 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 	}
 
 	// get role ids
-	roleIds, err := o.client.UserManagement.QueriesRolesV1(
+	roleIDs, err := o.client.UserManagement.QueriesRolesV1(
 		&user_management.QueriesRolesV1Params{
 			Context: ctx,
 		},
@@ -76,7 +76,7 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 	// get role details
 	_, err = o.client.UserManagement.EntitiesRolesV1(
 		&user_management.EntitiesRolesV1Params{
-			Ids:     roleIds.Payload.Resources,
+			Ids:     roleIDs.Payload.Resources,
 			Context: ctx,
 		},
 	)
