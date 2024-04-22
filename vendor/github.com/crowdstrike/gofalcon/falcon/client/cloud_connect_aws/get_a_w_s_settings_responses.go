@@ -56,7 +56,14 @@ func (o *GetAWSSettingsReader) ReadResponse(response runtime.ClientResponse, con
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /cloud-connect-aws/combined/settings/v1] GetAWSSettings", response, response.Code())
+		result := NewGetAWSSettingsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ GetAWSSettingsOK describes a response with status code 200, with default header 
 OK
 */
 type GetAWSSettingsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *GetAWSSettingsOK) GetPayload() *models.ModelsCustomerConfigurationsV1 {
 
 func (o *GetAWSSettingsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ GetAWSSettingsBadRequest describes a response with status code 400, with default
 Bad Request
 */
 type GetAWSSettingsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *GetAWSSettingsBadRequest) GetPayload() *models.ModelsCustomerConfigurat
 
 func (o *GetAWSSettingsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ GetAWSSettingsForbidden describes a response with status code 403, with default 
 Forbidden
 */
 type GetAWSSettingsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *GetAWSSettingsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetAWSSettingsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ GetAWSSettingsTooManyRequests describes a response with status code 429, with de
 Too Many Requests
 */
 type GetAWSSettingsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *GetAWSSettingsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetAWSSettingsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ GetAWSSettingsInternalServerError describes a response with status code 500, wit
 Internal Server Error
 */
 type GetAWSSettingsInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *GetAWSSettingsInternalServerError) GetPayload() *models.ModelsCustomerC
 
 func (o *GetAWSSettingsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -614,6 +566,78 @@ func (o *GetAWSSettingsInternalServerError) readResponse(response runtime.Client
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.ModelsCustomerConfigurationsV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetAWSSettingsDefault creates a GetAWSSettingsDefault with default headers values
+func NewGetAWSSettingsDefault(code int) *GetAWSSettingsDefault {
+	return &GetAWSSettingsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetAWSSettingsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetAWSSettingsDefault struct {
+	_statusCode int
+
+	Payload *models.ModelsCustomerConfigurationsV1
+}
+
+// IsSuccess returns true when this get a w s settings default response has a 2xx status code
+func (o *GetAWSSettingsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get a w s settings default response has a 3xx status code
+func (o *GetAWSSettingsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get a w s settings default response has a 4xx status code
+func (o *GetAWSSettingsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get a w s settings default response has a 5xx status code
+func (o *GetAWSSettingsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get a w s settings default response a status code equal to that given
+func (o *GetAWSSettingsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get a w s settings default response
+func (o *GetAWSSettingsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetAWSSettingsDefault) Error() string {
+	return fmt.Sprintf("[GET /cloud-connect-aws/combined/settings/v1][%d] GetAWSSettings default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetAWSSettingsDefault) String() string {
+	return fmt.Sprintf("[GET /cloud-connect-aws/combined/settings/v1][%d] GetAWSSettings default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetAWSSettingsDefault) GetPayload() *models.ModelsCustomerConfigurationsV1 {
+	return o.Payload
+}
+
+func (o *GetAWSSettingsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ModelsCustomerConfigurationsV1)
 

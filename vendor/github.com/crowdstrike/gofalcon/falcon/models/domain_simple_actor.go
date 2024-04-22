@@ -7,7 +7,6 @@ package models
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -19,9 +18,6 @@ import (
 //
 // swagger:model domain.SimpleActor
 type DomainSimpleActor struct {
-
-	// entitlements
-	Entitlements []*DomainEntity `json:"entitlements"`
 
 	// id
 	// Required: true
@@ -44,10 +40,6 @@ type DomainSimpleActor struct {
 func (m *DomainSimpleActor) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateEntitlements(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
@@ -59,32 +51,6 @@ func (m *DomainSimpleActor) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *DomainSimpleActor) validateEntitlements(formats strfmt.Registry) error {
-	if swag.IsZero(m.Entitlements) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Entitlements); i++ {
-		if swag.IsZero(m.Entitlements[i]) { // not required
-			continue
-		}
-
-		if m.Entitlements[i] != nil {
-			if err := m.Entitlements[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("entitlements" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("entitlements" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 
@@ -120,10 +86,6 @@ func (m *DomainSimpleActor) validateThumbnail(formats strfmt.Registry) error {
 func (m *DomainSimpleActor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateEntitlements(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateThumbnail(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -134,39 +96,9 @@ func (m *DomainSimpleActor) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
-func (m *DomainSimpleActor) contextValidateEntitlements(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Entitlements); i++ {
-
-		if m.Entitlements[i] != nil {
-
-			if swag.IsZero(m.Entitlements[i]) { // not required
-				return nil
-			}
-
-			if err := m.Entitlements[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("entitlements" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("entitlements" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *DomainSimpleActor) contextValidateThumbnail(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Thumbnail != nil {
-
-		if swag.IsZero(m.Thumbnail) { // not required
-			return nil
-		}
-
 		if err := m.Thumbnail.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("thumbnail")

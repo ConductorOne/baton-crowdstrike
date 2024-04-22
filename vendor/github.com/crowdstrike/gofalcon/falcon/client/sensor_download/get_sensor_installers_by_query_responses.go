@@ -50,7 +50,14 @@ func (o *GetSensorInstallersByQueryReader) ReadResponse(response runtime.ClientR
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /sensors/queries/installers/v1] GetSensorInstallersByQuery", response, response.Code())
+		result := NewGetSensorInstallersByQueryDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -66,10 +73,6 @@ OK
 */
 type GetSensorInstallersByQueryOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -78,7 +81,7 @@ type GetSensorInstallersByQueryOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecQueryResponse
+	Payload *models.MsaQueryResponse
 }
 
 // IsSuccess returns true when this get sensor installers by query o k response has a 2xx status code
@@ -119,18 +122,11 @@ func (o *GetSensorInstallersByQueryOK) String() string {
 	return fmt.Sprintf("[GET /sensors/queries/installers/v1][%d] getSensorInstallersByQueryOK  %+v", 200, o.Payload)
 }
 
-func (o *GetSensorInstallersByQueryOK) GetPayload() *models.MsaspecQueryResponse {
+func (o *GetSensorInstallersByQueryOK) GetPayload() *models.MsaQueryResponse {
 	return o.Payload
 }
 
 func (o *GetSensorInstallersByQueryOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -154,7 +150,7 @@ func (o *GetSensorInstallersByQueryOK) readResponse(response runtime.ClientRespo
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecQueryResponse)
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -176,10 +172,6 @@ Bad Request
 */
 type GetSensorInstallersByQueryBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -188,7 +180,7 @@ type GetSensorInstallersByQueryBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecQueryResponse
+	Payload *models.MsaQueryResponse
 }
 
 // IsSuccess returns true when this get sensor installers by query bad request response has a 2xx status code
@@ -229,18 +221,11 @@ func (o *GetSensorInstallersByQueryBadRequest) String() string {
 	return fmt.Sprintf("[GET /sensors/queries/installers/v1][%d] getSensorInstallersByQueryBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *GetSensorInstallersByQueryBadRequest) GetPayload() *models.MsaspecQueryResponse {
+func (o *GetSensorInstallersByQueryBadRequest) GetPayload() *models.MsaQueryResponse {
 	return o.Payload
 }
 
 func (o *GetSensorInstallersByQueryBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -264,7 +249,7 @@ func (o *GetSensorInstallersByQueryBadRequest) readResponse(response runtime.Cli
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecQueryResponse)
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -285,10 +270,6 @@ GetSensorInstallersByQueryForbidden describes a response with status code 403, w
 Forbidden
 */
 type GetSensorInstallersByQueryForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -345,13 +326,6 @@ func (o *GetSensorInstallersByQueryForbidden) GetPayload() *models.MsaReplyMetaO
 
 func (o *GetSensorInstallersByQueryForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -395,10 +369,6 @@ GetSensorInstallersByQueryTooManyRequests describes a response with status code 
 Too Many Requests
 */
 type GetSensorInstallersByQueryTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -459,13 +429,6 @@ func (o *GetSensorInstallersByQueryTooManyRequests) GetPayload() *models.MsaRepl
 
 func (o *GetSensorInstallersByQueryTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -500,6 +463,78 @@ func (o *GetSensorInstallersByQueryTooManyRequests) readResponse(response runtim
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetSensorInstallersByQueryDefault creates a GetSensorInstallersByQueryDefault with default headers values
+func NewGetSensorInstallersByQueryDefault(code int) *GetSensorInstallersByQueryDefault {
+	return &GetSensorInstallersByQueryDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetSensorInstallersByQueryDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetSensorInstallersByQueryDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this get sensor installers by query default response has a 2xx status code
+func (o *GetSensorInstallersByQueryDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get sensor installers by query default response has a 3xx status code
+func (o *GetSensorInstallersByQueryDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get sensor installers by query default response has a 4xx status code
+func (o *GetSensorInstallersByQueryDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get sensor installers by query default response has a 5xx status code
+func (o *GetSensorInstallersByQueryDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get sensor installers by query default response a status code equal to that given
+func (o *GetSensorInstallersByQueryDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get sensor installers by query default response
+func (o *GetSensorInstallersByQueryDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetSensorInstallersByQueryDefault) Error() string {
+	return fmt.Sprintf("[GET /sensors/queries/installers/v1][%d] GetSensorInstallersByQuery default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetSensorInstallersByQueryDefault) String() string {
+	return fmt.Sprintf("[GET /sensors/queries/installers/v1][%d] GetSensorInstallersByQuery default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetSensorInstallersByQueryDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *GetSensorInstallersByQueryDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

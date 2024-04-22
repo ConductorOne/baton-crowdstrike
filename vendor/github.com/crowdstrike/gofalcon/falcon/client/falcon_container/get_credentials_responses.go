@@ -62,7 +62,14 @@ func (o *GetCredentialsReader) ReadResponse(response runtime.ClientResponse, con
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /container-security/entities/image-registry-credentials/v1] GetCredentials", response, response.Code())
+		result := NewGetCredentialsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -90,7 +97,7 @@ type GetCredentialsOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.DomainRegistryCredentialsResponse
+	Payload *models.MsaEntitiesResponse
 }
 
 // IsSuccess returns true when this get credentials o k response has a 2xx status code
@@ -131,7 +138,7 @@ func (o *GetCredentialsOK) String() string {
 	return fmt.Sprintf("[GET /container-security/entities/image-registry-credentials/v1][%d] getCredentialsOK  %+v", 200, o.Payload)
 }
 
-func (o *GetCredentialsOK) GetPayload() *models.DomainRegistryCredentialsResponse {
+func (o *GetCredentialsOK) GetPayload() *models.MsaEntitiesResponse {
 	return o.Payload
 }
 
@@ -166,7 +173,7 @@ func (o *GetCredentialsOK) readResponse(response runtime.ClientResponse, consume
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.DomainRegistryCredentialsResponse)
+	o.Payload = new(models.MsaEntitiesResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -200,7 +207,7 @@ type GetCredentialsBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaAPIError
+	Payload *models.MsaErrorsOnly
 }
 
 // IsSuccess returns true when this get credentials bad request response has a 2xx status code
@@ -241,7 +248,7 @@ func (o *GetCredentialsBadRequest) String() string {
 	return fmt.Sprintf("[GET /container-security/entities/image-registry-credentials/v1][%d] getCredentialsBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *GetCredentialsBadRequest) GetPayload() *models.MsaAPIError {
+func (o *GetCredentialsBadRequest) GetPayload() *models.MsaErrorsOnly {
 	return o.Payload
 }
 
@@ -276,7 +283,7 @@ func (o *GetCredentialsBadRequest) readResponse(response runtime.ClientResponse,
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaAPIError)
+	o.Payload = new(models.MsaErrorsOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -310,7 +317,7 @@ type GetCredentialsUnauthorized struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaAPIError
+	Payload *models.MsaErrorsOnly
 }
 
 // IsSuccess returns true when this get credentials unauthorized response has a 2xx status code
@@ -351,7 +358,7 @@ func (o *GetCredentialsUnauthorized) String() string {
 	return fmt.Sprintf("[GET /container-security/entities/image-registry-credentials/v1][%d] getCredentialsUnauthorized  %+v", 401, o.Payload)
 }
 
-func (o *GetCredentialsUnauthorized) GetPayload() *models.MsaAPIError {
+func (o *GetCredentialsUnauthorized) GetPayload() *models.MsaErrorsOnly {
 	return o.Payload
 }
 
@@ -386,7 +393,7 @@ func (o *GetCredentialsUnauthorized) readResponse(response runtime.ClientRespons
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaAPIError)
+	o.Payload = new(models.MsaErrorsOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -420,7 +427,7 @@ type GetCredentialsForbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaAPIError
+	Payload *models.MsaErrorsOnly
 }
 
 // IsSuccess returns true when this get credentials forbidden response has a 2xx status code
@@ -461,7 +468,7 @@ func (o *GetCredentialsForbidden) String() string {
 	return fmt.Sprintf("[GET /container-security/entities/image-registry-credentials/v1][%d] getCredentialsForbidden  %+v", 403, o.Payload)
 }
 
-func (o *GetCredentialsForbidden) GetPayload() *models.MsaAPIError {
+func (o *GetCredentialsForbidden) GetPayload() *models.MsaErrorsOnly {
 	return o.Payload
 }
 
@@ -496,7 +503,7 @@ func (o *GetCredentialsForbidden) readResponse(response runtime.ClientResponse, 
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaAPIError)
+	o.Payload = new(models.MsaErrorsOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -655,7 +662,7 @@ type GetCredentialsInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.DomainRegistryCredentialsResponse
+	Payload *models.MsaEntitiesResponse
 }
 
 // IsSuccess returns true when this get credentials internal server error response has a 2xx status code
@@ -696,7 +703,7 @@ func (o *GetCredentialsInternalServerError) String() string {
 	return fmt.Sprintf("[GET /container-security/entities/image-registry-credentials/v1][%d] getCredentialsInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *GetCredentialsInternalServerError) GetPayload() *models.DomainRegistryCredentialsResponse {
+func (o *GetCredentialsInternalServerError) GetPayload() *models.MsaEntitiesResponse {
 	return o.Payload
 }
 
@@ -731,7 +738,79 @@ func (o *GetCredentialsInternalServerError) readResponse(response runtime.Client
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.DomainRegistryCredentialsResponse)
+	o.Payload = new(models.MsaEntitiesResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCredentialsDefault creates a GetCredentialsDefault with default headers values
+func NewGetCredentialsDefault(code int) *GetCredentialsDefault {
+	return &GetCredentialsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetCredentialsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetCredentialsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaEntitiesResponse
+}
+
+// IsSuccess returns true when this get credentials default response has a 2xx status code
+func (o *GetCredentialsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get credentials default response has a 3xx status code
+func (o *GetCredentialsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get credentials default response has a 4xx status code
+func (o *GetCredentialsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get credentials default response has a 5xx status code
+func (o *GetCredentialsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get credentials default response a status code equal to that given
+func (o *GetCredentialsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get credentials default response
+func (o *GetCredentialsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetCredentialsDefault) Error() string {
+	return fmt.Sprintf("[GET /container-security/entities/image-registry-credentials/v1][%d] GetCredentials default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetCredentialsDefault) String() string {
+	return fmt.Sprintf("[GET /container-security/entities/image-registry-credentials/v1][%d] GetCredentials default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetCredentialsDefault) GetPayload() *models.MsaEntitiesResponse {
+	return o.Payload
+}
+
+func (o *GetCredentialsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MsaEntitiesResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

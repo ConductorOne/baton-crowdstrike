@@ -63,10 +63,7 @@ DeleteCIDGroupMembersParams contains all the parameters to send to the API endpo
 */
 type DeleteCIDGroupMembersParams struct {
 
-	/* Body.
-
-	   Both 'cid_group_id' and 'cids' fields are required.
-	*/
+	// Body.
 	Body *models.DomainCIDGroupMembersRequestV1
 
 	timeout    time.Duration

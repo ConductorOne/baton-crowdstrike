@@ -56,7 +56,14 @@ func (o *DeleteUserGroupMembersReader) ReadResponse(response runtime.ClientRespo
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[DELETE /mssp/entities/user-group-members/v1] deleteUserGroupMembers", response, response.Code())
+		result := NewDeleteUserGroupMembersDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ DeleteUserGroupMembersOK describes a response with status code 200, with default
 OK
 */
 type DeleteUserGroupMembersOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *DeleteUserGroupMembersOK) GetPayload() *models.DomainUserGroupMembersRe
 
 func (o *DeleteUserGroupMembersOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ DeleteUserGroupMembersMultiStatus describes a response with status code 207, wit
 Multi-Status
 */
 type DeleteUserGroupMembersMultiStatus struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *DeleteUserGroupMembersMultiStatus) GetPayload() *models.DomainUserGroup
 
 func (o *DeleteUserGroupMembersMultiStatus) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ DeleteUserGroupMembersBadRequest describes a response with status code 400, with
 Bad Request
 */
 type DeleteUserGroupMembersBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *DeleteUserGroupMembersBadRequest) GetPayload() *models.MsaErrorsOnly {
 
 func (o *DeleteUserGroupMembersBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ DeleteUserGroupMembersForbidden describes a response with status code 403, with 
 Forbidden
 */
 type DeleteUserGroupMembersForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -461,13 +431,6 @@ func (o *DeleteUserGroupMembersForbidden) GetPayload() *models.MsaErrorsOnly {
 
 func (o *DeleteUserGroupMembersForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -511,10 +474,6 @@ DeleteUserGroupMembersTooManyRequests describes a response with status code 429,
 Too Many Requests
 */
 type DeleteUserGroupMembersTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -575,13 +534,6 @@ func (o *DeleteUserGroupMembersTooManyRequests) GetPayload() *models.MsaReplyMet
 
 func (o *DeleteUserGroupMembersTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *DeleteUserGroupMembersTooManyRequests) readResponse(response runtime.Cl
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteUserGroupMembersDefault creates a DeleteUserGroupMembersDefault with default headers values
+func NewDeleteUserGroupMembersDefault(code int) *DeleteUserGroupMembersDefault {
+	return &DeleteUserGroupMembersDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+DeleteUserGroupMembersDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type DeleteUserGroupMembersDefault struct {
+	_statusCode int
+
+	Payload *models.DomainUserGroupMembersResponseV1
+}
+
+// IsSuccess returns true when this delete user group members default response has a 2xx status code
+func (o *DeleteUserGroupMembersDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this delete user group members default response has a 3xx status code
+func (o *DeleteUserGroupMembersDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this delete user group members default response has a 4xx status code
+func (o *DeleteUserGroupMembersDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this delete user group members default response has a 5xx status code
+func (o *DeleteUserGroupMembersDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this delete user group members default response a status code equal to that given
+func (o *DeleteUserGroupMembersDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the delete user group members default response
+func (o *DeleteUserGroupMembersDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *DeleteUserGroupMembersDefault) Error() string {
+	return fmt.Sprintf("[DELETE /mssp/entities/user-group-members/v1][%d] deleteUserGroupMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *DeleteUserGroupMembersDefault) String() string {
+	return fmt.Sprintf("[DELETE /mssp/entities/user-group-members/v1][%d] deleteUserGroupMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *DeleteUserGroupMembersDefault) GetPayload() *models.DomainUserGroupMembersResponseV1 {
+	return o.Payload
+}
+
+func (o *DeleteUserGroupMembersDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.DomainUserGroupMembersResponseV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/crowdstrike/gofalcon/falcon/models"
 )
@@ -64,23 +63,8 @@ PerformIncidentActionParams contains all the parameters to send to the API endpo
 */
 type PerformIncidentActionParams struct {
 
-	/* Body.
-
-	   Incident Update request body containing minimum 1 and maximum 5000 Incident ID(s) and action param(s) to be performed action against.
-	*/
-	Body *models.DomainEntityActionRequest
-
-	/* OverwriteDetects.
-
-	   If true and update-detects is true, the assigned-to-uuid or status for ALL detections associated with the incident(s) will be overwritten. If false, only detects that have default values for assigned-to-uuid and/or status will be updated. Defaults to false. Ignored if 'update-detects' is missing or false.
-	*/
-	OverwriteDetects *bool
-
-	/* UpdateDetects.
-
-	   If true, update assigned-to-uuid and or status of detections associated with the incident(s). Defaults to false
-	*/
-	UpdateDetects *bool
+	// Body.
+	Body *models.MsaEntityActionRequestV2
 
 	timeout    time.Duration
 	Context    context.Context
@@ -99,21 +83,7 @@ func (o *PerformIncidentActionParams) WithDefaults() *PerformIncidentActionParam
 //
 // All values with no default are reset to their zero value.
 func (o *PerformIncidentActionParams) SetDefaults() {
-	var (
-		overwriteDetectsDefault = bool(false)
-
-		updateDetectsDefault = bool(false)
-	)
-
-	val := PerformIncidentActionParams{
-		OverwriteDetects: &overwriteDetectsDefault,
-		UpdateDetects:    &updateDetectsDefault,
-	}
-
-	val.timeout = o.timeout
-	val.Context = o.Context
-	val.HTTPClient = o.HTTPClient
-	*o = val
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the perform incident action params
@@ -150,36 +120,14 @@ func (o *PerformIncidentActionParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the perform incident action params
-func (o *PerformIncidentActionParams) WithBody(body *models.DomainEntityActionRequest) *PerformIncidentActionParams {
+func (o *PerformIncidentActionParams) WithBody(body *models.MsaEntityActionRequestV2) *PerformIncidentActionParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the perform incident action params
-func (o *PerformIncidentActionParams) SetBody(body *models.DomainEntityActionRequest) {
+func (o *PerformIncidentActionParams) SetBody(body *models.MsaEntityActionRequestV2) {
 	o.Body = body
-}
-
-// WithOverwriteDetects adds the overwriteDetects to the perform incident action params
-func (o *PerformIncidentActionParams) WithOverwriteDetects(overwriteDetects *bool) *PerformIncidentActionParams {
-	o.SetOverwriteDetects(overwriteDetects)
-	return o
-}
-
-// SetOverwriteDetects adds the overwriteDetects to the perform incident action params
-func (o *PerformIncidentActionParams) SetOverwriteDetects(overwriteDetects *bool) {
-	o.OverwriteDetects = overwriteDetects
-}
-
-// WithUpdateDetects adds the updateDetects to the perform incident action params
-func (o *PerformIncidentActionParams) WithUpdateDetects(updateDetects *bool) *PerformIncidentActionParams {
-	o.SetUpdateDetects(updateDetects)
-	return o
-}
-
-// SetUpdateDetects adds the updateDetects to the perform incident action params
-func (o *PerformIncidentActionParams) SetUpdateDetects(updateDetects *bool) {
-	o.UpdateDetects = updateDetects
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -192,40 +140,6 @@ func (o *PerformIncidentActionParams) WriteToRequest(r runtime.ClientRequest, re
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
-		}
-	}
-
-	if o.OverwriteDetects != nil {
-
-		// query param overwrite_detects
-		var qrOverwriteDetects bool
-
-		if o.OverwriteDetects != nil {
-			qrOverwriteDetects = *o.OverwriteDetects
-		}
-		qOverwriteDetects := swag.FormatBool(qrOverwriteDetects)
-		if qOverwriteDetects != "" {
-
-			if err := r.SetQueryParam("overwrite_detects", qOverwriteDetects); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.UpdateDetects != nil {
-
-		// query param update_detects
-		var qrUpdateDetects bool
-
-		if o.UpdateDetects != nil {
-			qrUpdateDetects = *o.UpdateDetects
-		}
-		qUpdateDetects := swag.FormatBool(qrUpdateDetects)
-		if qUpdateDetects != "" {
-
-			if err := r.SetQueryParam("update_detects", qUpdateDetects); err != nil {
-				return err
-			}
 		}
 	}
 

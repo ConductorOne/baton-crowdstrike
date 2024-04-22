@@ -56,7 +56,14 @@ func (o *QueryCombinedSensorUpdatePoliciesReader) ReadResponse(response runtime.
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /policy/combined/sensor-update/v1] queryCombinedSensorUpdatePolicies", response, response.Code())
+		result := NewQueryCombinedSensorUpdatePoliciesDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type QueryCombinedSensorUpdatePoliciesOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type QueryCombinedSensorUpdatePoliciesOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.SensorUpdateRespV1
+	Payload *models.ResponsesSensorUpdatePoliciesV1
 }
 
 // IsSuccess returns true when this query combined sensor update policies o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *QueryCombinedSensorUpdatePoliciesOK) String() string {
 	return fmt.Sprintf("[GET /policy/combined/sensor-update/v1][%d] queryCombinedSensorUpdatePoliciesOK  %+v", 200, o.Payload)
 }
 
-func (o *QueryCombinedSensorUpdatePoliciesOK) GetPayload() *models.SensorUpdateRespV1 {
+func (o *QueryCombinedSensorUpdatePoliciesOK) GetPayload() *models.ResponsesSensorUpdatePoliciesV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedSensorUpdatePoliciesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *QueryCombinedSensorUpdatePoliciesOK) readResponse(response runtime.Clie
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.SensorUpdateRespV1)
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -182,10 +178,6 @@ Bad Request
 */
 type QueryCombinedSensorUpdatePoliciesBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -194,7 +186,7 @@ type QueryCombinedSensorUpdatePoliciesBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.SensorUpdateRespV1
+	Payload *models.ResponsesSensorUpdatePoliciesV1
 }
 
 // IsSuccess returns true when this query combined sensor update policies bad request response has a 2xx status code
@@ -235,18 +227,11 @@ func (o *QueryCombinedSensorUpdatePoliciesBadRequest) String() string {
 	return fmt.Sprintf("[GET /policy/combined/sensor-update/v1][%d] queryCombinedSensorUpdatePoliciesBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *QueryCombinedSensorUpdatePoliciesBadRequest) GetPayload() *models.SensorUpdateRespV1 {
+func (o *QueryCombinedSensorUpdatePoliciesBadRequest) GetPayload() *models.ResponsesSensorUpdatePoliciesV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedSensorUpdatePoliciesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -270,7 +255,7 @@ func (o *QueryCombinedSensorUpdatePoliciesBadRequest) readResponse(response runt
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.SensorUpdateRespV1)
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -291,10 +276,6 @@ QueryCombinedSensorUpdatePoliciesForbidden describes a response with status code
 Forbidden
 */
 type QueryCombinedSensorUpdatePoliciesForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *QueryCombinedSensorUpdatePoliciesForbidden) GetPayload() *models.MsaErr
 
 func (o *QueryCombinedSensorUpdatePoliciesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ QueryCombinedSensorUpdatePoliciesTooManyRequests describes a response with statu
 Too Many Requests
 */
 type QueryCombinedSensorUpdatePoliciesTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *QueryCombinedSensorUpdatePoliciesTooManyRequests) GetPayload() *models.
 
 func (o *QueryCombinedSensorUpdatePoliciesTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +490,6 @@ Internal Server Error
 */
 type QueryCombinedSensorUpdatePoliciesInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -539,7 +498,7 @@ type QueryCombinedSensorUpdatePoliciesInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.SensorUpdateRespV1
+	Payload *models.ResponsesSensorUpdatePoliciesV1
 }
 
 // IsSuccess returns true when this query combined sensor update policies internal server error response has a 2xx status code
@@ -580,18 +539,11 @@ func (o *QueryCombinedSensorUpdatePoliciesInternalServerError) String() string {
 	return fmt.Sprintf("[GET /policy/combined/sensor-update/v1][%d] queryCombinedSensorUpdatePoliciesInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *QueryCombinedSensorUpdatePoliciesInternalServerError) GetPayload() *models.SensorUpdateRespV1 {
+func (o *QueryCombinedSensorUpdatePoliciesInternalServerError) GetPayload() *models.ResponsesSensorUpdatePoliciesV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedSensorUpdatePoliciesInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -615,7 +567,79 @@ func (o *QueryCombinedSensorUpdatePoliciesInternalServerError) readResponse(resp
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.SensorUpdateRespV1)
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryCombinedSensorUpdatePoliciesDefault creates a QueryCombinedSensorUpdatePoliciesDefault with default headers values
+func NewQueryCombinedSensorUpdatePoliciesDefault(code int) *QueryCombinedSensorUpdatePoliciesDefault {
+	return &QueryCombinedSensorUpdatePoliciesDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryCombinedSensorUpdatePoliciesDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryCombinedSensorUpdatePoliciesDefault struct {
+	_statusCode int
+
+	Payload *models.ResponsesSensorUpdatePoliciesV1
+}
+
+// IsSuccess returns true when this query combined sensor update policies default response has a 2xx status code
+func (o *QueryCombinedSensorUpdatePoliciesDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query combined sensor update policies default response has a 3xx status code
+func (o *QueryCombinedSensorUpdatePoliciesDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query combined sensor update policies default response has a 4xx status code
+func (o *QueryCombinedSensorUpdatePoliciesDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query combined sensor update policies default response has a 5xx status code
+func (o *QueryCombinedSensorUpdatePoliciesDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query combined sensor update policies default response a status code equal to that given
+func (o *QueryCombinedSensorUpdatePoliciesDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query combined sensor update policies default response
+func (o *QueryCombinedSensorUpdatePoliciesDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryCombinedSensorUpdatePoliciesDefault) Error() string {
+	return fmt.Sprintf("[GET /policy/combined/sensor-update/v1][%d] queryCombinedSensorUpdatePolicies default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryCombinedSensorUpdatePoliciesDefault) String() string {
+	return fmt.Sprintf("[GET /policy/combined/sensor-update/v1][%d] queryCombinedSensorUpdatePolicies default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryCombinedSensorUpdatePoliciesDefault) GetPayload() *models.ResponsesSensorUpdatePoliciesV1 {
+	return o.Payload
+}
+
+func (o *QueryCombinedSensorUpdatePoliciesDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

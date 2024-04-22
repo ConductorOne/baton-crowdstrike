@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // NewGetHelmValuesYamlParams creates a new GetHelmValuesYamlParams object,
@@ -67,12 +66,6 @@ type GetHelmValuesYamlParams struct {
 	   Cluster name. For EKS it will be cluster ARN.
 	*/
 	ClusterName string
-
-	/* IsSelfManagedCluster.
-
-	   Set to true if the cluster is not managed by a cloud provider, false if it is.
-	*/
-	IsSelfManagedCluster *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -138,17 +131,6 @@ func (o *GetHelmValuesYamlParams) SetClusterName(clusterName string) {
 	o.ClusterName = clusterName
 }
 
-// WithIsSelfManagedCluster adds the isSelfManagedCluster to the get helm values yaml params
-func (o *GetHelmValuesYamlParams) WithIsSelfManagedCluster(isSelfManagedCluster *bool) *GetHelmValuesYamlParams {
-	o.SetIsSelfManagedCluster(isSelfManagedCluster)
-	return o
-}
-
-// SetIsSelfManagedCluster adds the isSelfManagedCluster to the get helm values yaml params
-func (o *GetHelmValuesYamlParams) SetIsSelfManagedCluster(isSelfManagedCluster *bool) {
-	o.IsSelfManagedCluster = isSelfManagedCluster
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *GetHelmValuesYamlParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -164,23 +146,6 @@ func (o *GetHelmValuesYamlParams) WriteToRequest(r runtime.ClientRequest, reg st
 
 		if err := r.SetQueryParam("cluster_name", qClusterName); err != nil {
 			return err
-		}
-	}
-
-	if o.IsSelfManagedCluster != nil {
-
-		// query param is_self_managed_cluster
-		var qrIsSelfManagedCluster bool
-
-		if o.IsSelfManagedCluster != nil {
-			qrIsSelfManagedCluster = *o.IsSelfManagedCluster
-		}
-		qIsSelfManagedCluster := swag.FormatBool(qrIsSelfManagedCluster)
-		if qIsSelfManagedCluster != "" {
-
-			if err := r.SetQueryParam("is_self_managed_cluster", qIsSelfManagedCluster); err != nil {
-				return err
-			}
 		}
 	}
 

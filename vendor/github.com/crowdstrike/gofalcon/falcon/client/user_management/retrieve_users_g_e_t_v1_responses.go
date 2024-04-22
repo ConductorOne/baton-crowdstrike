@@ -56,7 +56,14 @@ func (o *RetrieveUsersGETV1Reader) ReadResponse(response runtime.ClientResponse,
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /user-management/entities/users/GET/v1] retrieveUsersGETV1", response, response.Code())
+		result := NewRetrieveUsersGETV1Default(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -84,7 +91,7 @@ type RetrieveUsersGETV1OK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FlightcontrolapiUserResponse
+	Payload *models.DomainMsaEntitiesUsersResponse
 }
 
 // IsSuccess returns true when this retrieve users g e t v1 o k response has a 2xx status code
@@ -125,7 +132,7 @@ func (o *RetrieveUsersGETV1OK) String() string {
 	return fmt.Sprintf("[POST /user-management/entities/users/GET/v1][%d] retrieveUsersGETV1OK  %+v", 200, o.Payload)
 }
 
-func (o *RetrieveUsersGETV1OK) GetPayload() *models.FlightcontrolapiUserResponse {
+func (o *RetrieveUsersGETV1OK) GetPayload() *models.DomainMsaEntitiesUsersResponse {
 	return o.Payload
 }
 
@@ -160,7 +167,7 @@ func (o *RetrieveUsersGETV1OK) readResponse(response runtime.ClientResponse, con
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FlightcontrolapiUserResponse)
+	o.Payload = new(models.DomainMsaEntitiesUsersResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -194,7 +201,7 @@ type RetrieveUsersGETV1BadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.DomainMsaEntitiesUsersResponse
 }
 
 // IsSuccess returns true when this retrieve users g e t v1 bad request response has a 2xx status code
@@ -235,7 +242,7 @@ func (o *RetrieveUsersGETV1BadRequest) String() string {
 	return fmt.Sprintf("[POST /user-management/entities/users/GET/v1][%d] retrieveUsersGETV1BadRequest  %+v", 400, o.Payload)
 }
 
-func (o *RetrieveUsersGETV1BadRequest) GetPayload() *models.MsaspecResponseFields {
+func (o *RetrieveUsersGETV1BadRequest) GetPayload() *models.DomainMsaEntitiesUsersResponse {
 	return o.Payload
 }
 
@@ -270,7 +277,7 @@ func (o *RetrieveUsersGETV1BadRequest) readResponse(response runtime.ClientRespo
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.DomainMsaEntitiesUsersResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -304,7 +311,7 @@ type RetrieveUsersGETV1Forbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.DomainMsaEntitiesUsersResponse
 }
 
 // IsSuccess returns true when this retrieve users g e t v1 forbidden response has a 2xx status code
@@ -345,7 +352,7 @@ func (o *RetrieveUsersGETV1Forbidden) String() string {
 	return fmt.Sprintf("[POST /user-management/entities/users/GET/v1][%d] retrieveUsersGETV1Forbidden  %+v", 403, o.Payload)
 }
 
-func (o *RetrieveUsersGETV1Forbidden) GetPayload() *models.MsaspecResponseFields {
+func (o *RetrieveUsersGETV1Forbidden) GetPayload() *models.DomainMsaEntitiesUsersResponse {
 	return o.Payload
 }
 
@@ -380,7 +387,7 @@ func (o *RetrieveUsersGETV1Forbidden) readResponse(response runtime.ClientRespon
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.DomainMsaEntitiesUsersResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -539,7 +546,7 @@ type RetrieveUsersGETV1InternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.DomainMsaEntitiesUsersResponse
 }
 
 // IsSuccess returns true when this retrieve users g e t v1 internal server error response has a 2xx status code
@@ -580,7 +587,7 @@ func (o *RetrieveUsersGETV1InternalServerError) String() string {
 	return fmt.Sprintf("[POST /user-management/entities/users/GET/v1][%d] retrieveUsersGETV1InternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *RetrieveUsersGETV1InternalServerError) GetPayload() *models.MsaspecResponseFields {
+func (o *RetrieveUsersGETV1InternalServerError) GetPayload() *models.DomainMsaEntitiesUsersResponse {
 	return o.Payload
 }
 
@@ -615,7 +622,79 @@ func (o *RetrieveUsersGETV1InternalServerError) readResponse(response runtime.Cl
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.DomainMsaEntitiesUsersResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRetrieveUsersGETV1Default creates a RetrieveUsersGETV1Default with default headers values
+func NewRetrieveUsersGETV1Default(code int) *RetrieveUsersGETV1Default {
+	return &RetrieveUsersGETV1Default{
+		_statusCode: code,
+	}
+}
+
+/*
+RetrieveUsersGETV1Default describes a response with status code -1, with default header values.
+
+OK
+*/
+type RetrieveUsersGETV1Default struct {
+	_statusCode int
+
+	Payload *models.DomainMsaEntitiesUsersResponse
+}
+
+// IsSuccess returns true when this retrieve users g e t v1 default response has a 2xx status code
+func (o *RetrieveUsersGETV1Default) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this retrieve users g e t v1 default response has a 3xx status code
+func (o *RetrieveUsersGETV1Default) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this retrieve users g e t v1 default response has a 4xx status code
+func (o *RetrieveUsersGETV1Default) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this retrieve users g e t v1 default response has a 5xx status code
+func (o *RetrieveUsersGETV1Default) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this retrieve users g e t v1 default response a status code equal to that given
+func (o *RetrieveUsersGETV1Default) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the retrieve users g e t v1 default response
+func (o *RetrieveUsersGETV1Default) Code() int {
+	return o._statusCode
+}
+
+func (o *RetrieveUsersGETV1Default) Error() string {
+	return fmt.Sprintf("[POST /user-management/entities/users/GET/v1][%d] retrieveUsersGETV1 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RetrieveUsersGETV1Default) String() string {
+	return fmt.Sprintf("[POST /user-management/entities/users/GET/v1][%d] retrieveUsersGETV1 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RetrieveUsersGETV1Default) GetPayload() *models.DomainMsaEntitiesUsersResponse {
+	return o.Payload
+}
+
+func (o *RetrieveUsersGETV1Default) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.DomainMsaEntitiesUsersResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

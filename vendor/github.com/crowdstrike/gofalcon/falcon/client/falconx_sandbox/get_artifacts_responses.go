@@ -25,12 +25,6 @@ type GetArtifactsReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetArtifactsReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-	case 200:
-		result := NewGetArtifactsOK()
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		return result, nil
 	case 400:
 		result := NewGetArtifactsBadRequest()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -62,118 +56,8 @@ func (o *GetArtifactsReader) ReadResponse(response runtime.ClientResponse, consu
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /falconx/entities/artifacts/v1] GetArtifacts", response, response.Code())
+		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
-}
-
-// NewGetArtifactsOK creates a GetArtifactsOK with default headers values
-func NewGetArtifactsOK() *GetArtifactsOK {
-	return &GetArtifactsOK{}
-}
-
-/*
-GetArtifactsOK describes a response with status code 200, with default header values.
-
-OK
-*/
-type GetArtifactsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
-	/* Request limit per minute.
-	 */
-	XRateLimitLimit int64
-
-	/* The number of requests remaining for the sliding one minute window.
-	 */
-	XRateLimitRemaining int64
-
-	Payload *models.MsaspecQueryResponse
-}
-
-// IsSuccess returns true when this get artifacts o k response has a 2xx status code
-func (o *GetArtifactsOK) IsSuccess() bool {
-	return true
-}
-
-// IsRedirect returns true when this get artifacts o k response has a 3xx status code
-func (o *GetArtifactsOK) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this get artifacts o k response has a 4xx status code
-func (o *GetArtifactsOK) IsClientError() bool {
-	return false
-}
-
-// IsServerError returns true when this get artifacts o k response has a 5xx status code
-func (o *GetArtifactsOK) IsServerError() bool {
-	return false
-}
-
-// IsCode returns true when this get artifacts o k response a status code equal to that given
-func (o *GetArtifactsOK) IsCode(code int) bool {
-	return code == 200
-}
-
-// Code gets the status code for the get artifacts o k response
-func (o *GetArtifactsOK) Code() int {
-	return 200
-}
-
-func (o *GetArtifactsOK) Error() string {
-	return fmt.Sprintf("[GET /falconx/entities/artifacts/v1][%d] getArtifactsOK  %+v", 200, o.Payload)
-}
-
-func (o *GetArtifactsOK) String() string {
-	return fmt.Sprintf("[GET /falconx/entities/artifacts/v1][%d] getArtifactsOK  %+v", 200, o.Payload)
-}
-
-func (o *GetArtifactsOK) GetPayload() *models.MsaspecQueryResponse {
-	return o.Payload
-}
-
-func (o *GetArtifactsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
-	// hydrates response header X-RateLimit-Limit
-	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
-
-	if hdrXRateLimitLimit != "" {
-		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
-		if err != nil {
-			return errors.InvalidType("X-RateLimit-Limit", "header", "int64", hdrXRateLimitLimit)
-		}
-		o.XRateLimitLimit = valxRateLimitLimit
-	}
-
-	// hydrates response header X-RateLimit-Remaining
-	hdrXRateLimitRemaining := response.GetHeader("X-RateLimit-Remaining")
-
-	if hdrXRateLimitRemaining != "" {
-		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
-		if err != nil {
-			return errors.InvalidType("X-RateLimit-Remaining", "header", "int64", hdrXRateLimitRemaining)
-		}
-		o.XRateLimitRemaining = valxRateLimitRemaining
-	}
-
-	o.Payload = new(models.MsaspecQueryResponse)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
 }
 
 // NewGetArtifactsBadRequest creates a GetArtifactsBadRequest with default headers values
@@ -200,7 +84,7 @@ type GetArtifactsBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.MsaReplyMetaOnly
 }
 
 // IsSuccess returns true when this get artifacts bad request response has a 2xx status code
@@ -241,7 +125,7 @@ func (o *GetArtifactsBadRequest) String() string {
 	return fmt.Sprintf("[GET /falconx/entities/artifacts/v1][%d] getArtifactsBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *GetArtifactsBadRequest) GetPayload() *models.MsaspecResponseFields {
+func (o *GetArtifactsBadRequest) GetPayload() *models.MsaReplyMetaOnly {
 	return o.Payload
 }
 
@@ -276,7 +160,7 @@ func (o *GetArtifactsBadRequest) readResponse(response runtime.ClientResponse, c
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.MsaReplyMetaOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -420,7 +304,7 @@ type GetArtifactsNotFound struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.MsaReplyMetaOnly
 }
 
 // IsSuccess returns true when this get artifacts not found response has a 2xx status code
@@ -461,7 +345,7 @@ func (o *GetArtifactsNotFound) String() string {
 	return fmt.Sprintf("[GET /falconx/entities/artifacts/v1][%d] getArtifactsNotFound  %+v", 404, o.Payload)
 }
 
-func (o *GetArtifactsNotFound) GetPayload() *models.MsaspecResponseFields {
+func (o *GetArtifactsNotFound) GetPayload() *models.MsaReplyMetaOnly {
 	return o.Payload
 }
 
@@ -496,7 +380,7 @@ func (o *GetArtifactsNotFound) readResponse(response runtime.ClientResponse, con
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.MsaReplyMetaOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -655,7 +539,7 @@ type GetArtifactsInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.MsaReplyMetaOnly
 }
 
 // IsSuccess returns true when this get artifacts internal server error response has a 2xx status code
@@ -696,7 +580,7 @@ func (o *GetArtifactsInternalServerError) String() string {
 	return fmt.Sprintf("[GET /falconx/entities/artifacts/v1][%d] getArtifactsInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *GetArtifactsInternalServerError) GetPayload() *models.MsaspecResponseFields {
+func (o *GetArtifactsInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
 	return o.Payload
 }
 
@@ -731,7 +615,7 @@ func (o *GetArtifactsInternalServerError) readResponse(response runtime.ClientRe
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.MsaReplyMetaOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -76,7 +76,7 @@ type QuerySensorUpdateKernelsDistinctParams struct {
 
 	/* Limit.
 
-	   The maximum records to return. [1-500]
+	   The maximum records to return. [1-5000]
 	*/
 	Limit *int64
 

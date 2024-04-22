@@ -56,7 +56,14 @@ func (o *SetSensorUpdatePoliciesPrecedenceReader) ReadResponse(response runtime.
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /policy/entities/sensor-update-precedence/v1] setSensorUpdatePoliciesPrecedence", response, response.Code())
+		result := NewSetSensorUpdatePoliciesPrecedenceDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ SetSensorUpdatePoliciesPrecedenceOK describes a response with status code 200, w
 OK
 */
 type SetSensorUpdatePoliciesPrecedenceOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *SetSensorUpdatePoliciesPrecedenceOK) GetPayload() *models.MsaQueryRespo
 
 func (o *SetSensorUpdatePoliciesPrecedenceOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ SetSensorUpdatePoliciesPrecedenceBadRequest describes a response with status cod
 Bad Request
 */
 type SetSensorUpdatePoliciesPrecedenceBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *SetSensorUpdatePoliciesPrecedenceBadRequest) GetPayload() *models.MsaQu
 
 func (o *SetSensorUpdatePoliciesPrecedenceBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ SetSensorUpdatePoliciesPrecedenceForbidden describes a response with status code
 Forbidden
 */
 type SetSensorUpdatePoliciesPrecedenceForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *SetSensorUpdatePoliciesPrecedenceForbidden) GetPayload() *models.MsaErr
 
 func (o *SetSensorUpdatePoliciesPrecedenceForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ SetSensorUpdatePoliciesPrecedenceTooManyRequests describes a response with statu
 Too Many Requests
 */
 type SetSensorUpdatePoliciesPrecedenceTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *SetSensorUpdatePoliciesPrecedenceTooManyRequests) GetPayload() *models.
 
 func (o *SetSensorUpdatePoliciesPrecedenceTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ SetSensorUpdatePoliciesPrecedenceInternalServerError describes a response with s
 Internal Server Error
 */
 type SetSensorUpdatePoliciesPrecedenceInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *SetSensorUpdatePoliciesPrecedenceInternalServerError) GetPayload() *mod
 
 func (o *SetSensorUpdatePoliciesPrecedenceInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -614,6 +566,78 @@ func (o *SetSensorUpdatePoliciesPrecedenceInternalServerError) readResponse(resp
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.MsaQueryResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewSetSensorUpdatePoliciesPrecedenceDefault creates a SetSensorUpdatePoliciesPrecedenceDefault with default headers values
+func NewSetSensorUpdatePoliciesPrecedenceDefault(code int) *SetSensorUpdatePoliciesPrecedenceDefault {
+	return &SetSensorUpdatePoliciesPrecedenceDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+SetSensorUpdatePoliciesPrecedenceDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type SetSensorUpdatePoliciesPrecedenceDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this set sensor update policies precedence default response has a 2xx status code
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this set sensor update policies precedence default response has a 3xx status code
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this set sensor update policies precedence default response has a 4xx status code
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this set sensor update policies precedence default response has a 5xx status code
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this set sensor update policies precedence default response a status code equal to that given
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the set sensor update policies precedence default response
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) Error() string {
+	return fmt.Sprintf("[POST /policy/entities/sensor-update-precedence/v1][%d] setSensorUpdatePoliciesPrecedence default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) String() string {
+	return fmt.Sprintf("[POST /policy/entities/sensor-update-precedence/v1][%d] setSensorUpdatePoliciesPrecedence default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *SetSensorUpdatePoliciesPrecedenceDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.MsaQueryResponse)
 

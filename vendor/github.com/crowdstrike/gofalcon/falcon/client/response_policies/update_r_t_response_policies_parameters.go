@@ -64,7 +64,7 @@ UpdateRTResponsePoliciesParams contains all the parameters to send to the API en
 type UpdateRTResponsePoliciesParams struct {
 
 	// Body.
-	Body *models.RemoteResponseUpdatePoliciesReqV1
+	Body *models.RequestsUpdateRTResponsePoliciesV1
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,13 +120,13 @@ func (o *UpdateRTResponsePoliciesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the update r t response policies params
-func (o *UpdateRTResponsePoliciesParams) WithBody(body *models.RemoteResponseUpdatePoliciesReqV1) *UpdateRTResponsePoliciesParams {
+func (o *UpdateRTResponsePoliciesParams) WithBody(body *models.RequestsUpdateRTResponsePoliciesV1) *UpdateRTResponsePoliciesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the update r t response policies params
-func (o *UpdateRTResponsePoliciesParams) SetBody(body *models.RemoteResponseUpdatePoliciesReqV1) {
+func (o *UpdateRTResponsePoliciesParams) SetBody(body *models.RequestsUpdateRTResponsePoliciesV1) {
 	o.Body = body
 }
 

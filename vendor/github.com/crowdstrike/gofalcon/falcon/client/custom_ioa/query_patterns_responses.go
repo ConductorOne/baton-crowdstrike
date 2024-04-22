@@ -44,7 +44,14 @@ func (o *QueryPatternsReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /ioarules/queries/pattern-severities/v1] query-patterns", response, response.Code())
+		result := NewQueryPatternsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -59,10 +66,6 @@ QueryPatternsOK describes a response with status code 200, with default header v
 OK
 */
 type QueryPatternsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -119,13 +122,6 @@ func (o *QueryPatternsOK) GetPayload() *models.MsaQueryResponse {
 
 func (o *QueryPatternsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -169,10 +165,6 @@ QueryPatternsForbidden describes a response with status code 403, with default h
 Forbidden
 */
 type QueryPatternsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -229,13 +221,6 @@ func (o *QueryPatternsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *QueryPatternsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -279,10 +264,6 @@ QueryPatternsTooManyRequests describes a response with status code 429, with def
 Too Many Requests
 */
 type QueryPatternsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -343,13 +324,6 @@ func (o *QueryPatternsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *QueryPatternsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -384,6 +358,78 @@ func (o *QueryPatternsTooManyRequests) readResponse(response runtime.ClientRespo
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryPatternsDefault creates a QueryPatternsDefault with default headers values
+func NewQueryPatternsDefault(code int) *QueryPatternsDefault {
+	return &QueryPatternsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryPatternsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryPatternsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this query patterns default response has a 2xx status code
+func (o *QueryPatternsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query patterns default response has a 3xx status code
+func (o *QueryPatternsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query patterns default response has a 4xx status code
+func (o *QueryPatternsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query patterns default response has a 5xx status code
+func (o *QueryPatternsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query patterns default response a status code equal to that given
+func (o *QueryPatternsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query patterns default response
+func (o *QueryPatternsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryPatternsDefault) Error() string {
+	return fmt.Sprintf("[GET /ioarules/queries/pattern-severities/v1][%d] query-patterns default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryPatternsDefault) String() string {
+	return fmt.Sprintf("[GET /ioarules/queries/pattern-severities/v1][%d] query-patterns default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryPatternsDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *QueryPatternsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

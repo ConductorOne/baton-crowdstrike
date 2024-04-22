@@ -44,7 +44,14 @@ func (o *GetFirewallFieldsReader) ReadResponse(response runtime.ClientResponse, 
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /fwmgr/entities/firewall-fields/v1] get-firewall-fields", response, response.Code())
+		result := NewGetFirewallFieldsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -59,10 +66,6 @@ GetFirewallFieldsOK describes a response with status code 200, with default head
 OK
 */
 type GetFirewallFieldsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -119,13 +122,6 @@ func (o *GetFirewallFieldsOK) GetPayload() *models.FwmgrAPIFirewallFieldsRespons
 
 func (o *GetFirewallFieldsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -169,10 +165,6 @@ GetFirewallFieldsForbidden describes a response with status code 403, with defau
 Forbidden
 */
 type GetFirewallFieldsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -229,13 +221,6 @@ func (o *GetFirewallFieldsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetFirewallFieldsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -279,10 +264,6 @@ GetFirewallFieldsTooManyRequests describes a response with status code 429, with
 Too Many Requests
 */
 type GetFirewallFieldsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -343,13 +324,6 @@ func (o *GetFirewallFieldsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly
 
 func (o *GetFirewallFieldsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -384,6 +358,78 @@ func (o *GetFirewallFieldsTooManyRequests) readResponse(response runtime.ClientR
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetFirewallFieldsDefault creates a GetFirewallFieldsDefault with default headers values
+func NewGetFirewallFieldsDefault(code int) *GetFirewallFieldsDefault {
+	return &GetFirewallFieldsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetFirewallFieldsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetFirewallFieldsDefault struct {
+	_statusCode int
+
+	Payload *models.FwmgrAPIFirewallFieldsResponse
+}
+
+// IsSuccess returns true when this get firewall fields default response has a 2xx status code
+func (o *GetFirewallFieldsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get firewall fields default response has a 3xx status code
+func (o *GetFirewallFieldsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get firewall fields default response has a 4xx status code
+func (o *GetFirewallFieldsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get firewall fields default response has a 5xx status code
+func (o *GetFirewallFieldsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get firewall fields default response a status code equal to that given
+func (o *GetFirewallFieldsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get firewall fields default response
+func (o *GetFirewallFieldsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetFirewallFieldsDefault) Error() string {
+	return fmt.Sprintf("[GET /fwmgr/entities/firewall-fields/v1][%d] get-firewall-fields default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetFirewallFieldsDefault) String() string {
+	return fmt.Sprintf("[GET /fwmgr/entities/firewall-fields/v1][%d] get-firewall-fields default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetFirewallFieldsDefault) GetPayload() *models.FwmgrAPIFirewallFieldsResponse {
+	return o.Payload
+}
+
+func (o *GetFirewallFieldsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.FwmgrAPIFirewallFieldsResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

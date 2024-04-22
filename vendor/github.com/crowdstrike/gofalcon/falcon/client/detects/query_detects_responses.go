@@ -56,7 +56,14 @@ func (o *QueryDetectsReader) ReadResponse(response runtime.ClientResponse, consu
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /detects/queries/detects/v1] QueryDetects", response, response.Code())
+		result := NewQueryDetectsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ QueryDetectsOK describes a response with status code 200, with default header va
 OK
 */
 type QueryDetectsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *QueryDetectsOK) GetPayload() *models.MsaQueryResponse {
 
 func (o *QueryDetectsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ QueryDetectsBadRequest describes a response with status code 400, with default h
 Bad Request
 */
 type QueryDetectsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *QueryDetectsBadRequest) GetPayload() *models.MsaQueryResponse {
 
 func (o *QueryDetectsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ QueryDetectsForbidden describes a response with status code 403, with default he
 Forbidden
 */
 type QueryDetectsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *QueryDetectsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *QueryDetectsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ QueryDetectsTooManyRequests describes a response with status code 429, with defa
 Too Many Requests
 */
 type QueryDetectsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *QueryDetectsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *QueryDetectsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ QueryDetectsInternalServerError describes a response with status code 500, with 
 Internal Server Error
 */
 type QueryDetectsInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *QueryDetectsInternalServerError) GetPayload() *models.MsaQueryResponse 
 
 func (o *QueryDetectsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -614,6 +566,78 @@ func (o *QueryDetectsInternalServerError) readResponse(response runtime.ClientRe
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.MsaQueryResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryDetectsDefault creates a QueryDetectsDefault with default headers values
+func NewQueryDetectsDefault(code int) *QueryDetectsDefault {
+	return &QueryDetectsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryDetectsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryDetectsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this query detects default response has a 2xx status code
+func (o *QueryDetectsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query detects default response has a 3xx status code
+func (o *QueryDetectsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query detects default response has a 4xx status code
+func (o *QueryDetectsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query detects default response has a 5xx status code
+func (o *QueryDetectsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query detects default response a status code equal to that given
+func (o *QueryDetectsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query detects default response
+func (o *QueryDetectsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryDetectsDefault) Error() string {
+	return fmt.Sprintf("[GET /detects/queries/detects/v1][%d] QueryDetects default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryDetectsDefault) String() string {
+	return fmt.Sprintf("[GET /detects/queries/detects/v1][%d] QueryDetects default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryDetectsDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *QueryDetectsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.MsaQueryResponse)
 

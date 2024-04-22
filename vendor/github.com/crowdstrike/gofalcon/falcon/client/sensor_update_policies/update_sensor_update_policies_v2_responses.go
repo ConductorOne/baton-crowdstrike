@@ -62,7 +62,14 @@ func (o *UpdateSensorUpdatePoliciesV2Reader) ReadResponse(response runtime.Clien
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[PATCH /policy/entities/sensor-update/v2] updateSensorUpdatePoliciesV2", response, response.Code())
+		result := NewUpdateSensorUpdatePoliciesV2Default(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -90,7 +97,7 @@ type UpdateSensorUpdatePoliciesV2OK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.SensorUpdateRespV2
+	Payload *models.ResponsesSensorUpdatePoliciesV2
 }
 
 // IsSuccess returns true when this update sensor update policies v2 o k response has a 2xx status code
@@ -131,7 +138,7 @@ func (o *UpdateSensorUpdatePoliciesV2OK) String() string {
 	return fmt.Sprintf("[PATCH /policy/entities/sensor-update/v2][%d] updateSensorUpdatePoliciesV2OK  %+v", 200, o.Payload)
 }
 
-func (o *UpdateSensorUpdatePoliciesV2OK) GetPayload() *models.SensorUpdateRespV2 {
+func (o *UpdateSensorUpdatePoliciesV2OK) GetPayload() *models.ResponsesSensorUpdatePoliciesV2 {
 	return o.Payload
 }
 
@@ -166,7 +173,7 @@ func (o *UpdateSensorUpdatePoliciesV2OK) readResponse(response runtime.ClientRes
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.SensorUpdateRespV2)
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV2)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -200,7 +207,7 @@ type UpdateSensorUpdatePoliciesV2BadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.SensorUpdateRespV2
+	Payload *models.ResponsesSensorUpdatePoliciesV2
 }
 
 // IsSuccess returns true when this update sensor update policies v2 bad request response has a 2xx status code
@@ -241,7 +248,7 @@ func (o *UpdateSensorUpdatePoliciesV2BadRequest) String() string {
 	return fmt.Sprintf("[PATCH /policy/entities/sensor-update/v2][%d] updateSensorUpdatePoliciesV2BadRequest  %+v", 400, o.Payload)
 }
 
-func (o *UpdateSensorUpdatePoliciesV2BadRequest) GetPayload() *models.SensorUpdateRespV2 {
+func (o *UpdateSensorUpdatePoliciesV2BadRequest) GetPayload() *models.ResponsesSensorUpdatePoliciesV2 {
 	return o.Payload
 }
 
@@ -276,7 +283,7 @@ func (o *UpdateSensorUpdatePoliciesV2BadRequest) readResponse(response runtime.C
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.SensorUpdateRespV2)
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV2)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -420,7 +427,7 @@ type UpdateSensorUpdatePoliciesV2NotFound struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.SensorUpdateRespV2
+	Payload *models.ResponsesSensorUpdatePoliciesV2
 }
 
 // IsSuccess returns true when this update sensor update policies v2 not found response has a 2xx status code
@@ -461,7 +468,7 @@ func (o *UpdateSensorUpdatePoliciesV2NotFound) String() string {
 	return fmt.Sprintf("[PATCH /policy/entities/sensor-update/v2][%d] updateSensorUpdatePoliciesV2NotFound  %+v", 404, o.Payload)
 }
 
-func (o *UpdateSensorUpdatePoliciesV2NotFound) GetPayload() *models.SensorUpdateRespV2 {
+func (o *UpdateSensorUpdatePoliciesV2NotFound) GetPayload() *models.ResponsesSensorUpdatePoliciesV2 {
 	return o.Payload
 }
 
@@ -496,7 +503,7 @@ func (o *UpdateSensorUpdatePoliciesV2NotFound) readResponse(response runtime.Cli
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.SensorUpdateRespV2)
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV2)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -655,7 +662,7 @@ type UpdateSensorUpdatePoliciesV2InternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.SensorUpdateRespV2
+	Payload *models.ResponsesSensorUpdatePoliciesV2
 }
 
 // IsSuccess returns true when this update sensor update policies v2 internal server error response has a 2xx status code
@@ -696,7 +703,7 @@ func (o *UpdateSensorUpdatePoliciesV2InternalServerError) String() string {
 	return fmt.Sprintf("[PATCH /policy/entities/sensor-update/v2][%d] updateSensorUpdatePoliciesV2InternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *UpdateSensorUpdatePoliciesV2InternalServerError) GetPayload() *models.SensorUpdateRespV2 {
+func (o *UpdateSensorUpdatePoliciesV2InternalServerError) GetPayload() *models.ResponsesSensorUpdatePoliciesV2 {
 	return o.Payload
 }
 
@@ -731,7 +738,79 @@ func (o *UpdateSensorUpdatePoliciesV2InternalServerError) readResponse(response 
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.SensorUpdateRespV2)
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV2)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateSensorUpdatePoliciesV2Default creates a UpdateSensorUpdatePoliciesV2Default with default headers values
+func NewUpdateSensorUpdatePoliciesV2Default(code int) *UpdateSensorUpdatePoliciesV2Default {
+	return &UpdateSensorUpdatePoliciesV2Default{
+		_statusCode: code,
+	}
+}
+
+/*
+UpdateSensorUpdatePoliciesV2Default describes a response with status code -1, with default header values.
+
+OK
+*/
+type UpdateSensorUpdatePoliciesV2Default struct {
+	_statusCode int
+
+	Payload *models.ResponsesSensorUpdatePoliciesV2
+}
+
+// IsSuccess returns true when this update sensor update policies v2 default response has a 2xx status code
+func (o *UpdateSensorUpdatePoliciesV2Default) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this update sensor update policies v2 default response has a 3xx status code
+func (o *UpdateSensorUpdatePoliciesV2Default) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this update sensor update policies v2 default response has a 4xx status code
+func (o *UpdateSensorUpdatePoliciesV2Default) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this update sensor update policies v2 default response has a 5xx status code
+func (o *UpdateSensorUpdatePoliciesV2Default) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this update sensor update policies v2 default response a status code equal to that given
+func (o *UpdateSensorUpdatePoliciesV2Default) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the update sensor update policies v2 default response
+func (o *UpdateSensorUpdatePoliciesV2Default) Code() int {
+	return o._statusCode
+}
+
+func (o *UpdateSensorUpdatePoliciesV2Default) Error() string {
+	return fmt.Sprintf("[PATCH /policy/entities/sensor-update/v2][%d] updateSensorUpdatePoliciesV2 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdateSensorUpdatePoliciesV2Default) String() string {
+	return fmt.Sprintf("[PATCH /policy/entities/sensor-update/v2][%d] updateSensorUpdatePoliciesV2 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdateSensorUpdatePoliciesV2Default) GetPayload() *models.ResponsesSensorUpdatePoliciesV2 {
+	return o.Payload
+}
+
+func (o *UpdateSensorUpdatePoliciesV2Default) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ResponsesSensorUpdatePoliciesV2)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

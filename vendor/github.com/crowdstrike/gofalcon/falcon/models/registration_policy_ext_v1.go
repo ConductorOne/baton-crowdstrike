@@ -23,10 +23,6 @@ type RegistrationPolicyExtV1 struct {
 	// Required: true
 	AccountID *string `json:"account_id"`
 
-	// account ids
-	// Required: true
-	AccountIds []string `json:"account_ids"`
-
 	// enabled
 	// Required: true
 	Enabled *bool `json:"enabled"`
@@ -53,10 +49,6 @@ func (m *RegistrationPolicyExtV1) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccountID(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateAccountIds(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -89,15 +81,6 @@ func (m *RegistrationPolicyExtV1) Validate(formats strfmt.Registry) error {
 func (m *RegistrationPolicyExtV1) validateAccountID(formats strfmt.Registry) error {
 
 	if err := validate.Required("account_id", "body", m.AccountID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *RegistrationPolicyExtV1) validateAccountIds(formats strfmt.Registry) error {
-
-	if err := validate.Required("account_ids", "body", m.AccountIds); err != nil {
 		return err
 	}
 

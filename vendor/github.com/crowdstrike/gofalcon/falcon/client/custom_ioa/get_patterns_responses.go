@@ -44,7 +44,14 @@ func (o *GetPatternsReader) ReadResponse(response runtime.ClientResponse, consum
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /ioarules/entities/pattern-severities/v1] get-patterns", response, response.Code())
+		result := NewGetPatternsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -59,10 +66,6 @@ GetPatternsOK describes a response with status code 200, with default header val
 OK
 */
 type GetPatternsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -119,13 +122,6 @@ func (o *GetPatternsOK) GetPayload() *models.APIPatternsResponse {
 
 func (o *GetPatternsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -169,10 +165,6 @@ GetPatternsForbidden describes a response with status code 403, with default hea
 Forbidden
 */
 type GetPatternsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -229,13 +221,6 @@ func (o *GetPatternsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetPatternsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -279,10 +264,6 @@ GetPatternsTooManyRequests describes a response with status code 429, with defau
 Too Many Requests
 */
 type GetPatternsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -343,13 +324,6 @@ func (o *GetPatternsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetPatternsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -384,6 +358,78 @@ func (o *GetPatternsTooManyRequests) readResponse(response runtime.ClientRespons
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetPatternsDefault creates a GetPatternsDefault with default headers values
+func NewGetPatternsDefault(code int) *GetPatternsDefault {
+	return &GetPatternsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetPatternsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetPatternsDefault struct {
+	_statusCode int
+
+	Payload *models.APIPatternsResponse
+}
+
+// IsSuccess returns true when this get patterns default response has a 2xx status code
+func (o *GetPatternsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get patterns default response has a 3xx status code
+func (o *GetPatternsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get patterns default response has a 4xx status code
+func (o *GetPatternsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get patterns default response has a 5xx status code
+func (o *GetPatternsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get patterns default response a status code equal to that given
+func (o *GetPatternsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get patterns default response
+func (o *GetPatternsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetPatternsDefault) Error() string {
+	return fmt.Sprintf("[GET /ioarules/entities/pattern-severities/v1][%d] get-patterns default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetPatternsDefault) String() string {
+	return fmt.Sprintf("[GET /ioarules/entities/pattern-severities/v1][%d] get-patterns default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetPatternsDefault) GetPayload() *models.APIPatternsResponse {
+	return o.Payload
+}
+
+func (o *GetPatternsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.APIPatternsResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

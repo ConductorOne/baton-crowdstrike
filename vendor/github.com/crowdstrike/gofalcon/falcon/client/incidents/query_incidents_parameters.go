@@ -78,7 +78,7 @@ type QueryIncidentsParams struct {
 
 	   Starting index of overall result set from which to return ids.
 	*/
-	Offset *int64
+	Offset *string
 
 	/* Sort.
 
@@ -162,13 +162,13 @@ func (o *QueryIncidentsParams) SetLimit(limit *int64) {
 }
 
 // WithOffset adds the offset to the query incidents params
-func (o *QueryIncidentsParams) WithOffset(offset *int64) *QueryIncidentsParams {
+func (o *QueryIncidentsParams) WithOffset(offset *string) *QueryIncidentsParams {
 	o.SetOffset(offset)
 	return o
 }
 
 // SetOffset adds the offset to the query incidents params
-func (o *QueryIncidentsParams) SetOffset(offset *int64) {
+func (o *QueryIncidentsParams) SetOffset(offset *string) {
 	o.Offset = offset
 }
 
@@ -228,12 +228,12 @@ func (o *QueryIncidentsParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	if o.Offset != nil {
 
 		// query param offset
-		var qrOffset int64
+		var qrOffset string
 
 		if o.Offset != nil {
 			qrOffset = *o.Offset
 		}
-		qOffset := swag.FormatInt64(qrOffset)
+		qOffset := qrOffset
 		if qOffset != "" {
 
 			if err := r.SetQueryParam("offset", qOffset); err != nil {

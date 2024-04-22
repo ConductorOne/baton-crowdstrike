@@ -56,7 +56,7 @@ func (o *CreateOrUpdateAWSSettingsReader) ReadResponse(response runtime.ClientRe
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /cloud-connect-aws/entities/settings/v1] CreateOrUpdateAWSSettings", response, response.Code())
+		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
 }
 
@@ -71,10 +71,6 @@ CreateOrUpdateAWSSettingsCreated describes a response with status code 201, with
 Created
 */
 type CreateOrUpdateAWSSettingsCreated struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +127,6 @@ func (o *CreateOrUpdateAWSSettingsCreated) GetPayload() *models.ModelsCustomerCo
 
 func (o *CreateOrUpdateAWSSettingsCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +170,6 @@ CreateOrUpdateAWSSettingsBadRequest describes a response with status code 400, w
 Bad Request
 */
 type CreateOrUpdateAWSSettingsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +226,6 @@ func (o *CreateOrUpdateAWSSettingsBadRequest) GetPayload() *models.ModelsCustome
 
 func (o *CreateOrUpdateAWSSettingsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +269,6 @@ CreateOrUpdateAWSSettingsForbidden describes a response with status code 403, wi
 Forbidden
 */
 type CreateOrUpdateAWSSettingsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +325,6 @@ func (o *CreateOrUpdateAWSSettingsForbidden) GetPayload() *models.MsaReplyMetaOn
 
 func (o *CreateOrUpdateAWSSettingsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +368,6 @@ CreateOrUpdateAWSSettingsTooManyRequests describes a response with status code 4
 Too Many Requests
 */
 type CreateOrUpdateAWSSettingsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +428,6 @@ func (o *CreateOrUpdateAWSSettingsTooManyRequests) GetPayload() *models.MsaReply
 
 func (o *CreateOrUpdateAWSSettingsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +483,6 @@ Internal Server Error
 */
 type CreateOrUpdateAWSSettingsInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -585,13 +537,6 @@ func (o *CreateOrUpdateAWSSettingsInternalServerError) GetPayload() *models.Mode
 }
 
 func (o *CreateOrUpdateAWSSettingsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")

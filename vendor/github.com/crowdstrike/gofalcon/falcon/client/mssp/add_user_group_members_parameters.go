@@ -63,10 +63,7 @@ AddUserGroupMembersParams contains all the parameters to send to the API endpoin
 */
 type AddUserGroupMembersParams struct {
 
-	/* Body.
-
-	   Both 'user_group_id' and 'user_uuids' fields are required.
-	*/
+	// Body.
 	Body *models.DomainUserGroupMembersRequestV1
 
 	timeout    time.Duration

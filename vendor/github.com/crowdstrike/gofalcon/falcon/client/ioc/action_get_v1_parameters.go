@@ -168,8 +168,8 @@ func (o *ActionGetV1Params) bindParamIds(formats strfmt.Registry) []string {
 		idsIC = append(idsIC, idsIIV)
 	}
 
-	// items.CollectionFormat: "multi"
-	idsIS := swag.JoinByFormat(idsIC, "multi")
+	// items.CollectionFormat: "csv"
+	idsIS := swag.JoinByFormat(idsIC, "csv")
 
 	return idsIS
 }

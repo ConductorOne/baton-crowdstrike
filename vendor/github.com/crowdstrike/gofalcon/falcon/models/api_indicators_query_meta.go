@@ -110,11 +110,6 @@ func (m *APIIndicatorsQueryMeta) ContextValidate(ctx context.Context, formats st
 func (m *APIIndicatorsQueryMeta) contextValidatePagination(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Pagination != nil {
-
-		if swag.IsZero(m.Pagination) { // not required
-			return nil
-		}
-
 		if err := m.Pagination.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("pagination")

@@ -62,7 +62,14 @@ func (o *PerformFirewallPoliciesActionReader) ReadResponse(response runtime.Clie
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /policy/entities/firewall-actions/v1] performFirewallPoliciesAction", response, response.Code())
+		result := NewPerformFirewallPoliciesActionDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -78,10 +85,6 @@ OK
 */
 type PerformFirewallPoliciesActionOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -90,7 +93,7 @@ type PerformFirewallPoliciesActionOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FirewallRespV1
+	Payload *models.ResponsesFirewallPoliciesV1
 }
 
 // IsSuccess returns true when this perform firewall policies action o k response has a 2xx status code
@@ -131,18 +134,11 @@ func (o *PerformFirewallPoliciesActionOK) String() string {
 	return fmt.Sprintf("[POST /policy/entities/firewall-actions/v1][%d] performFirewallPoliciesActionOK  %+v", 200, o.Payload)
 }
 
-func (o *PerformFirewallPoliciesActionOK) GetPayload() *models.FirewallRespV1 {
+func (o *PerformFirewallPoliciesActionOK) GetPayload() *models.ResponsesFirewallPoliciesV1 {
 	return o.Payload
 }
 
 func (o *PerformFirewallPoliciesActionOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -166,7 +162,7 @@ func (o *PerformFirewallPoliciesActionOK) readResponse(response runtime.ClientRe
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FirewallRespV1)
+	o.Payload = new(models.ResponsesFirewallPoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -188,10 +184,6 @@ Bad Request
 */
 type PerformFirewallPoliciesActionBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -200,7 +192,7 @@ type PerformFirewallPoliciesActionBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FirewallRespV1
+	Payload *models.ResponsesFirewallPoliciesV1
 }
 
 // IsSuccess returns true when this perform firewall policies action bad request response has a 2xx status code
@@ -241,18 +233,11 @@ func (o *PerformFirewallPoliciesActionBadRequest) String() string {
 	return fmt.Sprintf("[POST /policy/entities/firewall-actions/v1][%d] performFirewallPoliciesActionBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *PerformFirewallPoliciesActionBadRequest) GetPayload() *models.FirewallRespV1 {
+func (o *PerformFirewallPoliciesActionBadRequest) GetPayload() *models.ResponsesFirewallPoliciesV1 {
 	return o.Payload
 }
 
 func (o *PerformFirewallPoliciesActionBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -276,7 +261,7 @@ func (o *PerformFirewallPoliciesActionBadRequest) readResponse(response runtime.
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FirewallRespV1)
+	o.Payload = new(models.ResponsesFirewallPoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -297,10 +282,6 @@ PerformFirewallPoliciesActionForbidden describes a response with status code 403
 Forbidden
 */
 type PerformFirewallPoliciesActionForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -357,13 +338,6 @@ func (o *PerformFirewallPoliciesActionForbidden) GetPayload() *models.MsaErrorsO
 
 func (o *PerformFirewallPoliciesActionForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -408,10 +382,6 @@ Not Found
 */
 type PerformFirewallPoliciesActionNotFound struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -420,7 +390,7 @@ type PerformFirewallPoliciesActionNotFound struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FirewallRespV1
+	Payload *models.ResponsesFirewallPoliciesV1
 }
 
 // IsSuccess returns true when this perform firewall policies action not found response has a 2xx status code
@@ -461,18 +431,11 @@ func (o *PerformFirewallPoliciesActionNotFound) String() string {
 	return fmt.Sprintf("[POST /policy/entities/firewall-actions/v1][%d] performFirewallPoliciesActionNotFound  %+v", 404, o.Payload)
 }
 
-func (o *PerformFirewallPoliciesActionNotFound) GetPayload() *models.FirewallRespV1 {
+func (o *PerformFirewallPoliciesActionNotFound) GetPayload() *models.ResponsesFirewallPoliciesV1 {
 	return o.Payload
 }
 
 func (o *PerformFirewallPoliciesActionNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -496,7 +459,7 @@ func (o *PerformFirewallPoliciesActionNotFound) readResponse(response runtime.Cl
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FirewallRespV1)
+	o.Payload = new(models.ResponsesFirewallPoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -517,10 +480,6 @@ PerformFirewallPoliciesActionTooManyRequests describes a response with status co
 Too Many Requests
 */
 type PerformFirewallPoliciesActionTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -581,13 +540,6 @@ func (o *PerformFirewallPoliciesActionTooManyRequests) GetPayload() *models.MsaR
 
 func (o *PerformFirewallPoliciesActionTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -643,10 +595,6 @@ Internal Server Error
 */
 type PerformFirewallPoliciesActionInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -655,7 +603,7 @@ type PerformFirewallPoliciesActionInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FirewallRespV1
+	Payload *models.ResponsesFirewallPoliciesV1
 }
 
 // IsSuccess returns true when this perform firewall policies action internal server error response has a 2xx status code
@@ -696,18 +644,11 @@ func (o *PerformFirewallPoliciesActionInternalServerError) String() string {
 	return fmt.Sprintf("[POST /policy/entities/firewall-actions/v1][%d] performFirewallPoliciesActionInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *PerformFirewallPoliciesActionInternalServerError) GetPayload() *models.FirewallRespV1 {
+func (o *PerformFirewallPoliciesActionInternalServerError) GetPayload() *models.ResponsesFirewallPoliciesV1 {
 	return o.Payload
 }
 
 func (o *PerformFirewallPoliciesActionInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -731,7 +672,79 @@ func (o *PerformFirewallPoliciesActionInternalServerError) readResponse(response
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FirewallRespV1)
+	o.Payload = new(models.ResponsesFirewallPoliciesV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewPerformFirewallPoliciesActionDefault creates a PerformFirewallPoliciesActionDefault with default headers values
+func NewPerformFirewallPoliciesActionDefault(code int) *PerformFirewallPoliciesActionDefault {
+	return &PerformFirewallPoliciesActionDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+PerformFirewallPoliciesActionDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type PerformFirewallPoliciesActionDefault struct {
+	_statusCode int
+
+	Payload *models.ResponsesFirewallPoliciesV1
+}
+
+// IsSuccess returns true when this perform firewall policies action default response has a 2xx status code
+func (o *PerformFirewallPoliciesActionDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this perform firewall policies action default response has a 3xx status code
+func (o *PerformFirewallPoliciesActionDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this perform firewall policies action default response has a 4xx status code
+func (o *PerformFirewallPoliciesActionDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this perform firewall policies action default response has a 5xx status code
+func (o *PerformFirewallPoliciesActionDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this perform firewall policies action default response a status code equal to that given
+func (o *PerformFirewallPoliciesActionDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the perform firewall policies action default response
+func (o *PerformFirewallPoliciesActionDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *PerformFirewallPoliciesActionDefault) Error() string {
+	return fmt.Sprintf("[POST /policy/entities/firewall-actions/v1][%d] performFirewallPoliciesAction default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *PerformFirewallPoliciesActionDefault) String() string {
+	return fmt.Sprintf("[POST /policy/entities/firewall-actions/v1][%d] performFirewallPoliciesAction default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *PerformFirewallPoliciesActionDefault) GetPayload() *models.ResponsesFirewallPoliciesV1 {
+	return o.Payload
+}
+
+func (o *PerformFirewallPoliciesActionDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ResponsesFirewallPoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

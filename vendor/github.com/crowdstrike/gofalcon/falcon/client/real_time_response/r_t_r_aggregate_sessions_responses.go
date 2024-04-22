@@ -56,7 +56,14 @@ func (o *RTRAggregateSessionsReader) ReadResponse(response runtime.ClientRespons
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /real-time-response/aggregates/sessions/GET/v1] RTR-AggregateSessions", response, response.Code())
+		result := NewRTRAggregateSessionsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ RTRAggregateSessionsOK describes a response with status code 200, with default h
 OK
 */
 type RTRAggregateSessionsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *RTRAggregateSessionsOK) GetPayload() *models.MsaAggregatesResponse {
 
 func (o *RTRAggregateSessionsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ RTRAggregateSessionsBadRequest describes a response with status code 400, with d
 Bad Request
 */
 type RTRAggregateSessionsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *RTRAggregateSessionsBadRequest) GetPayload() *models.DomainAPIError {
 
 func (o *RTRAggregateSessionsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ RTRAggregateSessionsForbidden describes a response with status code 403, with de
 Forbidden
 */
 type RTRAggregateSessionsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *RTRAggregateSessionsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRAggregateSessionsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ RTRAggregateSessionsNotFound describes a response with status code 404, with def
 Not Found
 */
 type RTRAggregateSessionsNotFound struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -461,13 +431,6 @@ func (o *RTRAggregateSessionsNotFound) GetPayload() *models.DomainAPIError {
 
 func (o *RTRAggregateSessionsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -511,10 +474,6 @@ RTRAggregateSessionsTooManyRequests describes a response with status code 429, w
 Too Many Requests
 */
 type RTRAggregateSessionsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -575,13 +534,6 @@ func (o *RTRAggregateSessionsTooManyRequests) GetPayload() *models.MsaReplyMetaO
 
 func (o *RTRAggregateSessionsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *RTRAggregateSessionsTooManyRequests) readResponse(response runtime.Clie
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRTRAggregateSessionsDefault creates a RTRAggregateSessionsDefault with default headers values
+func NewRTRAggregateSessionsDefault(code int) *RTRAggregateSessionsDefault {
+	return &RTRAggregateSessionsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+RTRAggregateSessionsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type RTRAggregateSessionsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaAggregatesResponse
+}
+
+// IsSuccess returns true when this r t r aggregate sessions default response has a 2xx status code
+func (o *RTRAggregateSessionsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this r t r aggregate sessions default response has a 3xx status code
+func (o *RTRAggregateSessionsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this r t r aggregate sessions default response has a 4xx status code
+func (o *RTRAggregateSessionsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this r t r aggregate sessions default response has a 5xx status code
+func (o *RTRAggregateSessionsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this r t r aggregate sessions default response a status code equal to that given
+func (o *RTRAggregateSessionsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the r t r aggregate sessions default response
+func (o *RTRAggregateSessionsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *RTRAggregateSessionsDefault) Error() string {
+	return fmt.Sprintf("[POST /real-time-response/aggregates/sessions/GET/v1][%d] RTR-AggregateSessions default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRAggregateSessionsDefault) String() string {
+	return fmt.Sprintf("[POST /real-time-response/aggregates/sessions/GET/v1][%d] RTR-AggregateSessions default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRAggregateSessionsDefault) GetPayload() *models.MsaAggregatesResponse {
+	return o.Payload
+}
+
+func (o *RTRAggregateSessionsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MsaAggregatesResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

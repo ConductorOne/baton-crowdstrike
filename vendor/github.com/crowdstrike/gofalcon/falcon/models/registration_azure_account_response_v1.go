@@ -30,7 +30,7 @@ type RegistrationAzureAccountResponseV1 struct {
 
 	// resources
 	// Required: true
-	Resources []*RegistrationAzureAccountV1Ext `json:"resources"`
+	Resources []*DomainAzureAccountV1 `json:"resources"`
 }
 
 // Validate validates this registration azure account response v1
@@ -156,11 +156,6 @@ func (m *RegistrationAzureAccountResponseV1) contextValidateErrors(ctx context.C
 	for i := 0; i < len(m.Errors); i++ {
 
 		if m.Errors[i] != nil {
-
-			if swag.IsZero(m.Errors[i]) { // not required
-				return nil
-			}
-
 			if err := m.Errors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("errors" + "." + strconv.Itoa(i))
@@ -179,7 +174,6 @@ func (m *RegistrationAzureAccountResponseV1) contextValidateErrors(ctx context.C
 func (m *RegistrationAzureAccountResponseV1) contextValidateMeta(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Meta != nil {
-
 		if err := m.Meta.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("meta")
@@ -198,11 +192,6 @@ func (m *RegistrationAzureAccountResponseV1) contextValidateResources(ctx contex
 	for i := 0; i < len(m.Resources); i++ {
 
 		if m.Resources[i] != nil {
-
-			if swag.IsZero(m.Resources[i]) { // not required
-				return nil
-			}
-
 			if err := m.Resources[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("resources" + "." + strconv.Itoa(i))

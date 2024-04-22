@@ -19,16 +19,9 @@ import (
 // swagger:model domain.EnvironmentScore
 type DomainEnvironmentScore struct {
 
-	// adjusted score
-	// Required: true
-	AdjustedScore *int32 `json:"adjusted_score"`
-
-	// cid
-	// Required: true
-	Cid *string `json:"cid"`
-
 	// id
-	ID string `json:"id,omitempty"`
+	// Required: true
+	ID *string `json:"id"`
 
 	// score
 	// Required: true
@@ -44,11 +37,7 @@ type DomainEnvironmentScore struct {
 func (m *DomainEnvironmentScore) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAdjustedScore(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateCid(formats); err != nil {
+	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -66,18 +55,9 @@ func (m *DomainEnvironmentScore) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DomainEnvironmentScore) validateAdjustedScore(formats strfmt.Registry) error {
+func (m *DomainEnvironmentScore) validateID(formats strfmt.Registry) error {
 
-	if err := validate.Required("adjusted_score", "body", m.AdjustedScore); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DomainEnvironmentScore) validateCid(formats strfmt.Registry) error {
-
-	if err := validate.Required("cid", "body", m.Cid); err != nil {
+	if err := validate.Required("id", "body", m.ID); err != nil {
 		return err
 	}
 

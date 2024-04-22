@@ -56,7 +56,14 @@ func (o *RTRGetScriptsReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /real-time-response/entities/scripts/v1] RTR-GetScripts", response, response.Code())
+		result := NewRTRGetScriptsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type RTRGetScriptsOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type RTRGetScriptsOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.EmpowerapiMsaPFResponseV1
+	Payload *models.BinservclientMsaPFResponse
 }
 
 // IsSuccess returns true when this r t r get scripts o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *RTRGetScriptsOK) String() string {
 	return fmt.Sprintf("[GET /real-time-response/entities/scripts/v1][%d] rTRGetScriptsOK  %+v", 200, o.Payload)
 }
 
-func (o *RTRGetScriptsOK) GetPayload() *models.EmpowerapiMsaPFResponseV1 {
+func (o *RTRGetScriptsOK) GetPayload() *models.BinservclientMsaPFResponse {
 	return o.Payload
 }
 
 func (o *RTRGetScriptsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *RTRGetScriptsOK) readResponse(response runtime.ClientResponse, consumer
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.EmpowerapiMsaPFResponseV1)
+	o.Payload = new(models.BinservclientMsaPFResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -181,10 +177,6 @@ RTRGetScriptsBadRequest describes a response with status code 400, with default 
 Bad Request
 */
 type RTRGetScriptsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *RTRGetScriptsBadRequest) GetPayload() *models.DomainAPIError {
 
 func (o *RTRGetScriptsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ RTRGetScriptsForbidden describes a response with status code 403, with default h
 Forbidden
 */
 type RTRGetScriptsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *RTRGetScriptsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRGetScriptsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ RTRGetScriptsNotFound describes a response with status code 404, with default he
 Not Found
 */
 type RTRGetScriptsNotFound struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -461,13 +431,6 @@ func (o *RTRGetScriptsNotFound) GetPayload() *models.DomainAPIError {
 
 func (o *RTRGetScriptsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -511,10 +474,6 @@ RTRGetScriptsTooManyRequests describes a response with status code 429, with def
 Too Many Requests
 */
 type RTRGetScriptsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -575,13 +534,6 @@ func (o *RTRGetScriptsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRGetScriptsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *RTRGetScriptsTooManyRequests) readResponse(response runtime.ClientRespo
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRTRGetScriptsDefault creates a RTRGetScriptsDefault with default headers values
+func NewRTRGetScriptsDefault(code int) *RTRGetScriptsDefault {
+	return &RTRGetScriptsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+RTRGetScriptsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type RTRGetScriptsDefault struct {
+	_statusCode int
+
+	Payload *models.BinservclientMsaPFResponse
+}
+
+// IsSuccess returns true when this r t r get scripts default response has a 2xx status code
+func (o *RTRGetScriptsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this r t r get scripts default response has a 3xx status code
+func (o *RTRGetScriptsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this r t r get scripts default response has a 4xx status code
+func (o *RTRGetScriptsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this r t r get scripts default response has a 5xx status code
+func (o *RTRGetScriptsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this r t r get scripts default response a status code equal to that given
+func (o *RTRGetScriptsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the r t r get scripts default response
+func (o *RTRGetScriptsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *RTRGetScriptsDefault) Error() string {
+	return fmt.Sprintf("[GET /real-time-response/entities/scripts/v1][%d] RTR-GetScripts default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRGetScriptsDefault) String() string {
+	return fmt.Sprintf("[GET /real-time-response/entities/scripts/v1][%d] RTR-GetScripts default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRGetScriptsDefault) GetPayload() *models.BinservclientMsaPFResponse {
+	return o.Payload
+}
+
+func (o *RTRGetScriptsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.BinservclientMsaPFResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

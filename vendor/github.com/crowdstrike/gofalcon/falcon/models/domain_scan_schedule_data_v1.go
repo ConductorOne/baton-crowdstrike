@@ -24,14 +24,13 @@ type DomainScanScheduleDataV1 struct {
 	CloudPlatform *string `json:"cloud_platform"`
 
 	// next scan timestamp
+	// Required: true
 	// Format: date-time
-	NextScanTimestamp strfmt.DateTime `json:"next_scan_timestamp,omitempty"`
-
-	// scan interval
-	ScanInterval string `json:"scan_interval,omitempty"`
+	NextScanTimestamp *strfmt.DateTime `json:"next_scan_timestamp"`
 
 	// scan schedule
-	ScanSchedule string `json:"scan_schedule,omitempty"`
+	// Required: true
+	ScanSchedule *string `json:"scan_schedule"`
 }
 
 // Validate validates this domain scan schedule data v1
@@ -43,6 +42,10 @@ func (m *DomainScanScheduleDataV1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNextScanTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanSchedule(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -62,11 +65,21 @@ func (m *DomainScanScheduleDataV1) validateCloudPlatform(formats strfmt.Registry
 }
 
 func (m *DomainScanScheduleDataV1) validateNextScanTimestamp(formats strfmt.Registry) error {
-	if swag.IsZero(m.NextScanTimestamp) { // not required
-		return nil
+
+	if err := validate.Required("next_scan_timestamp", "body", m.NextScanTimestamp); err != nil {
+		return err
 	}
 
 	if err := validate.FormatOf("next_scan_timestamp", "body", "date-time", m.NextScanTimestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DomainScanScheduleDataV1) validateScanSchedule(formats strfmt.Registry) error {
+
+	if err := validate.Required("scan_schedule", "body", m.ScanSchedule); err != nil {
 		return err
 	}
 

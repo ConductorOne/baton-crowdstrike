@@ -56,7 +56,14 @@ func (o *QueryIntelActorIdsReader) ReadResponse(response runtime.ClientResponse,
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /intel/queries/actors/v1] QueryIntelActorIds", response, response.Code())
+		result := NewQueryIntelActorIdsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ QueryIntelActorIdsOK describes a response with status code 200, with default hea
 OK
 */
 type QueryIntelActorIdsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *QueryIntelActorIdsOK) GetPayload() *models.MsaQueryResponse {
 
 func (o *QueryIntelActorIdsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ QueryIntelActorIdsBadRequest describes a response with status code 400, with def
 Bad Request
 */
 type QueryIntelActorIdsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *QueryIntelActorIdsBadRequest) GetPayload() *models.MsaErrorsOnly {
 
 func (o *QueryIntelActorIdsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ QueryIntelActorIdsForbidden describes a response with status code 403, with defa
 Forbidden
 */
 type QueryIntelActorIdsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *QueryIntelActorIdsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *QueryIntelActorIdsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ QueryIntelActorIdsTooManyRequests describes a response with status code 429, wit
 Too Many Requests
 */
 type QueryIntelActorIdsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *QueryIntelActorIdsTooManyRequests) GetPayload() *models.MsaReplyMetaOnl
 
 func (o *QueryIntelActorIdsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ QueryIntelActorIdsInternalServerError describes a response with status code 500,
 Internal Server Error
 */
 type QueryIntelActorIdsInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *QueryIntelActorIdsInternalServerError) GetPayload() *models.MsaErrorsOn
 
 func (o *QueryIntelActorIdsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *QueryIntelActorIdsInternalServerError) readResponse(response runtime.Cl
 	}
 
 	o.Payload = new(models.MsaErrorsOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryIntelActorIdsDefault creates a QueryIntelActorIdsDefault with default headers values
+func NewQueryIntelActorIdsDefault(code int) *QueryIntelActorIdsDefault {
+	return &QueryIntelActorIdsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryIntelActorIdsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryIntelActorIdsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this query intel actor ids default response has a 2xx status code
+func (o *QueryIntelActorIdsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query intel actor ids default response has a 3xx status code
+func (o *QueryIntelActorIdsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query intel actor ids default response has a 4xx status code
+func (o *QueryIntelActorIdsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query intel actor ids default response has a 5xx status code
+func (o *QueryIntelActorIdsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query intel actor ids default response a status code equal to that given
+func (o *QueryIntelActorIdsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query intel actor ids default response
+func (o *QueryIntelActorIdsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryIntelActorIdsDefault) Error() string {
+	return fmt.Sprintf("[GET /intel/queries/actors/v1][%d] QueryIntelActorIds default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryIntelActorIdsDefault) String() string {
+	return fmt.Sprintf("[GET /intel/queries/actors/v1][%d] QueryIntelActorIds default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryIntelActorIdsDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *QueryIntelActorIdsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -56,7 +56,14 @@ func (o *RevealUninstallTokenReader) ReadResponse(response runtime.ClientRespons
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /policy/combined/reveal-uninstall-token/v1] revealUninstallToken", response, response.Code())
+		result := NewRevealUninstallTokenDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type RevealUninstallTokenOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type RevealUninstallTokenOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.UninstallTokenRespV1
+	Payload *models.ResponsesRevealUninstallTokenRespV1
 }
 
 // IsSuccess returns true when this reveal uninstall token o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *RevealUninstallTokenOK) String() string {
 	return fmt.Sprintf("[POST /policy/combined/reveal-uninstall-token/v1][%d] revealUninstallTokenOK  %+v", 200, o.Payload)
 }
 
-func (o *RevealUninstallTokenOK) GetPayload() *models.UninstallTokenRespV1 {
+func (o *RevealUninstallTokenOK) GetPayload() *models.ResponsesRevealUninstallTokenRespV1 {
 	return o.Payload
 }
 
 func (o *RevealUninstallTokenOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *RevealUninstallTokenOK) readResponse(response runtime.ClientResponse, c
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.UninstallTokenRespV1)
+	o.Payload = new(models.ResponsesRevealUninstallTokenRespV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -182,10 +178,6 @@ Bad Request
 */
 type RevealUninstallTokenBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -194,7 +186,7 @@ type RevealUninstallTokenBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.UninstallTokenRespV1
+	Payload *models.ResponsesRevealUninstallTokenRespV1
 }
 
 // IsSuccess returns true when this reveal uninstall token bad request response has a 2xx status code
@@ -235,18 +227,11 @@ func (o *RevealUninstallTokenBadRequest) String() string {
 	return fmt.Sprintf("[POST /policy/combined/reveal-uninstall-token/v1][%d] revealUninstallTokenBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *RevealUninstallTokenBadRequest) GetPayload() *models.UninstallTokenRespV1 {
+func (o *RevealUninstallTokenBadRequest) GetPayload() *models.ResponsesRevealUninstallTokenRespV1 {
 	return o.Payload
 }
 
 func (o *RevealUninstallTokenBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -270,7 +255,7 @@ func (o *RevealUninstallTokenBadRequest) readResponse(response runtime.ClientRes
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.UninstallTokenRespV1)
+	o.Payload = new(models.ResponsesRevealUninstallTokenRespV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -291,10 +276,6 @@ RevealUninstallTokenForbidden describes a response with status code 403, with de
 Forbidden
 */
 type RevealUninstallTokenForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *RevealUninstallTokenForbidden) GetPayload() *models.MsaErrorsOnly {
 
 func (o *RevealUninstallTokenForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ RevealUninstallTokenTooManyRequests describes a response with status code 429, w
 Too Many Requests
 */
 type RevealUninstallTokenTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *RevealUninstallTokenTooManyRequests) GetPayload() *models.MsaReplyMetaO
 
 func (o *RevealUninstallTokenTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +490,6 @@ Internal Server Error
 */
 type RevealUninstallTokenInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -539,7 +498,7 @@ type RevealUninstallTokenInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.UninstallTokenRespV1
+	Payload *models.ResponsesRevealUninstallTokenRespV1
 }
 
 // IsSuccess returns true when this reveal uninstall token internal server error response has a 2xx status code
@@ -580,18 +539,11 @@ func (o *RevealUninstallTokenInternalServerError) String() string {
 	return fmt.Sprintf("[POST /policy/combined/reveal-uninstall-token/v1][%d] revealUninstallTokenInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *RevealUninstallTokenInternalServerError) GetPayload() *models.UninstallTokenRespV1 {
+func (o *RevealUninstallTokenInternalServerError) GetPayload() *models.ResponsesRevealUninstallTokenRespV1 {
 	return o.Payload
 }
 
 func (o *RevealUninstallTokenInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -615,7 +567,79 @@ func (o *RevealUninstallTokenInternalServerError) readResponse(response runtime.
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.UninstallTokenRespV1)
+	o.Payload = new(models.ResponsesRevealUninstallTokenRespV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRevealUninstallTokenDefault creates a RevealUninstallTokenDefault with default headers values
+func NewRevealUninstallTokenDefault(code int) *RevealUninstallTokenDefault {
+	return &RevealUninstallTokenDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+RevealUninstallTokenDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type RevealUninstallTokenDefault struct {
+	_statusCode int
+
+	Payload *models.ResponsesRevealUninstallTokenRespV1
+}
+
+// IsSuccess returns true when this reveal uninstall token default response has a 2xx status code
+func (o *RevealUninstallTokenDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this reveal uninstall token default response has a 3xx status code
+func (o *RevealUninstallTokenDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this reveal uninstall token default response has a 4xx status code
+func (o *RevealUninstallTokenDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this reveal uninstall token default response has a 5xx status code
+func (o *RevealUninstallTokenDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this reveal uninstall token default response a status code equal to that given
+func (o *RevealUninstallTokenDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the reveal uninstall token default response
+func (o *RevealUninstallTokenDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *RevealUninstallTokenDefault) Error() string {
+	return fmt.Sprintf("[POST /policy/combined/reveal-uninstall-token/v1][%d] revealUninstallToken default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RevealUninstallTokenDefault) String() string {
+	return fmt.Sprintf("[POST /policy/combined/reveal-uninstall-token/v1][%d] revealUninstallToken default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RevealUninstallTokenDefault) GetPayload() *models.ResponsesRevealUninstallTokenRespV1 {
+	return o.Payload
+}
+
+func (o *RevealUninstallTokenDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ResponsesRevealUninstallTokenRespV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

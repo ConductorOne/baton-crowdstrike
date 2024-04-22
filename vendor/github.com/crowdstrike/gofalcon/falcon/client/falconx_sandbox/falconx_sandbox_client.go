@@ -34,13 +34,7 @@ type ClientService interface {
 
 	DeleteSampleV2(params *DeleteSampleV2Params, opts ...ClientOption) (*DeleteSampleV2OK, error)
 
-	GetArtifacts(params *GetArtifactsParams, opts ...ClientOption) (*GetArtifactsOK, error)
-
-	GetMemoryDump(params *GetMemoryDumpParams, opts ...ClientOption) (*GetMemoryDumpOK, error)
-
-	GetMemoryDumpExtractedStrings(params *GetMemoryDumpExtractedStringsParams, opts ...ClientOption) (*GetMemoryDumpExtractedStringsOK, error)
-
-	GetMemoryDumpHexDump(params *GetMemoryDumpHexDumpParams, opts ...ClientOption) (*GetMemoryDumpHexDumpOK, error)
+	GetArtifacts(params *GetArtifactsParams, opts ...ClientOption) error
 
 	GetReports(params *GetReportsParams, opts ...ClientOption) (*GetReportsOK, error)
 
@@ -134,15 +128,14 @@ func (a *Client) DeleteSampleV2(params *DeleteSampleV2Params, opts ...ClientOpti
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeleteSampleV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*DeleteSampleV2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 GetArtifacts downloads i o c packs p c a p files memory dumps and other analysis artifacts
 */
-func (a *Client) GetArtifacts(params *GetArtifactsParams, opts ...ClientOption) (*GetArtifactsOK, error) {
+func (a *Client) GetArtifacts(params *GetArtifactsParams, opts ...ClientOption) error {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetArtifactsParams()
@@ -163,132 +156,11 @@ func (a *Client) GetArtifacts(params *GetArtifactsParams, opts ...ClientOption) 
 		opt(op)
 	}
 
-	result, err := a.transport.Submit(op)
+	_, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	success, ok := result.(*GetArtifactsOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetArtifacts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetMemoryDump gets memory dump content as binary
-*/
-func (a *Client) GetMemoryDump(params *GetMemoryDumpParams, opts ...ClientOption) (*GetMemoryDumpOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetMemoryDumpParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetMemoryDump",
-		Method:             "GET",
-		PathPattern:        "/falconx/entities/memory-dump/v1",
-		ProducesMediaTypes: []string{"application/octet-stream"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &GetMemoryDumpReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetMemoryDumpOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetMemoryDump: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetMemoryDumpExtractedStrings gets extracted strings from a memory dump
-*/
-func (a *Client) GetMemoryDumpExtractedStrings(params *GetMemoryDumpExtractedStringsParams, opts ...ClientOption) (*GetMemoryDumpExtractedStringsOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetMemoryDumpExtractedStringsParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetMemoryDumpExtractedStrings",
-		Method:             "GET",
-		PathPattern:        "/falconx/entities/memory-dump/extracted-strings/v1",
-		ProducesMediaTypes: []string{"application/json", "application/octet-stream"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &GetMemoryDumpExtractedStringsReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetMemoryDumpExtractedStringsOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetMemoryDumpExtractedStrings: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetMemoryDumpHexDump gets hex view of a memory dump
-*/
-func (a *Client) GetMemoryDumpHexDump(params *GetMemoryDumpHexDumpParams, opts ...ClientOption) (*GetMemoryDumpHexDumpOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetMemoryDumpHexDumpParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetMemoryDumpHexDump",
-		Method:             "GET",
-		PathPattern:        "/falconx/entities/memory-dump/hex-dump/v1",
-		ProducesMediaTypes: []string{"application/json", "application/octet-stream"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &GetMemoryDumpHexDumpReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetMemoryDumpHexDumpOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetMemoryDumpHexDump: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	return nil
 }
 
 /*
@@ -324,9 +196,8 @@ func (a *Client) GetReports(params *GetReportsParams, opts ...ClientOption) (*Ge
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetReports: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*GetReportsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -362,9 +233,8 @@ func (a *Client) GetSampleV2(params *GetSampleV2Params, opts ...ClientOption) (*
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetSampleV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*GetSampleV2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -400,9 +270,8 @@ func (a *Client) GetSubmissions(params *GetSubmissionsParams, opts ...ClientOpti
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetSubmissions: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*GetSubmissionsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -438,9 +307,8 @@ func (a *Client) GetSummaryReports(params *GetSummaryReportsParams, opts ...Clie
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetSummaryReports: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*GetSummaryReportsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -476,9 +344,8 @@ func (a *Client) QueryReports(params *QueryReportsParams, opts ...ClientOption) 
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QueryReports: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryReportsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -514,9 +381,8 @@ func (a *Client) QuerySampleV1(params *QuerySampleV1Params, opts ...ClientOption
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QuerySampleV1: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QuerySampleV1Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -552,9 +418,8 @@ func (a *Client) QuerySubmissions(params *QuerySubmissionsParams, opts ...Client
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QuerySubmissions: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QuerySubmissionsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -590,9 +455,8 @@ func (a *Client) Submit(params *SubmitParams, opts ...ClientOption) (*SubmitOK, 
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for Submit: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*SubmitDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -628,9 +492,8 @@ func (a *Client) UploadSampleV2(params *UploadSampleV2Params, opts ...ClientOpti
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for UploadSampleV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*UploadSampleV2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

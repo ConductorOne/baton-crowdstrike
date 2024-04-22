@@ -326,11 +326,6 @@ func (m *DomainEvent) ContextValidate(ctx context.Context, formats strfmt.Regist
 func (m *DomainEvent) contextValidateBotnetConfigSource(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BotnetConfigSource != nil {
-
-		if swag.IsZero(m.BotnetConfigSource) { // not required
-			return nil
-		}
-
 		if err := m.BotnetConfigSource.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("botnet_config_source")
@@ -347,11 +342,6 @@ func (m *DomainEvent) contextValidateBotnetConfigSource(ctx context.Context, for
 func (m *DomainEvent) contextValidateDdosAttackSource(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.DdosAttackSource != nil {
-
-		if swag.IsZero(m.DdosAttackSource) { // not required
-			return nil
-		}
-
 		if err := m.DdosAttackSource.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("ddos_attack_source")
@@ -370,11 +360,6 @@ func (m *DomainEvent) contextValidateMatchedRules(ctx context.Context, formats s
 	for i := 0; i < len(m.MatchedRules); i++ {
 
 		if m.MatchedRules[i] != nil {
-
-			if swag.IsZero(m.MatchedRules[i]) { // not required
-				return nil
-			}
-
 			if err := m.MatchedRules[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("matched_rules" + "." + strconv.Itoa(i))
@@ -393,11 +378,6 @@ func (m *DomainEvent) contextValidateMatchedRules(ctx context.Context, formats s
 func (m *DomainEvent) contextValidatePastebinTextSource(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.PastebinTextSource != nil {
-
-		if swag.IsZero(m.PastebinTextSource) { // not required
-			return nil
-		}
-
 		if err := m.PastebinTextSource.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("pastebin_text_source")
@@ -414,11 +394,6 @@ func (m *DomainEvent) contextValidatePastebinTextSource(ctx context.Context, for
 func (m *DomainEvent) contextValidateTweetSource(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.TweetSource != nil {
-
-		if swag.IsZero(m.TweetSource) { // not required
-			return nil
-		}
-
 		if err := m.TweetSource.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("tweet_source")

@@ -88,7 +88,6 @@ type UpdateDetectsByIdsV2Params struct {
 	- `in_progress`
 	- `true_positive`
 	- `false_positive`
-	- `closed`
 	- `ignored`
 
 	**`comment` values**

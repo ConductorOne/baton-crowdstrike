@@ -46,9 +46,6 @@ type DomainScanHostMetadata struct {
 	// profile id
 	ProfileID string `json:"profile_id,omitempty"`
 
-	// scan control reason
-	ScanControlReason string `json:"scan_control_reason,omitempty"`
-
 	// scan id
 	ScanID string `json:"scan_id,omitempty"`
 
@@ -174,11 +171,6 @@ func (m *DomainScanHostMetadata) ContextValidate(ctx context.Context, formats st
 func (m *DomainScanHostMetadata) contextValidateFilecount(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Filecount != nil {
-
-		if swag.IsZero(m.Filecount) { // not required
-			return nil
-		}
-
 		if err := m.Filecount.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("filecount")

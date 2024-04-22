@@ -17,64 +17,58 @@ import (
 // swagger:model domain.ECrimeKillChain
 type DomainECrimeKillChain struct {
 
-	// Free form text describing attribution of the ecrime actor
+	// attribution
 	Attribution string `json:"attribution,omitempty"`
 
-	// Free form text describing actor's crimes
+	// crimes
 	Crimes string `json:"crimes,omitempty"`
 
-	// Free form text describing ecrime actor's customers and affiliates
+	// customers
 	Customers string `json:"customers,omitempty"`
 
-	// Comma separated values of vulnerabilities by CVE codes that are exploited by actor
-	Exploitation string `json:"exploitation,omitempty"`
-
-	// Free form text describing ecrime actor's marketing campaigns and advertisement
+	// marketing
 	Marketing string `json:"marketing,omitempty"`
 
-	// Legacy field, not used and empty
+	// monetization
 	Monetization string `json:"monetization,omitempty"`
 
-	// Rich text version of the attribution field
+	// rich text attribution
 	RichTextAttribution string `json:"rich_text_attribution,omitempty"`
 
-	// Rich text version of the crimes field
+	// rich text crimes
 	RichTextCrimes string `json:"rich_text_crimes,omitempty"`
 
-	// Rich text version of the customers field
+	// rich text customers
 	RichTextCustomers string `json:"rich_text_customers,omitempty"`
 
-	// Rich text version of the exploitation field
-	RichTextExploitation string `json:"rich_text_exploitation,omitempty"`
-
-	// Rich text version of the marketing field
+	// rich text marketing
 	RichTextMarketing string `json:"rich_text_marketing,omitempty"`
 
-	// Legacy field, not used and empty
+	// rich text monetization
 	RichTextMonetization string `json:"rich_text_monetization,omitempty"`
 
-	// Rich text version of the services_offered field
+	// rich text services offered
 	RichTextServicesOffered string `json:"rich_text_services_offered,omitempty"`
 
-	// Rich text version of the services_used field
+	// rich text services used
 	RichTextServicesUsed string `json:"rich_text_services_used,omitempty"`
 
-	// Rich text version of the technical_tradecraft field
+	// rich text technical tradecraft
 	RichTextTechnicalTradecraft string `json:"rich_text_technical_tradecraft,omitempty"`
 
-	// Rich text version of the victims field
+	// rich text victims
 	RichTextVictims string `json:"rich_text_victims,omitempty"`
 
-	// Free form text describing ecrime actor's services offered and monetized
+	// services offered
 	ServicesOffered string `json:"services_offered,omitempty"`
 
-	// Free form text describing ecrime actor's used services provided by other actors or groups
+	// services used
 	ServicesUsed string `json:"services_used,omitempty"`
 
-	// Free form text describing methods and descriptions of techniques used by actor
+	// technical tradecraft
 	TechnicalTradecraft string `json:"technical_tradecraft,omitempty"`
 
-	// Free form text describing victims or their characteristics of the ecrime actor
+	// victims
 	Victims string `json:"victims,omitempty"`
 }
 

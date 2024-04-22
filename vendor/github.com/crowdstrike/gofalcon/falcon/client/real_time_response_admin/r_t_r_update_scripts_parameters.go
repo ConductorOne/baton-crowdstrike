@@ -111,7 +111,7 @@ type RTRUpdateScriptsParams struct {
 
 	/* Platform.
 
-	   Platforms for the file. Currently supports: windows, mac, linux,
+	   Platforms for the file. Currently supports: windows, mac,
 	*/
 	Platform []string
 

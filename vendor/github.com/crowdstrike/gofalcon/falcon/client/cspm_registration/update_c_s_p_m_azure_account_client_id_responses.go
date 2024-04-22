@@ -56,7 +56,7 @@ func (o *UpdateCSPMAzureAccountClientIDReader) ReadResponse(response runtime.Cli
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[PATCH /cloud-connect-cspm-azure/entities/client-id/v1] UpdateCSPMAzureAccountClientID", response, response.Code())
+		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
 }
 
@@ -72,10 +72,6 @@ Created
 */
 type UpdateCSPMAzureAccountClientIDCreated struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +80,7 @@ type UpdateCSPMAzureAccountClientIDCreated struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.RegistrationAzureTenantConfigurationResponseV1
+	Payload *models.RegistrationAzureServicePrincipalResponseV1
 }
 
 // IsSuccess returns true when this update c s p m azure account client Id created response has a 2xx status code
@@ -125,18 +121,11 @@ func (o *UpdateCSPMAzureAccountClientIDCreated) String() string {
 	return fmt.Sprintf("[PATCH /cloud-connect-cspm-azure/entities/client-id/v1][%d] updateCSPMAzureAccountClientIdCreated  %+v", 201, o.Payload)
 }
 
-func (o *UpdateCSPMAzureAccountClientIDCreated) GetPayload() *models.RegistrationAzureTenantConfigurationResponseV1 {
+func (o *UpdateCSPMAzureAccountClientIDCreated) GetPayload() *models.RegistrationAzureServicePrincipalResponseV1 {
 	return o.Payload
 }
 
 func (o *UpdateCSPMAzureAccountClientIDCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +149,7 @@ func (o *UpdateCSPMAzureAccountClientIDCreated) readResponse(response runtime.Cl
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.RegistrationAzureTenantConfigurationResponseV1)
+	o.Payload = new(models.RegistrationAzureServicePrincipalResponseV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -182,10 +171,6 @@ Bad Request
 */
 type UpdateCSPMAzureAccountClientIDBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -194,7 +179,7 @@ type UpdateCSPMAzureAccountClientIDBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.RegistrationAzureTenantConfigurationResponseV1
+	Payload *models.RegistrationAzureServicePrincipalResponseV1
 }
 
 // IsSuccess returns true when this update c s p m azure account client Id bad request response has a 2xx status code
@@ -235,18 +220,11 @@ func (o *UpdateCSPMAzureAccountClientIDBadRequest) String() string {
 	return fmt.Sprintf("[PATCH /cloud-connect-cspm-azure/entities/client-id/v1][%d] updateCSPMAzureAccountClientIdBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *UpdateCSPMAzureAccountClientIDBadRequest) GetPayload() *models.RegistrationAzureTenantConfigurationResponseV1 {
+func (o *UpdateCSPMAzureAccountClientIDBadRequest) GetPayload() *models.RegistrationAzureServicePrincipalResponseV1 {
 	return o.Payload
 }
 
 func (o *UpdateCSPMAzureAccountClientIDBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -270,7 +248,7 @@ func (o *UpdateCSPMAzureAccountClientIDBadRequest) readResponse(response runtime
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.RegistrationAzureTenantConfigurationResponseV1)
+	o.Payload = new(models.RegistrationAzureServicePrincipalResponseV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -291,10 +269,6 @@ UpdateCSPMAzureAccountClientIDForbidden describes a response with status code 40
 Forbidden
 */
 type UpdateCSPMAzureAccountClientIDForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +325,6 @@ func (o *UpdateCSPMAzureAccountClientIDForbidden) GetPayload() *models.MsaReplyM
 
 func (o *UpdateCSPMAzureAccountClientIDForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +368,6 @@ UpdateCSPMAzureAccountClientIDTooManyRequests describes a response with status c
 Too Many Requests
 */
 type UpdateCSPMAzureAccountClientIDTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +428,6 @@ func (o *UpdateCSPMAzureAccountClientIDTooManyRequests) GetPayload() *models.Msa
 
 func (o *UpdateCSPMAzureAccountClientIDTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +483,6 @@ Internal Server Error
 */
 type UpdateCSPMAzureAccountClientIDInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -539,7 +491,7 @@ type UpdateCSPMAzureAccountClientIDInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.RegistrationAzureTenantConfigurationResponseV1
+	Payload *models.RegistrationAzureServicePrincipalResponseV1
 }
 
 // IsSuccess returns true when this update c s p m azure account client Id internal server error response has a 2xx status code
@@ -580,18 +532,11 @@ func (o *UpdateCSPMAzureAccountClientIDInternalServerError) String() string {
 	return fmt.Sprintf("[PATCH /cloud-connect-cspm-azure/entities/client-id/v1][%d] updateCSPMAzureAccountClientIdInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *UpdateCSPMAzureAccountClientIDInternalServerError) GetPayload() *models.RegistrationAzureTenantConfigurationResponseV1 {
+func (o *UpdateCSPMAzureAccountClientIDInternalServerError) GetPayload() *models.RegistrationAzureServicePrincipalResponseV1 {
 	return o.Payload
 }
 
 func (o *UpdateCSPMAzureAccountClientIDInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -615,7 +560,7 @@ func (o *UpdateCSPMAzureAccountClientIDInternalServerError) readResponse(respons
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.RegistrationAzureTenantConfigurationResponseV1)
+	o.Payload = new(models.RegistrationAzureServicePrincipalResponseV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

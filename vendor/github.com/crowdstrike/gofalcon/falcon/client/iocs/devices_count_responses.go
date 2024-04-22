@@ -44,7 +44,14 @@ func (o *DevicesCountReader) ReadResponse(response runtime.ClientResponse, consu
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /indicators/aggregates/devices-count/v1] DevicesCount", response, response.Code())
+		result := NewDevicesCountDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -60,10 +67,6 @@ OK
 */
 type DevicesCountOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -72,7 +75,7 @@ type DevicesCountOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.IocapiMsaReplyIOCDevicesCount
+	Payload *models.APIMsaReplyIOCDevicesCount
 }
 
 // IsSuccess returns true when this devices count o k response has a 2xx status code
@@ -113,18 +116,11 @@ func (o *DevicesCountOK) String() string {
 	return fmt.Sprintf("[GET /indicators/aggregates/devices-count/v1][%d] devicesCountOK  %+v", 200, o.Payload)
 }
 
-func (o *DevicesCountOK) GetPayload() *models.IocapiMsaReplyIOCDevicesCount {
+func (o *DevicesCountOK) GetPayload() *models.APIMsaReplyIOCDevicesCount {
 	return o.Payload
 }
 
 func (o *DevicesCountOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -148,7 +144,7 @@ func (o *DevicesCountOK) readResponse(response runtime.ClientResponse, consumer 
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.IocapiMsaReplyIOCDevicesCount)
+	o.Payload = new(models.APIMsaReplyIOCDevicesCount)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -169,10 +165,6 @@ DevicesCountForbidden describes a response with status code 403, with default he
 Forbidden
 */
 type DevicesCountForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -229,13 +221,6 @@ func (o *DevicesCountForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *DevicesCountForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -279,10 +264,6 @@ DevicesCountTooManyRequests describes a response with status code 429, with defa
 Too Many Requests
 */
 type DevicesCountTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -343,13 +324,6 @@ func (o *DevicesCountTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *DevicesCountTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -384,6 +358,78 @@ func (o *DevicesCountTooManyRequests) readResponse(response runtime.ClientRespon
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDevicesCountDefault creates a DevicesCountDefault with default headers values
+func NewDevicesCountDefault(code int) *DevicesCountDefault {
+	return &DevicesCountDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+DevicesCountDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type DevicesCountDefault struct {
+	_statusCode int
+
+	Payload *models.APIMsaReplyIOCDevicesCount
+}
+
+// IsSuccess returns true when this devices count default response has a 2xx status code
+func (o *DevicesCountDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this devices count default response has a 3xx status code
+func (o *DevicesCountDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this devices count default response has a 4xx status code
+func (o *DevicesCountDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this devices count default response has a 5xx status code
+func (o *DevicesCountDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this devices count default response a status code equal to that given
+func (o *DevicesCountDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the devices count default response
+func (o *DevicesCountDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *DevicesCountDefault) Error() string {
+	return fmt.Sprintf("[GET /indicators/aggregates/devices-count/v1][%d] DevicesCount default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *DevicesCountDefault) String() string {
+	return fmt.Sprintf("[GET /indicators/aggregates/devices-count/v1][%d] DevicesCount default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *DevicesCountDefault) GetPayload() *models.APIMsaReplyIOCDevicesCount {
+	return o.Payload
+}
+
+func (o *DevicesCountDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.APIMsaReplyIOCDevicesCount)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -62,7 +62,14 @@ func (o *UpdateActionV1Reader) ReadResponse(response runtime.ClientResponse, con
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[PATCH /recon/entities/actions/v1] UpdateActionV1", response, response.Code())
+		result := NewUpdateActionV1Default(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -200,7 +207,7 @@ type UpdateActionV1BadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.MsaErrorsOnly
 }
 
 // IsSuccess returns true when this update action v1 bad request response has a 2xx status code
@@ -241,7 +248,7 @@ func (o *UpdateActionV1BadRequest) String() string {
 	return fmt.Sprintf("[PATCH /recon/entities/actions/v1][%d] updateActionV1BadRequest  %+v", 400, o.Payload)
 }
 
-func (o *UpdateActionV1BadRequest) GetPayload() *models.MsaspecResponseFields {
+func (o *UpdateActionV1BadRequest) GetPayload() *models.MsaErrorsOnly {
 	return o.Payload
 }
 
@@ -276,7 +283,7 @@ func (o *UpdateActionV1BadRequest) readResponse(response runtime.ClientResponse,
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.MsaErrorsOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -310,7 +317,7 @@ type UpdateActionV1Unauthorized struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.MsaErrorsOnly
 }
 
 // IsSuccess returns true when this update action v1 unauthorized response has a 2xx status code
@@ -351,7 +358,7 @@ func (o *UpdateActionV1Unauthorized) String() string {
 	return fmt.Sprintf("[PATCH /recon/entities/actions/v1][%d] updateActionV1Unauthorized  %+v", 401, o.Payload)
 }
 
-func (o *UpdateActionV1Unauthorized) GetPayload() *models.MsaspecResponseFields {
+func (o *UpdateActionV1Unauthorized) GetPayload() *models.MsaErrorsOnly {
 	return o.Payload
 }
 
@@ -386,7 +393,7 @@ func (o *UpdateActionV1Unauthorized) readResponse(response runtime.ClientRespons
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.MsaErrorsOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -420,7 +427,7 @@ type UpdateActionV1Forbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.MsaErrorsOnly
 }
 
 // IsSuccess returns true when this update action v1 forbidden response has a 2xx status code
@@ -461,7 +468,7 @@ func (o *UpdateActionV1Forbidden) String() string {
 	return fmt.Sprintf("[PATCH /recon/entities/actions/v1][%d] updateActionV1Forbidden  %+v", 403, o.Payload)
 }
 
-func (o *UpdateActionV1Forbidden) GetPayload() *models.MsaspecResponseFields {
+func (o *UpdateActionV1Forbidden) GetPayload() *models.MsaErrorsOnly {
 	return o.Payload
 }
 
@@ -496,7 +503,7 @@ func (o *UpdateActionV1Forbidden) readResponse(response runtime.ClientResponse, 
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.MsaErrorsOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -655,7 +662,7 @@ type UpdateActionV1InternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecResponseFields
+	Payload *models.MsaErrorsOnly
 }
 
 // IsSuccess returns true when this update action v1 internal server error response has a 2xx status code
@@ -696,7 +703,7 @@ func (o *UpdateActionV1InternalServerError) String() string {
 	return fmt.Sprintf("[PATCH /recon/entities/actions/v1][%d] updateActionV1InternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *UpdateActionV1InternalServerError) GetPayload() *models.MsaspecResponseFields {
+func (o *UpdateActionV1InternalServerError) GetPayload() *models.MsaErrorsOnly {
 	return o.Payload
 }
 
@@ -731,7 +738,79 @@ func (o *UpdateActionV1InternalServerError) readResponse(response runtime.Client
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecResponseFields)
+	o.Payload = new(models.MsaErrorsOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewUpdateActionV1Default creates a UpdateActionV1Default with default headers values
+func NewUpdateActionV1Default(code int) *UpdateActionV1Default {
+	return &UpdateActionV1Default{
+		_statusCode: code,
+	}
+}
+
+/*
+UpdateActionV1Default describes a response with status code -1, with default header values.
+
+OK
+*/
+type UpdateActionV1Default struct {
+	_statusCode int
+
+	Payload *models.DomainActionEntitiesResponseV1
+}
+
+// IsSuccess returns true when this update action v1 default response has a 2xx status code
+func (o *UpdateActionV1Default) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this update action v1 default response has a 3xx status code
+func (o *UpdateActionV1Default) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this update action v1 default response has a 4xx status code
+func (o *UpdateActionV1Default) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this update action v1 default response has a 5xx status code
+func (o *UpdateActionV1Default) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this update action v1 default response a status code equal to that given
+func (o *UpdateActionV1Default) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the update action v1 default response
+func (o *UpdateActionV1Default) Code() int {
+	return o._statusCode
+}
+
+func (o *UpdateActionV1Default) Error() string {
+	return fmt.Sprintf("[PATCH /recon/entities/actions/v1][%d] UpdateActionV1 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdateActionV1Default) String() string {
+	return fmt.Sprintf("[PATCH /recon/entities/actions/v1][%d] UpdateActionV1 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdateActionV1Default) GetPayload() *models.DomainActionEntitiesResponseV1 {
+	return o.Payload
+}
+
+func (o *UpdateActionV1Default) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.DomainActionEntitiesResponseV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

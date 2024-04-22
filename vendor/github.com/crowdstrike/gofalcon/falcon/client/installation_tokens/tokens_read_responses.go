@@ -56,7 +56,14 @@ func (o *TokensReadReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /installation-tokens/entities/tokens/v1] tokens-read", response, response.Code())
+		result := NewTokensReadDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ TokensReadOK describes a response with status code 200, with default header valu
 OK
 */
 type TokensReadOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *TokensReadOK) GetPayload() *models.APITokenDetailsResponseV1 {
 
 func (o *TokensReadOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ TokensReadBadRequest describes a response with status code 400, with default hea
 Bad Request
 */
 type TokensReadBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *TokensReadBadRequest) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *TokensReadBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ TokensReadForbidden describes a response with status code 403, with default head
 Forbidden
 */
 type TokensReadForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *TokensReadForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *TokensReadForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ TokensReadTooManyRequests describes a response with status code 429, with defaul
 Too Many Requests
 */
 type TokensReadTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *TokensReadTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *TokensReadTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ TokensReadInternalServerError describes a response with status code 500, with de
 Internal Server Error
 */
 type TokensReadInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *TokensReadInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *TokensReadInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *TokensReadInternalServerError) readResponse(response runtime.ClientResp
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewTokensReadDefault creates a TokensReadDefault with default headers values
+func NewTokensReadDefault(code int) *TokensReadDefault {
+	return &TokensReadDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+TokensReadDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type TokensReadDefault struct {
+	_statusCode int
+
+	Payload *models.APITokenDetailsResponseV1
+}
+
+// IsSuccess returns true when this tokens read default response has a 2xx status code
+func (o *TokensReadDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this tokens read default response has a 3xx status code
+func (o *TokensReadDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this tokens read default response has a 4xx status code
+func (o *TokensReadDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this tokens read default response has a 5xx status code
+func (o *TokensReadDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this tokens read default response a status code equal to that given
+func (o *TokensReadDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the tokens read default response
+func (o *TokensReadDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *TokensReadDefault) Error() string {
+	return fmt.Sprintf("[GET /installation-tokens/entities/tokens/v1][%d] tokens-read default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *TokensReadDefault) String() string {
+	return fmt.Sprintf("[GET /installation-tokens/entities/tokens/v1][%d] tokens-read default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *TokensReadDefault) GetPayload() *models.APITokenDetailsResponseV1 {
+	return o.Payload
+}
+
+func (o *TokensReadDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.APITokenDetailsResponseV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

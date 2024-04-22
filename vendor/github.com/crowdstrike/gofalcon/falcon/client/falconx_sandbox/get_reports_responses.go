@@ -56,7 +56,14 @@ func (o *GetReportsReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /falconx/entities/reports/v1] GetReports", response, response.Code())
+		result := NewGetReportsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ GetReportsOK describes a response with status code 200, with default header valu
 OK
 */
 type GetReportsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *GetReportsOK) GetPayload() *models.FalconxReportV1Response {
 
 func (o *GetReportsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ GetReportsBadRequest describes a response with status code 400, with default hea
 Bad Request
 */
 type GetReportsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *GetReportsBadRequest) GetPayload() *models.FalconxReportV1Response {
 
 func (o *GetReportsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ GetReportsForbidden describes a response with status code 403, with default head
 Forbidden
 */
 type GetReportsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *GetReportsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetReportsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ GetReportsTooManyRequests describes a response with status code 429, with defaul
 Too Many Requests
 */
 type GetReportsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *GetReportsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetReportsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ GetReportsInternalServerError describes a response with status code 500, with de
 Internal Server Error
 */
 type GetReportsInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *GetReportsInternalServerError) GetPayload() *models.FalconxReportV1Resp
 
 func (o *GetReportsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -614,6 +566,78 @@ func (o *GetReportsInternalServerError) readResponse(response runtime.ClientResp
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.FalconxReportV1Response)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetReportsDefault creates a GetReportsDefault with default headers values
+func NewGetReportsDefault(code int) *GetReportsDefault {
+	return &GetReportsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetReportsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetReportsDefault struct {
+	_statusCode int
+
+	Payload *models.FalconxReportV1Response
+}
+
+// IsSuccess returns true when this get reports default response has a 2xx status code
+func (o *GetReportsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get reports default response has a 3xx status code
+func (o *GetReportsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get reports default response has a 4xx status code
+func (o *GetReportsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get reports default response has a 5xx status code
+func (o *GetReportsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get reports default response a status code equal to that given
+func (o *GetReportsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get reports default response
+func (o *GetReportsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetReportsDefault) Error() string {
+	return fmt.Sprintf("[GET /falconx/entities/reports/v1][%d] GetReports default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetReportsDefault) String() string {
+	return fmt.Sprintf("[GET /falconx/entities/reports/v1][%d] GetReports default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetReportsDefault) GetPayload() *models.FalconxReportV1Response {
+	return o.Payload
+}
+
+func (o *GetReportsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.FalconxReportV1Response)
 

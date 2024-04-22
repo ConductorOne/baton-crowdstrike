@@ -17,7 +17,7 @@ import (
 // swagger:model domain.APIRemediationIDs
 type DomainAPIRemediationIDs struct {
 
-	// Refers to a remediation unique identifier that points to remediation details addressing this vulnerability
+	// ids
 	Ids []string `json:"ids"`
 }
 

@@ -22,9 +22,6 @@ type DomainBehavior struct {
 	// aid
 	Aid string `json:"aid,omitempty"`
 
-	// alert ids
-	AlertIds []string `json:"alert_ids"`
-
 	// behavior id
 	BehaviorID string `json:"behavior_id,omitempty"`
 
@@ -37,17 +34,11 @@ type DomainBehavior struct {
 	// compound tto
 	CompoundTto string `json:"compound_tto,omitempty"`
 
-	// detection ids
-	DetectionIds []string `json:"detection_ids"`
-
-	// display name
-	DisplayName string `json:"display_name,omitempty"`
+	// detection id
+	DetectionID string `json:"detection_id,omitempty"`
 
 	// domain
 	Domain string `json:"domain,omitempty"`
-
-	// exclusion type
-	ExclusionType string `json:"exclusion_type,omitempty"`
 
 	// filepath
 	Filepath string `json:"filepath,omitempty"`
@@ -74,7 +65,7 @@ type DomainBehavior struct {
 	PatternDisposition int32 `json:"pattern_disposition,omitempty"`
 
 	// pattern disposition details
-	PatternDispositionDetails *PatterndispositionPatternDisposition `json:"pattern_disposition_details,omitempty"`
+	PatternDispositionDetails *CloudontologyPatternDisposition `json:"pattern_disposition_details,omitempty"`
 
 	// pattern id
 	// Required: true
@@ -86,14 +77,8 @@ type DomainBehavior struct {
 	// tactic
 	Tactic string `json:"tactic,omitempty"`
 
-	// tactic id
-	TacticID string `json:"tactic_id,omitempty"`
-
 	// technique
 	Technique string `json:"technique,omitempty"`
-
-	// technique id
-	TechniqueID string `json:"technique_id,omitempty"`
 
 	// template instance id
 	// Required: true
@@ -201,11 +186,6 @@ func (m *DomainBehavior) ContextValidate(ctx context.Context, formats strfmt.Reg
 func (m *DomainBehavior) contextValidatePatternDispositionDetails(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.PatternDispositionDetails != nil {
-
-		if swag.IsZero(m.PatternDispositionDetails) { // not required
-			return nil
-		}
-
 		if err := m.PatternDispositionDetails.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("pattern_disposition_details")

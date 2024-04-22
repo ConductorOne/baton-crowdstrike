@@ -56,7 +56,14 @@ func (o *QueryIntelReportEntitiesReader) ReadResponse(response runtime.ClientRes
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /intel/combined/reports/v1] QueryIntelReportEntities", response, response.Code())
+		result := NewQueryIntelReportEntitiesDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ QueryIntelReportEntitiesOK describes a response with status code 200, with defau
 OK
 */
 type QueryIntelReportEntitiesOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *QueryIntelReportEntitiesOK) GetPayload() *models.DomainNewsResponse {
 
 func (o *QueryIntelReportEntitiesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ QueryIntelReportEntitiesBadRequest describes a response with status code 400, wi
 Bad Request
 */
 type QueryIntelReportEntitiesBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -235,13 +227,6 @@ func (o *QueryIntelReportEntitiesBadRequest) String() string {
 
 func (o *QueryIntelReportEntitiesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -278,10 +263,6 @@ QueryIntelReportEntitiesForbidden describes a response with status code 403, wit
 Forbidden
 */
 type QueryIntelReportEntitiesForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -338,13 +319,6 @@ func (o *QueryIntelReportEntitiesForbidden) GetPayload() *models.MsaReplyMetaOnl
 
 func (o *QueryIntelReportEntitiesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -388,10 +362,6 @@ QueryIntelReportEntitiesTooManyRequests describes a response with status code 42
 Too Many Requests
 */
 type QueryIntelReportEntitiesTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -452,13 +422,6 @@ func (o *QueryIntelReportEntitiesTooManyRequests) GetPayload() *models.MsaReplyM
 
 func (o *QueryIntelReportEntitiesTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -513,10 +476,6 @@ QueryIntelReportEntitiesInternalServerError describes a response with status cod
 Internal Server Error
 */
 type QueryIntelReportEntitiesInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -573,13 +532,6 @@ func (o *QueryIntelReportEntitiesInternalServerError) GetPayload() *models.MsaEr
 
 func (o *QueryIntelReportEntitiesInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -603,6 +555,78 @@ func (o *QueryIntelReportEntitiesInternalServerError) readResponse(response runt
 	}
 
 	o.Payload = new(models.MsaErrorsOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryIntelReportEntitiesDefault creates a QueryIntelReportEntitiesDefault with default headers values
+func NewQueryIntelReportEntitiesDefault(code int) *QueryIntelReportEntitiesDefault {
+	return &QueryIntelReportEntitiesDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryIntelReportEntitiesDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryIntelReportEntitiesDefault struct {
+	_statusCode int
+
+	Payload *models.DomainNewsResponse
+}
+
+// IsSuccess returns true when this query intel report entities default response has a 2xx status code
+func (o *QueryIntelReportEntitiesDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query intel report entities default response has a 3xx status code
+func (o *QueryIntelReportEntitiesDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query intel report entities default response has a 4xx status code
+func (o *QueryIntelReportEntitiesDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query intel report entities default response has a 5xx status code
+func (o *QueryIntelReportEntitiesDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query intel report entities default response a status code equal to that given
+func (o *QueryIntelReportEntitiesDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query intel report entities default response
+func (o *QueryIntelReportEntitiesDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryIntelReportEntitiesDefault) Error() string {
+	return fmt.Sprintf("[GET /intel/combined/reports/v1][%d] QueryIntelReportEntities default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryIntelReportEntitiesDefault) String() string {
+	return fmt.Sprintf("[GET /intel/combined/reports/v1][%d] QueryIntelReportEntities default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryIntelReportEntitiesDefault) GetPayload() *models.DomainNewsResponse {
+	return o.Payload
+}
+
+func (o *QueryIntelReportEntitiesDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.DomainNewsResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

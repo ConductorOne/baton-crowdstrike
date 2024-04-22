@@ -39,7 +39,7 @@ type MalqueryQueryMetaInfo struct {
 	TraceID *string `json:"trace_id"`
 
 	// writes
-	Writes *MsaspecWrites `json:"writes,omitempty"`
+	Writes *MsaResources `json:"writes,omitempty"`
 }
 
 // Validate validates this malquery query meta info
@@ -132,11 +132,6 @@ func (m *MalqueryQueryMetaInfo) ContextValidate(ctx context.Context, formats str
 func (m *MalqueryQueryMetaInfo) contextValidatePagination(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Pagination != nil {
-
-		if swag.IsZero(m.Pagination) { // not required
-			return nil
-		}
-
 		if err := m.Pagination.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("pagination")
@@ -153,11 +148,6 @@ func (m *MalqueryQueryMetaInfo) contextValidatePagination(ctx context.Context, f
 func (m *MalqueryQueryMetaInfo) contextValidateWrites(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Writes != nil {
-
-		if swag.IsZero(m.Writes) { // not required
-			return nil
-		}
-
 		if err := m.Writes.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("writes")

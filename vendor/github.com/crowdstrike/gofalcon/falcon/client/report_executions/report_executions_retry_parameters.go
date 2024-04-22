@@ -64,7 +64,7 @@ ReportExecutionsRetryParams contains all the parameters to send to the API endpo
 type ReportExecutionsRetryParams struct {
 
 	// Body.
-	Body []*models.DomainReportExecutionRetryRequestV1
+	Body []*models.APIReportExecutionRetryRequestV1
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,13 +120,13 @@ func (o *ReportExecutionsRetryParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the report executions retry params
-func (o *ReportExecutionsRetryParams) WithBody(body []*models.DomainReportExecutionRetryRequestV1) *ReportExecutionsRetryParams {
+func (o *ReportExecutionsRetryParams) WithBody(body []*models.APIReportExecutionRetryRequestV1) *ReportExecutionsRetryParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the report executions retry params
-func (o *ReportExecutionsRetryParams) SetBody(body []*models.DomainReportExecutionRetryRequestV1) {
+func (o *ReportExecutionsRetryParams) SetBody(body []*models.APIReportExecutionRetryRequestV1) {
 	o.Body = body
 }
 

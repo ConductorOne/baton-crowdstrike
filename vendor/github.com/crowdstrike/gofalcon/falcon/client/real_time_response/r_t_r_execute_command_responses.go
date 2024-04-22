@@ -50,7 +50,7 @@ func (o *RTRExecuteCommandReader) ReadResponse(response runtime.ClientResponse, 
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /real-time-response/entities/command/v1] RTR-ExecuteCommand", response, response.Code())
+		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
 }
 
@@ -65,10 +65,6 @@ RTRExecuteCommandCreated describes a response with status code 201, with default
 Created
 */
 type RTRExecuteCommandCreated struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -125,13 +121,6 @@ func (o *RTRExecuteCommandCreated) GetPayload() *models.DomainCommandExecuteResp
 
 func (o *RTRExecuteCommandCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -175,10 +164,6 @@ RTRExecuteCommandBadRequest describes a response with status code 400, with defa
 Bad Request
 */
 type RTRExecuteCommandBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -235,13 +220,6 @@ func (o *RTRExecuteCommandBadRequest) GetPayload() *models.DomainAPIError {
 
 func (o *RTRExecuteCommandBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -285,10 +263,6 @@ RTRExecuteCommandForbidden describes a response with status code 403, with defau
 Forbidden
 */
 type RTRExecuteCommandForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -345,13 +319,6 @@ func (o *RTRExecuteCommandForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRExecuteCommandForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -395,10 +362,6 @@ RTRExecuteCommandTooManyRequests describes a response with status code 429, with
 Too Many Requests
 */
 type RTRExecuteCommandTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -458,13 +421,6 @@ func (o *RTRExecuteCommandTooManyRequests) GetPayload() *models.MsaReplyMetaOnly
 }
 
 func (o *RTRExecuteCommandTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")

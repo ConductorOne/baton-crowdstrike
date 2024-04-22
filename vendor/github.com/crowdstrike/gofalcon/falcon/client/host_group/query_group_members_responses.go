@@ -62,7 +62,14 @@ func (o *QueryGroupMembersReader) ReadResponse(response runtime.ClientResponse, 
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /devices/queries/host-group-members/v1] queryGroupMembers", response, response.Code())
+		result := NewQueryGroupMembersDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -77,10 +84,6 @@ QueryGroupMembersOK describes a response with status code 200, with default head
 OK
 */
 type QueryGroupMembersOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -137,13 +140,6 @@ func (o *QueryGroupMembersOK) GetPayload() *models.MsaQueryResponse {
 
 func (o *QueryGroupMembersOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -187,10 +183,6 @@ QueryGroupMembersBadRequest describes a response with status code 400, with defa
 Bad Request
 */
 type QueryGroupMembersBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -247,13 +239,6 @@ func (o *QueryGroupMembersBadRequest) GetPayload() *models.MsaQueryResponse {
 
 func (o *QueryGroupMembersBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -297,10 +282,6 @@ QueryGroupMembersForbidden describes a response with status code 403, with defau
 Forbidden
 */
 type QueryGroupMembersForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -357,13 +338,6 @@ func (o *QueryGroupMembersForbidden) GetPayload() *models.MsaErrorsOnly {
 
 func (o *QueryGroupMembersForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -407,10 +381,6 @@ QueryGroupMembersNotFound describes a response with status code 404, with defaul
 Not Found
 */
 type QueryGroupMembersNotFound struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -467,13 +437,6 @@ func (o *QueryGroupMembersNotFound) GetPayload() *models.MsaQueryResponse {
 
 func (o *QueryGroupMembersNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -517,10 +480,6 @@ QueryGroupMembersTooManyRequests describes a response with status code 429, with
 Too Many Requests
 */
 type QueryGroupMembersTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -581,13 +540,6 @@ func (o *QueryGroupMembersTooManyRequests) GetPayload() *models.MsaReplyMetaOnly
 
 func (o *QueryGroupMembersTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -642,10 +594,6 @@ QueryGroupMembersInternalServerError describes a response with status code 500, 
 Internal Server Error
 */
 type QueryGroupMembersInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -702,13 +650,6 @@ func (o *QueryGroupMembersInternalServerError) GetPayload() *models.MsaQueryResp
 
 func (o *QueryGroupMembersInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -730,6 +671,78 @@ func (o *QueryGroupMembersInternalServerError) readResponse(response runtime.Cli
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.MsaQueryResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryGroupMembersDefault creates a QueryGroupMembersDefault with default headers values
+func NewQueryGroupMembersDefault(code int) *QueryGroupMembersDefault {
+	return &QueryGroupMembersDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryGroupMembersDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryGroupMembersDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this query group members default response has a 2xx status code
+func (o *QueryGroupMembersDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query group members default response has a 3xx status code
+func (o *QueryGroupMembersDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query group members default response has a 4xx status code
+func (o *QueryGroupMembersDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query group members default response has a 5xx status code
+func (o *QueryGroupMembersDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query group members default response a status code equal to that given
+func (o *QueryGroupMembersDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query group members default response
+func (o *QueryGroupMembersDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryGroupMembersDefault) Error() string {
+	return fmt.Sprintf("[GET /devices/queries/host-group-members/v1][%d] queryGroupMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryGroupMembersDefault) String() string {
+	return fmt.Sprintf("[GET /devices/queries/host-group-members/v1][%d] queryGroupMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryGroupMembersDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *QueryGroupMembersDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.MsaQueryResponse)
 

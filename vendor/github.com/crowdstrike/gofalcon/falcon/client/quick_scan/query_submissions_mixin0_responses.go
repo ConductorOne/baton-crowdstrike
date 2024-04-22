@@ -56,7 +56,14 @@ func (o *QuerySubmissionsMixin0Reader) ReadResponse(response runtime.ClientRespo
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /scanner/queries/scans/v1] QuerySubmissionsMixin0", response, response.Code())
+		result := NewQuerySubmissionsMixin0Default(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type QuerySubmissionsMixin0OK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type QuerySubmissionsMixin0OK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MlscannerapiQueryResponse
+	Payload *models.MlscannerQueryResponse
 }
 
 // IsSuccess returns true when this query submissions mixin0 o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *QuerySubmissionsMixin0OK) String() string {
 	return fmt.Sprintf("[GET /scanner/queries/scans/v1][%d] querySubmissionsMixin0OK  %+v", 200, o.Payload)
 }
 
-func (o *QuerySubmissionsMixin0OK) GetPayload() *models.MlscannerapiQueryResponse {
+func (o *QuerySubmissionsMixin0OK) GetPayload() *models.MlscannerQueryResponse {
 	return o.Payload
 }
 
 func (o *QuerySubmissionsMixin0OK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *QuerySubmissionsMixin0OK) readResponse(response runtime.ClientResponse,
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MlscannerapiQueryResponse)
+	o.Payload = new(models.MlscannerQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -182,10 +178,6 @@ Bad Request
 */
 type QuerySubmissionsMixin0BadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -194,7 +186,7 @@ type QuerySubmissionsMixin0BadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MlscannerapiQueryResponse
+	Payload *models.MlscannerQueryResponse
 }
 
 // IsSuccess returns true when this query submissions mixin0 bad request response has a 2xx status code
@@ -235,18 +227,11 @@ func (o *QuerySubmissionsMixin0BadRequest) String() string {
 	return fmt.Sprintf("[GET /scanner/queries/scans/v1][%d] querySubmissionsMixin0BadRequest  %+v", 400, o.Payload)
 }
 
-func (o *QuerySubmissionsMixin0BadRequest) GetPayload() *models.MlscannerapiQueryResponse {
+func (o *QuerySubmissionsMixin0BadRequest) GetPayload() *models.MlscannerQueryResponse {
 	return o.Payload
 }
 
 func (o *QuerySubmissionsMixin0BadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -270,7 +255,7 @@ func (o *QuerySubmissionsMixin0BadRequest) readResponse(response runtime.ClientR
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MlscannerapiQueryResponse)
+	o.Payload = new(models.MlscannerQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -291,10 +276,6 @@ QuerySubmissionsMixin0Forbidden describes a response with status code 403, with 
 Forbidden
 */
 type QuerySubmissionsMixin0Forbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *QuerySubmissionsMixin0Forbidden) GetPayload() *models.MsaReplyMetaOnly 
 
 func (o *QuerySubmissionsMixin0Forbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ QuerySubmissionsMixin0TooManyRequests describes a response with status code 429,
 Too Many Requests
 */
 type QuerySubmissionsMixin0TooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *QuerySubmissionsMixin0TooManyRequests) GetPayload() *models.MsaReplyMet
 
 func (o *QuerySubmissionsMixin0TooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +490,6 @@ Internal Server Error
 */
 type QuerySubmissionsMixin0InternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -539,7 +498,7 @@ type QuerySubmissionsMixin0InternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MlscannerapiQueryResponse
+	Payload *models.MlscannerQueryResponse
 }
 
 // IsSuccess returns true when this query submissions mixin0 internal server error response has a 2xx status code
@@ -580,18 +539,11 @@ func (o *QuerySubmissionsMixin0InternalServerError) String() string {
 	return fmt.Sprintf("[GET /scanner/queries/scans/v1][%d] querySubmissionsMixin0InternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *QuerySubmissionsMixin0InternalServerError) GetPayload() *models.MlscannerapiQueryResponse {
+func (o *QuerySubmissionsMixin0InternalServerError) GetPayload() *models.MlscannerQueryResponse {
 	return o.Payload
 }
 
 func (o *QuerySubmissionsMixin0InternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -615,7 +567,79 @@ func (o *QuerySubmissionsMixin0InternalServerError) readResponse(response runtim
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MlscannerapiQueryResponse)
+	o.Payload = new(models.MlscannerQueryResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQuerySubmissionsMixin0Default creates a QuerySubmissionsMixin0Default with default headers values
+func NewQuerySubmissionsMixin0Default(code int) *QuerySubmissionsMixin0Default {
+	return &QuerySubmissionsMixin0Default{
+		_statusCode: code,
+	}
+}
+
+/*
+QuerySubmissionsMixin0Default describes a response with status code -1, with default header values.
+
+OK
+*/
+type QuerySubmissionsMixin0Default struct {
+	_statusCode int
+
+	Payload *models.MlscannerQueryResponse
+}
+
+// IsSuccess returns true when this query submissions mixin0 default response has a 2xx status code
+func (o *QuerySubmissionsMixin0Default) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query submissions mixin0 default response has a 3xx status code
+func (o *QuerySubmissionsMixin0Default) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query submissions mixin0 default response has a 4xx status code
+func (o *QuerySubmissionsMixin0Default) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query submissions mixin0 default response has a 5xx status code
+func (o *QuerySubmissionsMixin0Default) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query submissions mixin0 default response a status code equal to that given
+func (o *QuerySubmissionsMixin0Default) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query submissions mixin0 default response
+func (o *QuerySubmissionsMixin0Default) Code() int {
+	return o._statusCode
+}
+
+func (o *QuerySubmissionsMixin0Default) Error() string {
+	return fmt.Sprintf("[GET /scanner/queries/scans/v1][%d] QuerySubmissionsMixin0 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QuerySubmissionsMixin0Default) String() string {
+	return fmt.Sprintf("[GET /scanner/queries/scans/v1][%d] QuerySubmissionsMixin0 default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QuerySubmissionsMixin0Default) GetPayload() *models.MlscannerQueryResponse {
+	return o.Payload
+}
+
+func (o *QuerySubmissionsMixin0Default) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MlscannerQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

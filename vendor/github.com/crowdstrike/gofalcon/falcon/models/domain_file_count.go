@@ -28,9 +28,6 @@ type DomainFileCount struct {
 
 	// skipped
 	Skipped int32 `json:"skipped,omitempty"`
-
-	// traversed
-	Traversed int32 `json:"traversed,omitempty"`
 }
 
 // Validate validates this domain file count

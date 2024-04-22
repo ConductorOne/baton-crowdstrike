@@ -64,7 +64,7 @@ type GetRolesByIDParams struct {
 
 	/* Ids.
 
-	   Link ID is a string consisting of multiple components, but should be treated as opaque.
+	   MSSP Role assignment is of the format <user_group_id>:<cid_group_id>
 	*/
 	Ids []string
 
@@ -168,8 +168,8 @@ func (o *GetRolesByIDParams) bindParamIds(formats strfmt.Registry) []string {
 		idsIC = append(idsIC, idsIIV)
 	}
 
-	// items.CollectionFormat: "multi"
-	idsIS := swag.JoinByFormat(idsIC, "multi")
+	// items.CollectionFormat: "csv"
+	idsIS := swag.JoinByFormat(idsIC, "csv")
 
 	return idsIS
 }

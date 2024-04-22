@@ -42,8 +42,6 @@ type ClientService interface {
 
 	DeleteCIDGroupMembers(params *DeleteCIDGroupMembersParams, opts ...ClientOption) (*DeleteCIDGroupMembersOK, *DeleteCIDGroupMembersMultiStatus, error)
 
-	DeleteCIDGroupMembersV2(params *DeleteCIDGroupMembersV2Params, opts ...ClientOption) (*DeleteCIDGroupMembersV2OK, *DeleteCIDGroupMembersV2MultiStatus, error)
-
 	DeleteCIDGroups(params *DeleteCIDGroupsParams, opts ...ClientOption) (*DeleteCIDGroupsOK, *DeleteCIDGroupsMultiStatus, error)
 
 	DeleteUserGroupMembers(params *DeleteUserGroupMembersParams, opts ...ClientOption) (*DeleteUserGroupMembersOK, *DeleteUserGroupMembersMultiStatus, error)
@@ -127,13 +125,13 @@ func (a *Client) AddCIDGroupMembers(params *AddCIDGroupMembersParams, opts ...Cl
 	case *AddCIDGroupMembersMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*AddCIDGroupMembersDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-AddRole creates a link between user group and c ID group with zero or more additional roles the call does not replace any existing link between them user group ID and c ID group ID have to be specified in request
+AddRole assigns new m s s p role s between user group and c ID group it does not revoke existing role s between user group and c ID group user group ID and c ID group ID have to be specified in request
 */
 func (a *Client) AddRole(params *AddRoleParams, opts ...ClientOption) (*AddRoleOK, *AddRoleMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -166,9 +164,9 @@ func (a *Client) AddRole(params *AddRoleParams, opts ...ClientOption) (*AddRoleO
 	case *AddRoleMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*AddRoleDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -205,13 +203,13 @@ func (a *Client) AddUserGroupMembers(params *AddUserGroupMembersParams, opts ...
 	case *AddUserGroupMembersMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*AddUserGroupMembersDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-CreateCIDGroups creates new c ID groups name is a required field but description is an optional field maximum 500 c ID groups allowed
+CreateCIDGroups creates new c ID group s maximum 500 c ID group s allowed
 */
 func (a *Client) CreateCIDGroups(params *CreateCIDGroupsParams, opts ...ClientOption) (*CreateCIDGroupsOK, *CreateCIDGroupsMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -244,13 +242,13 @@ func (a *Client) CreateCIDGroups(params *CreateCIDGroupsParams, opts ...ClientOp
 	case *CreateCIDGroupsMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*CreateCIDGroupsDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-CreateUserGroups creates new user groups name is a required field but description is an optional field maximum 500 user groups allowed per customer
+CreateUserGroups creates new user group s maximum 500 user group s allowed per customer
 */
 func (a *Client) CreateUserGroups(params *CreateUserGroupsParams, opts ...ClientOption) (*CreateUserGroupsOK, *CreateUserGroupsMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -283,13 +281,13 @@ func (a *Client) CreateUserGroups(params *CreateUserGroupsParams, opts ...Client
 	case *CreateUserGroupsMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*CreateUserGroupsDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-DeleteCIDGroupMembers deprecateds please use d e l e t e entities cid group members v2 delete c ID group members
+DeleteCIDGroupMembers deletes c ID group members entry
 */
 func (a *Client) DeleteCIDGroupMembers(params *DeleteCIDGroupMembersParams, opts ...ClientOption) (*DeleteCIDGroupMembersOK, *DeleteCIDGroupMembersMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -322,48 +320,9 @@ func (a *Client) DeleteCIDGroupMembers(params *DeleteCIDGroupMembersParams, opts
 	case *DeleteCIDGroupMembersMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-DeleteCIDGroupMembersV2 deletes c ID group members prevents removal of a cid group a cid group if it is only part of one cid group
-*/
-func (a *Client) DeleteCIDGroupMembersV2(params *DeleteCIDGroupMembersV2Params, opts ...ClientOption) (*DeleteCIDGroupMembersV2OK, *DeleteCIDGroupMembersV2MultiStatus, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewDeleteCIDGroupMembersV2Params()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "deleteCIDGroupMembersV2",
-		Method:             "DELETE",
-		PathPattern:        "/mssp/entities/cid-group-members/v2",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &DeleteCIDGroupMembersV2Reader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, nil, err
-	}
-	switch value := result.(type) {
-	case *DeleteCIDGroupMembersV2OK:
-		return value, nil, nil
-	case *DeleteCIDGroupMembersV2MultiStatus:
-		return nil, value, nil
-	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*DeleteCIDGroupMembersDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -400,9 +359,9 @@ func (a *Client) DeleteCIDGroups(params *DeleteCIDGroupsParams, opts ...ClientOp
 	case *DeleteCIDGroupsMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*DeleteCIDGroupsDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -439,9 +398,9 @@ func (a *Client) DeleteUserGroupMembers(params *DeleteUserGroupMembersParams, op
 	case *DeleteUserGroupMembersMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*DeleteUserGroupMembersDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -478,13 +437,13 @@ func (a *Client) DeleteUserGroups(params *DeleteUserGroupsParams, opts ...Client
 	case *DeleteUserGroupsMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*DeleteUserGroupsDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-DeletedRoles deletes links or additional roles between user groups and c ID groups user group ID and c ID group ID have to be specified in request only specified roles are removed if specified in request payload else association between user group and c ID group is dissolved completely if no roles specified
+DeletedRoles deletes m s s p role assignment s between user group and c ID group user group ID and c ID group ID have to be specified in request only specified roles are removed if specified in request payload else association between user group and c ID group is dissolved completely if no roles specified
 */
 func (a *Client) DeletedRoles(params *DeletedRolesParams, opts ...ClientOption) (*DeletedRolesOK, *DeletedRolesMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -517,9 +476,9 @@ func (a *Client) DeletedRoles(params *DeletedRolesParams, opts ...ClientOption) 
 	case *DeletedRolesMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*DeletedRolesDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -712,9 +671,9 @@ func (a *Client) GetChildren(params *GetChildrenParams, opts ...ClientOption) (*
 	case *GetChildrenMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*GetChildrenDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -757,7 +716,7 @@ func (a *Client) GetChildrenV2(params *GetChildrenV2Params, opts ...ClientOption
 }
 
 /*
-GetRolesByID gets link between user group and c ID group by ID link ID is a string consisting of multiple components but should be treated as opaque
+GetRolesByID gets m s s p role assignment s m s s p role assignment is of the format
 */
 func (a *Client) GetRolesByID(params *GetRolesByIDParams, opts ...ClientOption) (*GetRolesByIDOK, *GetRolesByIDMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -790,9 +749,9 @@ func (a *Client) GetRolesByID(params *GetRolesByIDParams, opts ...ClientOption) 
 	case *GetRolesByIDMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*GetRolesByIDDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -984,9 +943,8 @@ func (a *Client) QueryCIDGroupMembers(params *QueryCIDGroupMembersParams, opts .
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for queryCIDGroupMembers: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryCIDGroupMembersDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1022,9 +980,8 @@ func (a *Client) QueryCIDGroups(params *QueryCIDGroupsParams, opts ...ClientOpti
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for queryCIDGroups: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryCIDGroupsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1060,9 +1017,8 @@ func (a *Client) QueryChildren(params *QueryChildrenParams, opts ...ClientOption
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for queryChildren: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryChildrenDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1098,9 +1054,8 @@ func (a *Client) QueryRoles(params *QueryRolesParams, opts ...ClientOption) (*Qu
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for queryRoles: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryRolesDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1136,9 +1091,8 @@ func (a *Client) QueryUserGroupMembers(params *QueryUserGroupMembersParams, opts
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for queryUserGroupMembers: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryUserGroupMembersDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1174,13 +1128,12 @@ func (a *Client) QueryUserGroups(params *QueryUserGroupsParams, opts ...ClientOp
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for queryUserGroups: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryUserGroupsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-UpdateCIDGroups updates existing c ID groups c ID group ID is expected for each c ID group definition provided in request body name is a required field but description is an optional field empty description will override existing value c ID group member s remain unaffected
+UpdateCIDGroups updates existing c ID group s c ID group ID is expected for each c ID group definition provided in request body c ID group member s remain unaffected
 */
 func (a *Client) UpdateCIDGroups(params *UpdateCIDGroupsParams, opts ...ClientOption) (*UpdateCIDGroupsOK, *UpdateCIDGroupsMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -1213,13 +1166,13 @@ func (a *Client) UpdateCIDGroups(params *UpdateCIDGroupsParams, opts ...ClientOp
 	case *UpdateCIDGroupsMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*UpdateCIDGroupsDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-UpdateUserGroups updates existing user group s user group ID is expected for each user group definition provided in request body name is a required field but description is an optional field empty description will override existing value user group member s remain unaffected
+UpdateUserGroups updates existing user group s user group ID is expected for each user group definition provided in request body user group member s remain unaffected
 */
 func (a *Client) UpdateUserGroups(params *UpdateUserGroupsParams, opts ...ClientOption) (*UpdateUserGroupsOK, *UpdateUserGroupsMultiStatus, error) {
 	// TODO: Validate the params before sending
@@ -1252,9 +1205,9 @@ func (a *Client) UpdateUserGroups(params *UpdateUserGroupsParams, opts ...Client
 	case *UpdateUserGroupsMultiStatus:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for mssp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*UpdateUserGroupsDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

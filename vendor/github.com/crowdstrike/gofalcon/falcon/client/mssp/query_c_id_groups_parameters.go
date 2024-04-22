@@ -64,7 +64,7 @@ type QueryCIDGroupsParams struct {
 
 	/* Limit.
 
-	   Maximum number of results to return
+	   Number of ids to return
 
 	   Default: 10
 	*/

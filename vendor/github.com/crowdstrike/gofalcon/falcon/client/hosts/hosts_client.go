@@ -30,6 +30,8 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	GetDeviceDetails(params *GetDeviceDetailsParams, opts ...ClientOption) (*GetDeviceDetailsOK, error)
+
 	GetDeviceDetailsV2(params *GetDeviceDetailsV2Params, opts ...ClientOption) (*GetDeviceDetailsV2OK, error)
 
 	GetOnlineStateV1(params *GetOnlineStateV1Params, opts ...ClientOption) (*GetOnlineStateV1OK, error)
@@ -53,6 +55,43 @@ type ClientService interface {
 	EntitiesPerformAction(params *EntitiesPerformActionParams, opts ...ClientOption) (*EntitiesPerformActionOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+GetDeviceDetails deprecateds please use new methods get device details v2 or post device details v2 this method now redirects to get device details v2 the original API endpoint will be removed on or sometime after february 9 2023
+*/
+func (a *Client) GetDeviceDetails(params *GetDeviceDetailsParams, opts ...ClientOption) (*GetDeviceDetailsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetDeviceDetailsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetDeviceDetails",
+		Method:             "GET",
+		PathPattern:        "/devices/entities/devices//v2",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetDeviceDetailsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetDeviceDetailsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetDeviceDetailsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -88,9 +127,8 @@ func (a *Client) GetDeviceDetailsV2(params *GetDeviceDetailsV2Params, opts ...Cl
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetDeviceDetailsV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*GetDeviceDetailsV2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -126,9 +164,8 @@ func (a *Client) GetOnlineStateV1(params *GetOnlineStateV1Params, opts ...Client
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetOnlineState.V1: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*GetOnlineStateV1Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -202,9 +239,8 @@ func (a *Client) PostDeviceDetailsV2(params *PostDeviceDetailsV2Params, opts ...
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostDeviceDetailsV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*PostDeviceDetailsV2Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -240,9 +276,8 @@ func (a *Client) QueryDeviceLoginHistory(params *QueryDeviceLoginHistoryParams, 
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QueryDeviceLoginHistory: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryDeviceLoginHistoryDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -278,9 +313,8 @@ func (a *Client) QueryDevicesByFilter(params *QueryDevicesByFilterParams, opts .
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QueryDevicesByFilter: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryDevicesByFilterDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -316,9 +350,8 @@ func (a *Client) QueryDevicesByFilterScroll(params *QueryDevicesByFilterScrollPa
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QueryDevicesByFilterScroll: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryDevicesByFilterScrollDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -354,9 +387,8 @@ func (a *Client) QueryGetNetworkAddressHistoryV1(params *QueryGetNetworkAddressH
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QueryGetNetworkAddressHistoryV1: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryGetNetworkAddressHistoryV1Default)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -392,9 +424,8 @@ func (a *Client) QueryHiddenDevices(params *QueryHiddenDevicesParams, opts ...Cl
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for QueryHiddenDevices: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*QueryHiddenDevicesDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -469,9 +500,8 @@ func (a *Client) EntitiesPerformAction(params *EntitiesPerformActionParams, opts
 		return success, nil
 	}
 	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for entities.perform_action: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	unexpectedSuccess := result.(*EntitiesPerformActionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

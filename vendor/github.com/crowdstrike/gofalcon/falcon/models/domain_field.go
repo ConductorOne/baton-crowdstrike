@@ -7,7 +7,6 @@ package models
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -20,55 +19,30 @@ import (
 // swagger:model domain.Field
 type DomainField struct {
 
-	// label
-	// Required: true
-	Label *string `json:"label"`
-
 	// name
 	// Required: true
 	Name *string `json:"name"`
 
-	// options
+	// value
 	// Required: true
-	Options []*DomainValueItem `json:"options"`
-
-	// type
-	// Required: true
-	Type *string `json:"type"`
+	Value *string `json:"value"`
 }
 
 // Validate validates this domain field
 func (m *DomainField) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateLabel(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateOptions(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateType(formats); err != nil {
+	if err := m.validateValue(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *DomainField) validateLabel(formats strfmt.Registry) error {
-
-	if err := validate.Required("label", "body", m.Label); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -81,78 +55,17 @@ func (m *DomainField) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DomainField) validateOptions(formats strfmt.Registry) error {
+func (m *DomainField) validateValue(formats strfmt.Registry) error {
 
-	if err := validate.Required("options", "body", m.Options); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Options); i++ {
-		if swag.IsZero(m.Options[i]) { // not required
-			continue
-		}
-
-		if m.Options[i] != nil {
-			if err := m.Options[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("options" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("options" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *DomainField) validateType(formats strfmt.Registry) error {
-
-	if err := validate.Required("type", "body", m.Type); err != nil {
+	if err := validate.Required("value", "body", m.Value); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// ContextValidate validate this domain field based on the context it is used
+// ContextValidate validates this domain field based on context it is used
 func (m *DomainField) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateOptions(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *DomainField) contextValidateOptions(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Options); i++ {
-
-		if m.Options[i] != nil {
-
-			if swag.IsZero(m.Options[i]) { // not required
-				return nil
-			}
-
-			if err := m.Options[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("options" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("options" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 

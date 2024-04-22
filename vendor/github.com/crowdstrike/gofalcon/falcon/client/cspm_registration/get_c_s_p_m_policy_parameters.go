@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // NewGetCSPMPolicyParams creates a new GetCSPMPolicyParams object,
@@ -66,7 +65,7 @@ type GetCSPMPolicyParams struct {
 
 	   Policy ID
 	*/
-	Ids int64
+	Ids string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -122,13 +121,13 @@ func (o *GetCSPMPolicyParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithIds adds the ids to the get c s p m policy params
-func (o *GetCSPMPolicyParams) WithIds(ids int64) *GetCSPMPolicyParams {
+func (o *GetCSPMPolicyParams) WithIds(ids string) *GetCSPMPolicyParams {
 	o.SetIds(ids)
 	return o
 }
 
 // SetIds adds the ids to the get c s p m policy params
-func (o *GetCSPMPolicyParams) SetIds(ids int64) {
+func (o *GetCSPMPolicyParams) SetIds(ids string) {
 	o.Ids = ids
 }
 
@@ -142,7 +141,7 @@ func (o *GetCSPMPolicyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 
 	// query param ids
 	qrIds := o.Ids
-	qIds := swag.FormatInt64(qrIds)
+	qIds := qrIds
 	if qIds != "" {
 
 		if err := r.SetQueryParam("ids", qIds); err != nil {

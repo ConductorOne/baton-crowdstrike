@@ -11,7 +11,6 @@ import (
 // ApiConfig object is used to initialise and configure API Client. Together with NewClient function, ApiConfig provides preferred way to initiate API communication.
 type ApiConfig struct {
 	// AccessToken is the access token used to access the CrowdStrike Falcon platform.
-	// If used either Cloud or HostOverride must be provided.
 	// *required* if ClientId and ClientSecret are empty.
 	AccessToken string
 	// Client ID used for authentication with CrowdStrike Falcon platform.
@@ -25,8 +24,9 @@ type ApiConfig struct {
 	// This Context object will be used only when authenticating with the OAuth interface.
 	Context context.Context
 	// Cloud allows us to select Falcon Cloud to connect.
+	// *required* if AccessToken is used.
 	Cloud CloudType
-	// HostOverride allows to override host. Cloud will be ignored.
+	// HostOverride allows to override default host (default: api.crowdstrike.com)
 	HostOverride string
 	// BasePathOverride allows to override default base path (default: /)
 	BasePathOverride string

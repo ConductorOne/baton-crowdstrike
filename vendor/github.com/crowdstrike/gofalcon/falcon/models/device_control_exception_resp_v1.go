@@ -33,8 +33,7 @@ type DeviceControlExceptionRespV1 struct {
 	Description string `json:"description,omitempty"`
 
 	// expiration time
-	// Format: date-time
-	ExpirationTime strfmt.DateTime `json:"expiration_time,omitempty"`
+	ExpirationTime string `json:"expiration_time,omitempty"`
 
 	// Unique identifier for an exception
 	// Required: true
@@ -73,10 +72,6 @@ func (m *DeviceControlExceptionRespV1) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateExpirationTime(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
@@ -90,18 +85,6 @@ func (m *DeviceControlExceptionRespV1) Validate(formats strfmt.Registry) error {
 func (m *DeviceControlExceptionRespV1) validateClass(formats strfmt.Registry) error {
 
 	if err := validate.Required("class", "body", m.Class); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DeviceControlExceptionRespV1) validateExpirationTime(formats strfmt.Registry) error {
-	if swag.IsZero(m.ExpirationTime) { // not required
-		return nil
-	}
-
-	if err := validate.FormatOf("expiration_time", "body", "date-time", m.ExpirationTime.String(), formats); err != nil {
 		return err
 	}
 

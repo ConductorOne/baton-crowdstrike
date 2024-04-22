@@ -56,7 +56,14 @@ func (o *RTRDeleteScriptsReader) ReadResponse(response runtime.ClientResponse, c
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[DELETE /real-time-response/entities/scripts/v1] RTR-DeleteScripts", response, response.Code())
+		result := NewRTRDeleteScriptsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ RTRDeleteScriptsOK describes a response with status code 200, with default heade
 OK
 */
 type RTRDeleteScriptsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *RTRDeleteScriptsOK) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRDeleteScriptsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ RTRDeleteScriptsBadRequest describes a response with status code 400, with defau
 Bad Request
 */
 type RTRDeleteScriptsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *RTRDeleteScriptsBadRequest) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRDeleteScriptsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ RTRDeleteScriptsForbidden describes a response with status code 403, with defaul
 Forbidden
 */
 type RTRDeleteScriptsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *RTRDeleteScriptsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRDeleteScriptsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ RTRDeleteScriptsNotFound describes a response with status code 404, with default
 Not Found
 */
 type RTRDeleteScriptsNotFound struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -461,13 +431,6 @@ func (o *RTRDeleteScriptsNotFound) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRDeleteScriptsNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -511,10 +474,6 @@ RTRDeleteScriptsTooManyRequests describes a response with status code 429, with 
 Too Many Requests
 */
 type RTRDeleteScriptsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -575,13 +534,6 @@ func (o *RTRDeleteScriptsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly 
 
 func (o *RTRDeleteScriptsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -614,6 +566,78 @@ func (o *RTRDeleteScriptsTooManyRequests) readResponse(response runtime.ClientRe
 		}
 		o.XRateLimitRetryAfter = valxRateLimitRetryAfter
 	}
+
+	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRTRDeleteScriptsDefault creates a RTRDeleteScriptsDefault with default headers values
+func NewRTRDeleteScriptsDefault(code int) *RTRDeleteScriptsDefault {
+	return &RTRDeleteScriptsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+RTRDeleteScriptsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type RTRDeleteScriptsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaReplyMetaOnly
+}
+
+// IsSuccess returns true when this r t r delete scripts default response has a 2xx status code
+func (o *RTRDeleteScriptsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this r t r delete scripts default response has a 3xx status code
+func (o *RTRDeleteScriptsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this r t r delete scripts default response has a 4xx status code
+func (o *RTRDeleteScriptsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this r t r delete scripts default response has a 5xx status code
+func (o *RTRDeleteScriptsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this r t r delete scripts default response a status code equal to that given
+func (o *RTRDeleteScriptsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the r t r delete scripts default response
+func (o *RTRDeleteScriptsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *RTRDeleteScriptsDefault) Error() string {
+	return fmt.Sprintf("[DELETE /real-time-response/entities/scripts/v1][%d] RTR-DeleteScripts default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRDeleteScriptsDefault) String() string {
+	return fmt.Sprintf("[DELETE /real-time-response/entities/scripts/v1][%d] RTR-DeleteScripts default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRDeleteScriptsDefault) GetPayload() *models.MsaReplyMetaOnly {
+	return o.Payload
+}
+
+func (o *RTRDeleteScriptsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.MsaReplyMetaOnly)
 

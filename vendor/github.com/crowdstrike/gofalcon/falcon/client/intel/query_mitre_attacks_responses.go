@@ -44,7 +44,7 @@ func (o *QueryMitreAttacksReader) ReadResponse(response runtime.ClientResponse, 
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /intel/queries/mitre/v1] QueryMitreAttacks", response, response.Code())
+		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
 }
 
@@ -71,8 +71,6 @@ type QueryMitreAttacksOK struct {
 	/* The number of requests remaining for the sliding one minute window.
 	 */
 	XRateLimitRemaining int64
-
-	Payload *models.DomainQueryMitreAttacksResponse
 }
 
 // IsSuccess returns true when this query mitre attacks o k response has a 2xx status code
@@ -106,15 +104,11 @@ func (o *QueryMitreAttacksOK) Code() int {
 }
 
 func (o *QueryMitreAttacksOK) Error() string {
-	return fmt.Sprintf("[GET /intel/queries/mitre/v1][%d] queryMitreAttacksOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /intel/queries/mitre/v1][%d] queryMitreAttacksOK ", 200)
 }
 
 func (o *QueryMitreAttacksOK) String() string {
-	return fmt.Sprintf("[GET /intel/queries/mitre/v1][%d] queryMitreAttacksOK  %+v", 200, o.Payload)
-}
-
-func (o *QueryMitreAttacksOK) GetPayload() *models.DomainQueryMitreAttacksResponse {
-	return o.Payload
+	return fmt.Sprintf("[GET /intel/queries/mitre/v1][%d] queryMitreAttacksOK ", 200)
 }
 
 func (o *QueryMitreAttacksOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -146,13 +140,6 @@ func (o *QueryMitreAttacksOK) readResponse(response runtime.ClientResponse, cons
 			return errors.InvalidType("X-RateLimit-Remaining", "header", "int64", hdrXRateLimitRemaining)
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
-	}
-
-	o.Payload = new(models.DomainQueryMitreAttacksResponse)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
 	}
 
 	return nil

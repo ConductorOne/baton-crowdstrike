@@ -19,18 +19,6 @@ import (
 // swagger:model domain.XDRParams
 type DomainXDRParams struct {
 
-	// assign to
-	// Required: true
-	AssignTo *string `json:"assign_to"`
-
-	// assign to uuid
-	// Required: true
-	AssignToUUID *string `json:"assign_to_uuid"`
-
-	// comment
-	// Required: true
-	Comment *string `json:"comment"`
-
 	// execution offset
 	// Required: true
 	ExecutionOffset *string `json:"execution_offset"`
@@ -39,17 +27,9 @@ type DomainXDRParams struct {
 	// Required: true
 	Severity *int64 `json:"severity"`
 
-	// status
-	// Required: true
-	Status *string `json:"status"`
-
 	// tactic
 	// Required: true
 	Tactic *string `json:"tactic"`
-
-	// tags
-	// Required: true
-	Tags []string `json:"tags"`
 
 	// technique
 	// Required: true
@@ -64,18 +44,6 @@ type DomainXDRParams struct {
 func (m *DomainXDRParams) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAssignTo(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateAssignToUUID(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateComment(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateExecutionOffset(formats); err != nil {
 		res = append(res, err)
 	}
@@ -84,15 +52,7 @@ func (m *DomainXDRParams) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateStatus(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateTactic(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTags(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -107,33 +67,6 @@ func (m *DomainXDRParams) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *DomainXDRParams) validateAssignTo(formats strfmt.Registry) error {
-
-	if err := validate.Required("assign_to", "body", m.AssignTo); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DomainXDRParams) validateAssignToUUID(formats strfmt.Registry) error {
-
-	if err := validate.Required("assign_to_uuid", "body", m.AssignToUUID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DomainXDRParams) validateComment(formats strfmt.Registry) error {
-
-	if err := validate.Required("comment", "body", m.Comment); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -155,27 +88,9 @@ func (m *DomainXDRParams) validateSeverity(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DomainXDRParams) validateStatus(formats strfmt.Registry) error {
-
-	if err := validate.Required("status", "body", m.Status); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *DomainXDRParams) validateTactic(formats strfmt.Registry) error {
 
 	if err := validate.Required("tactic", "body", m.Tactic); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *DomainXDRParams) validateTags(formats strfmt.Registry) error {
-
-	if err := validate.Required("tags", "body", m.Tags); err != nil {
 		return err
 	}
 

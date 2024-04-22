@@ -56,7 +56,14 @@ func (o *QuerySubmissionsReader) ReadResponse(response runtime.ClientResponse, c
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /falconx/queries/submissions/v1] QuerySubmissions", response, response.Code())
+		result := NewQuerySubmissionsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type QuerySubmissionsOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type QuerySubmissionsOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecQueryResponse
+	Payload *models.MsaQueryResponse
 }
 
 // IsSuccess returns true when this query submissions o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *QuerySubmissionsOK) String() string {
 	return fmt.Sprintf("[GET /falconx/queries/submissions/v1][%d] querySubmissionsOK  %+v", 200, o.Payload)
 }
 
-func (o *QuerySubmissionsOK) GetPayload() *models.MsaspecQueryResponse {
+func (o *QuerySubmissionsOK) GetPayload() *models.MsaQueryResponse {
 	return o.Payload
 }
 
 func (o *QuerySubmissionsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *QuerySubmissionsOK) readResponse(response runtime.ClientResponse, consu
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecQueryResponse)
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -182,10 +178,6 @@ Bad Request
 */
 type QuerySubmissionsBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -194,7 +186,7 @@ type QuerySubmissionsBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecQueryResponse
+	Payload *models.MsaQueryResponse
 }
 
 // IsSuccess returns true when this query submissions bad request response has a 2xx status code
@@ -235,18 +227,11 @@ func (o *QuerySubmissionsBadRequest) String() string {
 	return fmt.Sprintf("[GET /falconx/queries/submissions/v1][%d] querySubmissionsBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *QuerySubmissionsBadRequest) GetPayload() *models.MsaspecQueryResponse {
+func (o *QuerySubmissionsBadRequest) GetPayload() *models.MsaQueryResponse {
 	return o.Payload
 }
 
 func (o *QuerySubmissionsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -270,7 +255,7 @@ func (o *QuerySubmissionsBadRequest) readResponse(response runtime.ClientRespons
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecQueryResponse)
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -291,10 +276,6 @@ QuerySubmissionsForbidden describes a response with status code 403, with defaul
 Forbidden
 */
 type QuerySubmissionsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *QuerySubmissionsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *QuerySubmissionsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ QuerySubmissionsTooManyRequests describes a response with status code 429, with 
 Too Many Requests
 */
 type QuerySubmissionsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *QuerySubmissionsTooManyRequests) GetPayload() *models.MsaReplyMetaOnly 
 
 func (o *QuerySubmissionsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +490,6 @@ Internal Server Error
 */
 type QuerySubmissionsInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -539,7 +498,7 @@ type QuerySubmissionsInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaspecQueryResponse
+	Payload *models.MsaQueryResponse
 }
 
 // IsSuccess returns true when this query submissions internal server error response has a 2xx status code
@@ -580,18 +539,11 @@ func (o *QuerySubmissionsInternalServerError) String() string {
 	return fmt.Sprintf("[GET /falconx/queries/submissions/v1][%d] querySubmissionsInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *QuerySubmissionsInternalServerError) GetPayload() *models.MsaspecQueryResponse {
+func (o *QuerySubmissionsInternalServerError) GetPayload() *models.MsaQueryResponse {
 	return o.Payload
 }
 
 func (o *QuerySubmissionsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -615,7 +567,79 @@ func (o *QuerySubmissionsInternalServerError) readResponse(response runtime.Clie
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaspecQueryResponse)
+	o.Payload = new(models.MsaQueryResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQuerySubmissionsDefault creates a QuerySubmissionsDefault with default headers values
+func NewQuerySubmissionsDefault(code int) *QuerySubmissionsDefault {
+	return &QuerySubmissionsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QuerySubmissionsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QuerySubmissionsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this query submissions default response has a 2xx status code
+func (o *QuerySubmissionsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query submissions default response has a 3xx status code
+func (o *QuerySubmissionsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query submissions default response has a 4xx status code
+func (o *QuerySubmissionsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query submissions default response has a 5xx status code
+func (o *QuerySubmissionsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query submissions default response a status code equal to that given
+func (o *QuerySubmissionsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query submissions default response
+func (o *QuerySubmissionsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QuerySubmissionsDefault) Error() string {
+	return fmt.Sprintf("[GET /falconx/queries/submissions/v1][%d] QuerySubmissions default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QuerySubmissionsDefault) String() string {
+	return fmt.Sprintf("[GET /falconx/queries/submissions/v1][%d] QuerySubmissions default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QuerySubmissionsDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *QuerySubmissionsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.MsaQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

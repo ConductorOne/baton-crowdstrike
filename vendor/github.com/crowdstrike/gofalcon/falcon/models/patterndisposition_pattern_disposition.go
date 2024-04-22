@@ -19,10 +19,6 @@ import (
 // swagger:model patterndisposition.PatternDisposition
 type PatterndispositionPatternDisposition struct {
 
-	// blocking unsupported or disabled
-	// Required: true
-	BlockingUnsupportedOrDisabled *bool `json:"blocking_unsupported_or_disabled"`
-
 	// bootup safeguard enabled
 	// Required: true
 	BootupSafeguardEnabled *bool `json:"bootup_safeguard_enabled"`
@@ -50,10 +46,6 @@ type PatterndispositionPatternDisposition struct {
 	// indicator
 	// Required: true
 	Indicator *bool `json:"indicator"`
-
-	// kill action failed
-	// Required: true
-	KillActionFailed *bool `json:"kill_action_failed"`
 
 	// kill parent
 	// Required: true
@@ -98,23 +90,11 @@ type PatterndispositionPatternDisposition struct {
 	// sensor only
 	// Required: true
 	SensorOnly *bool `json:"sensor_only"`
-
-	// suspend parent
-	// Required: true
-	SuspendParent *bool `json:"suspend_parent"`
-
-	// suspend process
-	// Required: true
-	SuspendProcess *bool `json:"suspend_process"`
 }
 
 // Validate validates this patterndisposition pattern disposition
 func (m *PatterndispositionPatternDisposition) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateBlockingUnsupportedOrDisabled(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateBootupSafeguardEnabled(formats); err != nil {
 		res = append(res, err)
@@ -141,10 +121,6 @@ func (m *PatterndispositionPatternDisposition) Validate(formats strfmt.Registry)
 	}
 
 	if err := m.validateIndicator(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateKillActionFailed(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -192,26 +168,9 @@ func (m *PatterndispositionPatternDisposition) Validate(formats strfmt.Registry)
 		res = append(res, err)
 	}
 
-	if err := m.validateSuspendParent(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateSuspendProcess(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *PatterndispositionPatternDisposition) validateBlockingUnsupportedOrDisabled(formats strfmt.Registry) error {
-
-	if err := validate.Required("blocking_unsupported_or_disabled", "body", m.BlockingUnsupportedOrDisabled); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -272,15 +231,6 @@ func (m *PatterndispositionPatternDisposition) validateInddetMask(formats strfmt
 func (m *PatterndispositionPatternDisposition) validateIndicator(formats strfmt.Registry) error {
 
 	if err := validate.Required("indicator", "body", m.Indicator); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *PatterndispositionPatternDisposition) validateKillActionFailed(formats strfmt.Registry) error {
-
-	if err := validate.Required("kill_action_failed", "body", m.KillActionFailed); err != nil {
 		return err
 	}
 
@@ -380,24 +330,6 @@ func (m *PatterndispositionPatternDisposition) validateRooting(formats strfmt.Re
 func (m *PatterndispositionPatternDisposition) validateSensorOnly(formats strfmt.Registry) error {
 
 	if err := validate.Required("sensor_only", "body", m.SensorOnly); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *PatterndispositionPatternDisposition) validateSuspendParent(formats strfmt.Registry) error {
-
-	if err := validate.Required("suspend_parent", "body", m.SuspendParent); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *PatterndispositionPatternDisposition) validateSuspendProcess(formats strfmt.Registry) error {
-
-	if err := validate.Required("suspend_process", "body", m.SuspendProcess); err != nil {
 		return err
 	}
 

@@ -63,7 +63,14 @@ func (o *GetIntelRuleFileReader) ReadResponse(response runtime.ClientResponse, c
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /intel/entities/rules-files/v1] GetIntelRuleFile", response, response.Code())
+		result := NewGetIntelRuleFileDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -81,10 +88,6 @@ GetIntelRuleFileOK describes a response with status code 200, with default heade
 OK
 */
 type GetIntelRuleFileOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -141,13 +144,6 @@ func (o *GetIntelRuleFileOK) GetPayload() io.Writer {
 
 func (o *GetIntelRuleFileOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -189,10 +185,6 @@ GetIntelRuleFileBadRequest describes a response with status code 400, with defau
 Bad Request
 */
 type GetIntelRuleFileBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -249,13 +241,6 @@ func (o *GetIntelRuleFileBadRequest) GetPayload() *models.MsaErrorsOnly {
 
 func (o *GetIntelRuleFileBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -299,10 +284,6 @@ GetIntelRuleFileForbidden describes a response with status code 403, with defaul
 Forbidden
 */
 type GetIntelRuleFileForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -359,13 +340,6 @@ func (o *GetIntelRuleFileForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetIntelRuleFileForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -409,10 +383,6 @@ GetIntelRuleFileNotFound describes a response with status code 404, with default
 Bad Request
 */
 type GetIntelRuleFileNotFound struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -469,13 +439,6 @@ func (o *GetIntelRuleFileNotFound) GetPayload() *models.MsaErrorsOnly {
 
 func (o *GetIntelRuleFileNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -519,10 +482,6 @@ GetIntelRuleFileTooManyRequests describes a response with status code 429, with 
 Too Many Requests
 */
 type GetIntelRuleFileTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -583,13 +542,6 @@ func (o *GetIntelRuleFileTooManyRequests) GetPayload() *models.MsaReplyMetaOnly 
 
 func (o *GetIntelRuleFileTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -644,10 +596,6 @@ GetIntelRuleFileInternalServerError describes a response with status code 500, w
 Internal Server Error
 */
 type GetIntelRuleFileInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -704,13 +652,6 @@ func (o *GetIntelRuleFileInternalServerError) GetPayload() *models.MsaErrorsOnly
 
 func (o *GetIntelRuleFileInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -739,6 +680,65 @@ func (o *GetIntelRuleFileInternalServerError) readResponse(response runtime.Clie
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
+
+	return nil
+}
+
+// NewGetIntelRuleFileDefault creates a GetIntelRuleFileDefault with default headers values
+func NewGetIntelRuleFileDefault(code int) *GetIntelRuleFileDefault {
+	return &GetIntelRuleFileDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetIntelRuleFileDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetIntelRuleFileDefault struct {
+	_statusCode int
+}
+
+// IsSuccess returns true when this get intel rule file default response has a 2xx status code
+func (o *GetIntelRuleFileDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get intel rule file default response has a 3xx status code
+func (o *GetIntelRuleFileDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get intel rule file default response has a 4xx status code
+func (o *GetIntelRuleFileDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get intel rule file default response has a 5xx status code
+func (o *GetIntelRuleFileDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get intel rule file default response a status code equal to that given
+func (o *GetIntelRuleFileDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get intel rule file default response
+func (o *GetIntelRuleFileDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetIntelRuleFileDefault) Error() string {
+	return fmt.Sprintf("[GET /intel/entities/rules-files/v1][%d] GetIntelRuleFile default ", o._statusCode)
+}
+
+func (o *GetIntelRuleFileDefault) String() string {
+	return fmt.Sprintf("[GET /intel/entities/rules-files/v1][%d] GetIntelRuleFile default ", o._statusCode)
+}
+
+func (o *GetIntelRuleFileDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

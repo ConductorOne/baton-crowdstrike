@@ -105,7 +105,6 @@ func (m *DomainMetaInfo) ContextValidate(ctx context.Context, formats strfmt.Reg
 func (m *DomainMetaInfo) contextValidateMsaMetaInfo(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.MsaMetaInfo != nil {
-
 		if err := m.MsaMetaInfo.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("MsaMetaInfo")
@@ -122,11 +121,6 @@ func (m *DomainMetaInfo) contextValidateMsaMetaInfo(ctx context.Context, formats
 func (m *DomainMetaInfo) contextValidateQuota(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Quota != nil {
-
-		if swag.IsZero(m.Quota) { // not required
-			return nil
-		}
-
 		if err := m.Quota.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("quota")

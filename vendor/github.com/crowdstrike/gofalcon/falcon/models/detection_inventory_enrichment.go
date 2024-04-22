@@ -88,11 +88,6 @@ func (m *DetectionInventoryEnrichment) contextValidateHost(ctx context.Context, 
 	for i := 0; i < len(m.Host); i++ {
 
 		if m.Host[i] != nil {
-
-			if swag.IsZero(m.Host[i]) { // not required
-				return nil
-			}
-
 			if err := m.Host[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("host" + "." + strconv.Itoa(i))

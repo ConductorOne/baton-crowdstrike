@@ -15,122 +15,105 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// DomainActorDocument JSON definition of an Actor, also known as Adversary
+// DomainActorDocument domain actor document
 //
 // swagger:model domain.ActorDocument
 type DomainActorDocument struct {
 
-	// Boolean field marking if actor is active
+	// active
 	// Required: true
 	Active *bool `json:"active"`
 
-	// Actor type, one of: targeted, ecrime
+	// actor type
 	ActorType string `json:"actor_type,omitempty"`
 
-	// actor's capabilities, some examples: RAT,Ransomware,Spearphishing,Downloader,Backdoor,InformationStealer,exploit,CredentialHarvesting,dropper,DenialOfService,Loader,Phishing
-	// Required: true
-	Capabilities []*DomainEntity `json:"capabilities"`
-
-	// Capability of actor's activity, one of: Below Average, Average, Above average
+	// capability
 	Capability *DomainEntity `json:"capability,omitempty"`
 
-	// Actor's document creation date when it was added to the Falcon portal in unix timestamp format
+	// created date
 	// Required: true
 	CreatedDate *int64 `json:"created_date"`
 
-	// Actor's text description, partially containing structured data from other fields
+	// description
 	Description string `json:"description,omitempty"`
 
-	// Multi-field property describing eCrime actor's kill chain
+	// ecrime kill chain
 	EcrimeKillChain *DomainECrimeKillChain `json:"ecrime_kill_chain,omitempty"`
 
-	// Field used to filter user's access to actor documents
+	// entitlements
 	Entitlements []*DomainEntity `json:"entitlements"`
 
-	// Actor's first activity observed date in unix timestamp format
+	// first activity date
 	// Required: true
 	FirstActivityDate *int64 `json:"first_activity_date"`
 
-	// Deprecated, unused field
+	// group
 	Group *DomainEntity `json:"group,omitempty"`
 
-	// Numerical ID for the Actor
+	// id
 	// Required: true
 	ID *int64 `json:"id"`
 
-	// Image used in UI
+	// image
 	Image *DomainImage `json:"image,omitempty"`
 
-	// Multi-field property describing actor's kill chain
+	// kill chain
 	KillChain *DomainKillChain `json:"kill_chain,omitempty"`
 
-	// Alternative names and community identifiers of an actor
+	// known as
 	// Required: true
 	KnownAs *string `json:"known_as"`
 
-	// Actor's last (most recent) activity observed date in unix timestamp format
+	// last activity date
 	// Required: true
 	LastActivityDate *int64 `json:"last_activity_date"`
 
-	// Actor's document last modified date in unix timestamp format
+	// last modified date
 	// Required: true
 	LastModifiedDate *int64 `json:"last_modified_date"`
 
-	// Actor's activity motivation, one of: State-Sponsored, Criminal, Hacktivism
+	// motivations
 	// Required: true
 	Motivations []*DomainEntity `json:"motivations"`
 
-	// Actor's name, composed of 2 words
-	Name string `json:"name,omitempty"`
+	// name
+	// Required: true
+	Name *string `json:"name"`
 
-	// internal field
+	// notify users
 	// Required: true
 	NotifyUsers *bool `json:"notify_users"`
 
-	// Actor's activity objectives, one of: IntelligenceGathering, FinancialGain, IntellectualPropertyTheft, defacement, Destruction, DenialOfService
-	// Required: true
-	Objectives []*DomainEntity `json:"objectives"`
-
-	// represents origin of actor's activity and/or members, some examples: China,Russian Federation,Eastern Europe,Iran,East Asia, South Asia
+	// origins
 	// Required: true
 	Origins []*DomainEntity `json:"origins"`
 
-	// Recent CrowdStrike's finished intelligence alerting date in unix timestamp format
-	RecentAlerting int64 `json:"recent_alerting,omitempty"`
-
-	// Deprecated, unused field
+	// region
 	Region *DomainEntity `json:"region,omitempty"`
 
-	// Rich text version of the description field
+	// rich text description
 	RichTextDescription string `json:"rich_text_description,omitempty"`
 
-	// Short version of the description field
+	// short description
 	// Required: true
 	ShortDescription *string `json:"short_description"`
 
-	// Name in url friendly format, lowercased and spaces replaced with dash
-	Slug string `json:"slug,omitempty"`
-
-	// Status of an actor, one of: Active, Inactive, Retired
+	// slug
 	// Required: true
-	Status *string `json:"status"`
+	Slug *string `json:"slug"`
 
-	// Target countries of actor's activity and attacks, slug value is a 2 characters code for the country value, some examples: United States,United Kingdom,Germany,India,Japan,France,Australia,Canada,China
+	// target countries
 	// Required: true
 	TargetCountries []*DomainEntity `json:"target_countries"`
 
-	// Target economical industries of actor's activity and attacks. List of available values: Government, Financial Services, Technology, Telecommunications, Healthcare, Energy, Academic, Media, Aerospace, NGO, Manufacturing, Industrials and Engineering, Retail, Hospitality, Consulting and Professional Services, Opportunistic, Aviation, Defense, Transportation, Oil and Gas, Legal, Pharmaceutical, Logistics, Military, Automotive, Food and Beverage, Consumer Goods, Real Estate, Insurance, Agriculture, Chemicals, Utilities, Maritime, Extractive, Travel, Dissident, Cryptocurrency, Entertainment, National Government, Law Enforcement, Think Tanks, Local Government, Sports Organizations, Computer Gaming, Biomedical, Nonprofit, Financial Management & Hedge Funds, Political Parties, Architectural and Engineering, Emergency Services, Social Media, International Government, Nuclear, Research Entities, Vocational and Higher-Level Education, eCommerce
+	// target industries
 	// Required: true
 	TargetIndustries []*DomainEntity `json:"target_industries"`
 
-	// Target geographic regions of actor's activity and attacks. List of available values: North America, Western Europe, Southeast Asia, Middle East, Eastern Europe, South Asia, South America, Oceania, East Asia, Central Africa, Northern Europe, Southern Europe, North Africa, Southern Africa, Central America, Central Asia, East Africa, West Africa, Caribbean
-	// Required: true
-	TargetRegions []*DomainEntity `json:"target_regions"`
-
-	// Thumbnail image used in UI
+	// thumbnail
 	Thumbnail *DomainImage `json:"thumbnail,omitempty"`
 
-	// URL at which actor profile can be accessed
+	// url
 	URL string `json:"url,omitempty"`
 }
 
@@ -139,10 +122,6 @@ func (m *DomainActorDocument) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateActive(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateCapabilities(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -198,11 +177,11 @@ func (m *DomainActorDocument) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateNotifyUsers(formats); err != nil {
+	if err := m.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateObjectives(formats); err != nil {
+	if err := m.validateNotifyUsers(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -218,7 +197,7 @@ func (m *DomainActorDocument) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateStatus(formats); err != nil {
+	if err := m.validateSlug(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -227,10 +206,6 @@ func (m *DomainActorDocument) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTargetIndustries(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTargetRegions(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -248,33 +223,6 @@ func (m *DomainActorDocument) validateActive(formats strfmt.Registry) error {
 
 	if err := validate.Required("active", "body", m.Active); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *DomainActorDocument) validateCapabilities(formats strfmt.Registry) error {
-
-	if err := validate.Required("capabilities", "body", m.Capabilities); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.Capabilities); i++ {
-		if swag.IsZero(m.Capabilities[i]) { // not required
-			continue
-		}
-
-		if m.Capabilities[i] != nil {
-			if err := m.Capabilities[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("capabilities" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("capabilities" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -482,37 +430,19 @@ func (m *DomainActorDocument) validateMotivations(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *DomainActorDocument) validateNotifyUsers(formats strfmt.Registry) error {
+func (m *DomainActorDocument) validateName(formats strfmt.Registry) error {
 
-	if err := validate.Required("notify_users", "body", m.NotifyUsers); err != nil {
+	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *DomainActorDocument) validateObjectives(formats strfmt.Registry) error {
+func (m *DomainActorDocument) validateNotifyUsers(formats strfmt.Registry) error {
 
-	if err := validate.Required("objectives", "body", m.Objectives); err != nil {
+	if err := validate.Required("notify_users", "body", m.NotifyUsers); err != nil {
 		return err
-	}
-
-	for i := 0; i < len(m.Objectives); i++ {
-		if swag.IsZero(m.Objectives[i]) { // not required
-			continue
-		}
-
-		if m.Objectives[i] != nil {
-			if err := m.Objectives[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("objectives" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("objectives" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -573,9 +503,9 @@ func (m *DomainActorDocument) validateShortDescription(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *DomainActorDocument) validateStatus(formats strfmt.Registry) error {
+func (m *DomainActorDocument) validateSlug(formats strfmt.Registry) error {
 
-	if err := validate.Required("status", "body", m.Status); err != nil {
+	if err := validate.Required("slug", "body", m.Slug); err != nil {
 		return err
 	}
 
@@ -636,33 +566,6 @@ func (m *DomainActorDocument) validateTargetIndustries(formats strfmt.Registry) 
 	return nil
 }
 
-func (m *DomainActorDocument) validateTargetRegions(formats strfmt.Registry) error {
-
-	if err := validate.Required("target_regions", "body", m.TargetRegions); err != nil {
-		return err
-	}
-
-	for i := 0; i < len(m.TargetRegions); i++ {
-		if swag.IsZero(m.TargetRegions[i]) { // not required
-			continue
-		}
-
-		if m.TargetRegions[i] != nil {
-			if err := m.TargetRegions[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("target_regions" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("target_regions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *DomainActorDocument) validateThumbnail(formats strfmt.Registry) error {
 	if swag.IsZero(m.Thumbnail) { // not required
 		return nil
@@ -685,10 +588,6 @@ func (m *DomainActorDocument) validateThumbnail(formats strfmt.Registry) error {
 // ContextValidate validate this domain actor document based on the context it is used
 func (m *DomainActorDocument) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.contextValidateCapabilities(ctx, formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.contextValidateCapability(ctx, formats); err != nil {
 		res = append(res, err)
@@ -718,10 +617,6 @@ func (m *DomainActorDocument) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateObjectives(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateOrigins(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -738,10 +633,6 @@ func (m *DomainActorDocument) ContextValidate(ctx context.Context, formats strfm
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateTargetRegions(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateThumbnail(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -752,39 +643,9 @@ func (m *DomainActorDocument) ContextValidate(ctx context.Context, formats strfm
 	return nil
 }
 
-func (m *DomainActorDocument) contextValidateCapabilities(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Capabilities); i++ {
-
-		if m.Capabilities[i] != nil {
-
-			if swag.IsZero(m.Capabilities[i]) { // not required
-				return nil
-			}
-
-			if err := m.Capabilities[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("capabilities" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("capabilities" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *DomainActorDocument) contextValidateCapability(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Capability != nil {
-
-		if swag.IsZero(m.Capability) { // not required
-			return nil
-		}
-
 		if err := m.Capability.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("capability")
@@ -801,11 +662,6 @@ func (m *DomainActorDocument) contextValidateCapability(ctx context.Context, for
 func (m *DomainActorDocument) contextValidateEcrimeKillChain(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.EcrimeKillChain != nil {
-
-		if swag.IsZero(m.EcrimeKillChain) { // not required
-			return nil
-		}
-
 		if err := m.EcrimeKillChain.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("ecrime_kill_chain")
@@ -824,11 +680,6 @@ func (m *DomainActorDocument) contextValidateEntitlements(ctx context.Context, f
 	for i := 0; i < len(m.Entitlements); i++ {
 
 		if m.Entitlements[i] != nil {
-
-			if swag.IsZero(m.Entitlements[i]) { // not required
-				return nil
-			}
-
 			if err := m.Entitlements[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("entitlements" + "." + strconv.Itoa(i))
@@ -847,11 +698,6 @@ func (m *DomainActorDocument) contextValidateEntitlements(ctx context.Context, f
 func (m *DomainActorDocument) contextValidateGroup(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Group != nil {
-
-		if swag.IsZero(m.Group) { // not required
-			return nil
-		}
-
 		if err := m.Group.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("group")
@@ -868,11 +714,6 @@ func (m *DomainActorDocument) contextValidateGroup(ctx context.Context, formats 
 func (m *DomainActorDocument) contextValidateImage(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Image != nil {
-
-		if swag.IsZero(m.Image) { // not required
-			return nil
-		}
-
 		if err := m.Image.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("image")
@@ -889,11 +730,6 @@ func (m *DomainActorDocument) contextValidateImage(ctx context.Context, formats 
 func (m *DomainActorDocument) contextValidateKillChain(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.KillChain != nil {
-
-		if swag.IsZero(m.KillChain) { // not required
-			return nil
-		}
-
 		if err := m.KillChain.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("kill_chain")
@@ -912,11 +748,6 @@ func (m *DomainActorDocument) contextValidateMotivations(ctx context.Context, fo
 	for i := 0; i < len(m.Motivations); i++ {
 
 		if m.Motivations[i] != nil {
-
-			if swag.IsZero(m.Motivations[i]) { // not required
-				return nil
-			}
-
 			if err := m.Motivations[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("motivations" + "." + strconv.Itoa(i))
@@ -932,41 +763,11 @@ func (m *DomainActorDocument) contextValidateMotivations(ctx context.Context, fo
 	return nil
 }
 
-func (m *DomainActorDocument) contextValidateObjectives(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.Objectives); i++ {
-
-		if m.Objectives[i] != nil {
-
-			if swag.IsZero(m.Objectives[i]) { // not required
-				return nil
-			}
-
-			if err := m.Objectives[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("objectives" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("objectives" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *DomainActorDocument) contextValidateOrigins(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Origins); i++ {
 
 		if m.Origins[i] != nil {
-
-			if swag.IsZero(m.Origins[i]) { // not required
-				return nil
-			}
-
 			if err := m.Origins[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("origins" + "." + strconv.Itoa(i))
@@ -985,11 +786,6 @@ func (m *DomainActorDocument) contextValidateOrigins(ctx context.Context, format
 func (m *DomainActorDocument) contextValidateRegion(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Region != nil {
-
-		if swag.IsZero(m.Region) { // not required
-			return nil
-		}
-
 		if err := m.Region.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("region")
@@ -1008,11 +804,6 @@ func (m *DomainActorDocument) contextValidateTargetCountries(ctx context.Context
 	for i := 0; i < len(m.TargetCountries); i++ {
 
 		if m.TargetCountries[i] != nil {
-
-			if swag.IsZero(m.TargetCountries[i]) { // not required
-				return nil
-			}
-
 			if err := m.TargetCountries[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("target_countries" + "." + strconv.Itoa(i))
@@ -1033,11 +824,6 @@ func (m *DomainActorDocument) contextValidateTargetIndustries(ctx context.Contex
 	for i := 0; i < len(m.TargetIndustries); i++ {
 
 		if m.TargetIndustries[i] != nil {
-
-			if swag.IsZero(m.TargetIndustries[i]) { // not required
-				return nil
-			}
-
 			if err := m.TargetIndustries[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("target_industries" + "." + strconv.Itoa(i))
@@ -1053,39 +839,9 @@ func (m *DomainActorDocument) contextValidateTargetIndustries(ctx context.Contex
 	return nil
 }
 
-func (m *DomainActorDocument) contextValidateTargetRegions(ctx context.Context, formats strfmt.Registry) error {
-
-	for i := 0; i < len(m.TargetRegions); i++ {
-
-		if m.TargetRegions[i] != nil {
-
-			if swag.IsZero(m.TargetRegions[i]) { // not required
-				return nil
-			}
-
-			if err := m.TargetRegions[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("target_regions" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("target_regions" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (m *DomainActorDocument) contextValidateThumbnail(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Thumbnail != nil {
-
-		if swag.IsZero(m.Thumbnail) { // not required
-			return nil
-		}
-
 		if err := m.Thumbnail.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("thumbnail")

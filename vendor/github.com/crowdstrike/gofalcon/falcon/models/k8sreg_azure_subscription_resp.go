@@ -197,11 +197,6 @@ func (m *K8sregAzureSubscriptionResp) contextValidateAzurePermissionsStatus(ctx 
 	for i := 0; i < len(m.AzurePermissionsStatus); i++ {
 
 		if m.AzurePermissionsStatus[i] != nil {
-
-			if swag.IsZero(m.AzurePermissionsStatus[i]) { // not required
-				return nil
-			}
-
 			if err := m.AzurePermissionsStatus[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("azure_permissions_status" + "." + strconv.Itoa(i))

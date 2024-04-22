@@ -68,12 +68,6 @@ type GetAWSAccountsMixin0Params struct {
 	*/
 	Ids []string
 
-	/* IsHorizonAcct.
-
-	   Filter by whether an account originates from Horizon or not
-	*/
-	IsHorizonAcct *string
-
 	/* Limit.
 
 	   Limit returned accounts
@@ -156,17 +150,6 @@ func (o *GetAWSAccountsMixin0Params) SetIds(ids []string) {
 	o.Ids = ids
 }
 
-// WithIsHorizonAcct adds the isHorizonAcct to the get a w s accounts mixin0 params
-func (o *GetAWSAccountsMixin0Params) WithIsHorizonAcct(isHorizonAcct *string) *GetAWSAccountsMixin0Params {
-	o.SetIsHorizonAcct(isHorizonAcct)
-	return o
-}
-
-// SetIsHorizonAcct adds the isHorizonAcct to the get a w s accounts mixin0 params
-func (o *GetAWSAccountsMixin0Params) SetIsHorizonAcct(isHorizonAcct *string) {
-	o.IsHorizonAcct = isHorizonAcct
-}
-
 // WithLimit adds the limit to the get a w s accounts mixin0 params
 func (o *GetAWSAccountsMixin0Params) WithLimit(limit *int64) *GetAWSAccountsMixin0Params {
 	o.SetLimit(limit)
@@ -216,23 +199,6 @@ func (o *GetAWSAccountsMixin0Params) WriteToRequest(r runtime.ClientRequest, reg
 		// query array param ids
 		if err := r.SetQueryParam("ids", joinedIds...); err != nil {
 			return err
-		}
-	}
-
-	if o.IsHorizonAcct != nil {
-
-		// query param is_horizon_acct
-		var qrIsHorizonAcct string
-
-		if o.IsHorizonAcct != nil {
-			qrIsHorizonAcct = *o.IsHorizonAcct
-		}
-		qIsHorizonAcct := qrIsHorizonAcct
-		if qIsHorizonAcct != "" {
-
-			if err := r.SetQueryParam("is_horizon_acct", qIsHorizonAcct); err != nil {
-				return err
-			}
 		}
 	}
 

@@ -64,7 +64,7 @@ CreatePreventionPoliciesParams contains all the parameters to send to the API en
 type CreatePreventionPoliciesParams struct {
 
 	// Body.
-	Body *models.PreventionCreatePoliciesReqV1
+	Body *models.RequestsCreatePreventionPoliciesV1
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,13 +120,13 @@ func (o *CreatePreventionPoliciesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the create prevention policies params
-func (o *CreatePreventionPoliciesParams) WithBody(body *models.PreventionCreatePoliciesReqV1) *CreatePreventionPoliciesParams {
+func (o *CreatePreventionPoliciesParams) WithBody(body *models.RequestsCreatePreventionPoliciesV1) *CreatePreventionPoliciesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the create prevention policies params
-func (o *CreatePreventionPoliciesParams) SetBody(body *models.PreventionCreatePoliciesReqV1) {
+func (o *CreatePreventionPoliciesParams) SetBody(body *models.RequestsCreatePreventionPoliciesV1) {
 	o.Body = body
 }
 

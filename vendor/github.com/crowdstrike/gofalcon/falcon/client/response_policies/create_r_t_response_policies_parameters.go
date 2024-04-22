@@ -64,7 +64,7 @@ CreateRTResponsePoliciesParams contains all the parameters to send to the API en
 type CreateRTResponsePoliciesParams struct {
 
 	// Body.
-	Body *models.RemoteResponseCreatePoliciesV1
+	Body *models.RequestsCreateRTResponsePoliciesV1
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,13 +120,13 @@ func (o *CreateRTResponsePoliciesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the create r t response policies params
-func (o *CreateRTResponsePoliciesParams) WithBody(body *models.RemoteResponseCreatePoliciesV1) *CreateRTResponsePoliciesParams {
+func (o *CreateRTResponsePoliciesParams) WithBody(body *models.RequestsCreateRTResponsePoliciesV1) *CreateRTResponsePoliciesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the create r t response policies params
-func (o *CreateRTResponsePoliciesParams) SetBody(body *models.RemoteResponseCreatePoliciesV1) {
+func (o *CreateRTResponsePoliciesParams) SetBody(body *models.RequestsCreateRTResponsePoliciesV1) {
 	o.Body = body
 }
 

@@ -56,7 +56,14 @@ func (o *AggregateRuleGroupsReader) ReadResponse(response runtime.ClientResponse
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /fwmgr/aggregates/rule-groups/GET/v1] aggregate-rule-groups", response, response.Code())
+		result := NewAggregateRuleGroupsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -194,7 +201,7 @@ type AggregateRuleGroupsBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FwmgrMsaspecResponseFields
+	Payload *models.FwmgrMsaReplyMetaOnly
 }
 
 // IsSuccess returns true when this aggregate rule groups bad request response has a 2xx status code
@@ -235,7 +242,7 @@ func (o *AggregateRuleGroupsBadRequest) String() string {
 	return fmt.Sprintf("[POST /fwmgr/aggregates/rule-groups/GET/v1][%d] aggregateRuleGroupsBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *AggregateRuleGroupsBadRequest) GetPayload() *models.FwmgrMsaspecResponseFields {
+func (o *AggregateRuleGroupsBadRequest) GetPayload() *models.FwmgrMsaReplyMetaOnly {
 	return o.Payload
 }
 
@@ -270,7 +277,7 @@ func (o *AggregateRuleGroupsBadRequest) readResponse(response runtime.ClientResp
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FwmgrMsaspecResponseFields)
+	o.Payload = new(models.FwmgrMsaReplyMetaOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -607,6 +614,78 @@ func (o *AggregateRuleGroupsInternalServerError) readResponse(response runtime.C
 			return errors.InvalidType("X-RateLimit-Remaining", "header", "int64", hdrXRateLimitRemaining)
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	return nil
+}
+
+// NewAggregateRuleGroupsDefault creates a AggregateRuleGroupsDefault with default headers values
+func NewAggregateRuleGroupsDefault(code int) *AggregateRuleGroupsDefault {
+	return &AggregateRuleGroupsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+AggregateRuleGroupsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type AggregateRuleGroupsDefault struct {
+	_statusCode int
+
+	Payload *models.FwmgrAPIAggregatesResponse
+}
+
+// IsSuccess returns true when this aggregate rule groups default response has a 2xx status code
+func (o *AggregateRuleGroupsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this aggregate rule groups default response has a 3xx status code
+func (o *AggregateRuleGroupsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this aggregate rule groups default response has a 4xx status code
+func (o *AggregateRuleGroupsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this aggregate rule groups default response has a 5xx status code
+func (o *AggregateRuleGroupsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this aggregate rule groups default response a status code equal to that given
+func (o *AggregateRuleGroupsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the aggregate rule groups default response
+func (o *AggregateRuleGroupsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *AggregateRuleGroupsDefault) Error() string {
+	return fmt.Sprintf("[POST /fwmgr/aggregates/rule-groups/GET/v1][%d] aggregate-rule-groups default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *AggregateRuleGroupsDefault) String() string {
+	return fmt.Sprintf("[POST /fwmgr/aggregates/rule-groups/GET/v1][%d] aggregate-rule-groups default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *AggregateRuleGroupsDefault) GetPayload() *models.FwmgrAPIAggregatesResponse {
+	return o.Payload
+}
+
+func (o *AggregateRuleGroupsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.FwmgrAPIAggregatesResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil

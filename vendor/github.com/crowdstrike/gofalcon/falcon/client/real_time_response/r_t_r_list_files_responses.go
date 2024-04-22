@@ -56,7 +56,14 @@ func (o *RTRListFilesReader) ReadResponse(response runtime.ClientResponse, consu
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /real-time-response/entities/file/v1] RTR-ListFiles", response, response.Code())
+		result := NewRTRListFilesDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ RTRListFilesOK describes a response with status code 200, with default header va
 OK
 */
 type RTRListFilesOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *RTRListFilesOK) GetPayload() *models.DomainListFilesResponseWrapper {
 
 func (o *RTRListFilesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ RTRListFilesBadRequest describes a response with status code 400, with default h
 Bad Request
 */
 type RTRListFilesBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *RTRListFilesBadRequest) GetPayload() *models.DomainAPIError {
 
 func (o *RTRListFilesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ RTRListFilesForbidden describes a response with status code 403, with default he
 Forbidden
 */
 type RTRListFilesForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *RTRListFilesForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRListFilesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ RTRListFilesNotFound describes a response with status code 404, with default hea
 Not Found
 */
 type RTRListFilesNotFound struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -461,13 +431,6 @@ func (o *RTRListFilesNotFound) GetPayload() *models.DomainAPIError {
 
 func (o *RTRListFilesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -511,10 +474,6 @@ RTRListFilesTooManyRequests describes a response with status code 429, with defa
 Too Many Requests
 */
 type RTRListFilesTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -575,13 +534,6 @@ func (o *RTRListFilesTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *RTRListFilesTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *RTRListFilesTooManyRequests) readResponse(response runtime.ClientRespon
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewRTRListFilesDefault creates a RTRListFilesDefault with default headers values
+func NewRTRListFilesDefault(code int) *RTRListFilesDefault {
+	return &RTRListFilesDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+RTRListFilesDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type RTRListFilesDefault struct {
+	_statusCode int
+
+	Payload *models.DomainListFilesResponseWrapper
+}
+
+// IsSuccess returns true when this r t r list files default response has a 2xx status code
+func (o *RTRListFilesDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this r t r list files default response has a 3xx status code
+func (o *RTRListFilesDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this r t r list files default response has a 4xx status code
+func (o *RTRListFilesDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this r t r list files default response has a 5xx status code
+func (o *RTRListFilesDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this r t r list files default response a status code equal to that given
+func (o *RTRListFilesDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the r t r list files default response
+func (o *RTRListFilesDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *RTRListFilesDefault) Error() string {
+	return fmt.Sprintf("[GET /real-time-response/entities/file/v1][%d] RTR-ListFiles default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRListFilesDefault) String() string {
+	return fmt.Sprintf("[GET /real-time-response/entities/file/v1][%d] RTR-ListFiles default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *RTRListFilesDefault) GetPayload() *models.DomainListFilesResponseWrapper {
+	return o.Payload
+}
+
+func (o *RTRListFilesDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.DomainListFilesResponseWrapper)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

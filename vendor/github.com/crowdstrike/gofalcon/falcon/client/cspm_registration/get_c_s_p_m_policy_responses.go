@@ -62,7 +62,14 @@ func (o *GetCSPMPolicyReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /settings/entities/policy-details/v1] GetCSPMPolicy", response, response.Code())
+		result := NewGetCSPMPolicyDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -77,10 +84,6 @@ GetCSPMPolicyOK describes a response with status code 200, with default header v
 OK
 */
 type GetCSPMPolicyOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -137,13 +140,6 @@ func (o *GetCSPMPolicyOK) GetPayload() *models.RegistrationPolicyResponseV1 {
 
 func (o *GetCSPMPolicyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -187,10 +183,6 @@ GetCSPMPolicyMultiStatus describes a response with status code 207, with default
 Multi-Status
 */
 type GetCSPMPolicyMultiStatus struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -247,13 +239,6 @@ func (o *GetCSPMPolicyMultiStatus) GetPayload() *models.RegistrationPolicyRespon
 
 func (o *GetCSPMPolicyMultiStatus) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -297,10 +282,6 @@ GetCSPMPolicyBadRequest describes a response with status code 400, with default 
 Bad Request
 */
 type GetCSPMPolicyBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -357,13 +338,6 @@ func (o *GetCSPMPolicyBadRequest) GetPayload() *models.RegistrationPolicyRespons
 
 func (o *GetCSPMPolicyBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -407,10 +381,6 @@ GetCSPMPolicyForbidden describes a response with status code 403, with default h
 Forbidden
 */
 type GetCSPMPolicyForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -467,13 +437,6 @@ func (o *GetCSPMPolicyForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetCSPMPolicyForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -517,10 +480,6 @@ GetCSPMPolicyTooManyRequests describes a response with status code 429, with def
 Too Many Requests
 */
 type GetCSPMPolicyTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -581,13 +540,6 @@ func (o *GetCSPMPolicyTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetCSPMPolicyTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -642,10 +594,6 @@ GetCSPMPolicyInternalServerError describes a response with status code 500, with
 Internal Server Error
 */
 type GetCSPMPolicyInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -702,13 +650,6 @@ func (o *GetCSPMPolicyInternalServerError) GetPayload() *models.RegistrationPoli
 
 func (o *GetCSPMPolicyInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -730,6 +671,78 @@ func (o *GetCSPMPolicyInternalServerError) readResponse(response runtime.ClientR
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.RegistrationPolicyResponseV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCSPMPolicyDefault creates a GetCSPMPolicyDefault with default headers values
+func NewGetCSPMPolicyDefault(code int) *GetCSPMPolicyDefault {
+	return &GetCSPMPolicyDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetCSPMPolicyDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetCSPMPolicyDefault struct {
+	_statusCode int
+
+	Payload *models.RegistrationPolicyResponseV1
+}
+
+// IsSuccess returns true when this get c s p m policy default response has a 2xx status code
+func (o *GetCSPMPolicyDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get c s p m policy default response has a 3xx status code
+func (o *GetCSPMPolicyDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get c s p m policy default response has a 4xx status code
+func (o *GetCSPMPolicyDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get c s p m policy default response has a 5xx status code
+func (o *GetCSPMPolicyDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get c s p m policy default response a status code equal to that given
+func (o *GetCSPMPolicyDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get c s p m policy default response
+func (o *GetCSPMPolicyDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetCSPMPolicyDefault) Error() string {
+	return fmt.Sprintf("[GET /settings/entities/policy-details/v1][%d] GetCSPMPolicy default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetCSPMPolicyDefault) String() string {
+	return fmt.Sprintf("[GET /settings/entities/policy-details/v1][%d] GetCSPMPolicy default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetCSPMPolicyDefault) GetPayload() *models.RegistrationPolicyResponseV1 {
+	return o.Payload
+}
+
+func (o *GetCSPMPolicyDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.RegistrationPolicyResponseV1)
 

@@ -50,7 +50,14 @@ func (o *QueryRulesReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /fwmgr/queries/rules/v1] query-rules", response, response.Code())
+		result := NewQueryRulesDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -188,7 +195,7 @@ type QueryRulesBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FwmgrMsaspecResponseFields
+	Payload *models.FwmgrMsaReplyMetaOnly
 }
 
 // IsSuccess returns true when this query rules bad request response has a 2xx status code
@@ -229,7 +236,7 @@ func (o *QueryRulesBadRequest) String() string {
 	return fmt.Sprintf("[GET /fwmgr/queries/rules/v1][%d] queryRulesBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *QueryRulesBadRequest) GetPayload() *models.FwmgrMsaspecResponseFields {
+func (o *QueryRulesBadRequest) GetPayload() *models.FwmgrMsaReplyMetaOnly {
 	return o.Payload
 }
 
@@ -264,7 +271,7 @@ func (o *QueryRulesBadRequest) readResponse(response runtime.ClientResponse, con
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FwmgrMsaspecResponseFields)
+	o.Payload = new(models.FwmgrMsaReplyMetaOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -500,6 +507,78 @@ func (o *QueryRulesTooManyRequests) readResponse(response runtime.ClientResponse
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryRulesDefault creates a QueryRulesDefault with default headers values
+func NewQueryRulesDefault(code int) *QueryRulesDefault {
+	return &QueryRulesDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryRulesDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryRulesDefault struct {
+	_statusCode int
+
+	Payload *models.FwmgrAPIQueryResponse
+}
+
+// IsSuccess returns true when this query rules default response has a 2xx status code
+func (o *QueryRulesDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query rules default response has a 3xx status code
+func (o *QueryRulesDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query rules default response has a 4xx status code
+func (o *QueryRulesDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query rules default response has a 5xx status code
+func (o *QueryRulesDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query rules default response a status code equal to that given
+func (o *QueryRulesDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query rules default response
+func (o *QueryRulesDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryRulesDefault) Error() string {
+	return fmt.Sprintf("[GET /fwmgr/queries/rules/v1][%d] query-rules default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryRulesDefault) String() string {
+	return fmt.Sprintf("[GET /fwmgr/queries/rules/v1][%d] query-rules default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryRulesDefault) GetPayload() *models.FwmgrAPIQueryResponse {
+	return o.Payload
+}
+
+func (o *QueryRulesDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.FwmgrAPIQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

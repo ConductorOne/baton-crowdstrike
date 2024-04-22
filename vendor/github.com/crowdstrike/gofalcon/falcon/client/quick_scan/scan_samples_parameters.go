@@ -67,7 +67,7 @@ type ScanSamplesParams struct {
 
 	   Submit a batch of SHA256s for ml scanning. The samples must have been previously uploaded through `/samples/entities/samples/v3`
 	*/
-	Body *models.MlscannerapiSamplesScanParameters
+	Body *models.MlscannerSamplesScanParameters
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *ScanSamplesParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the scan samples params
-func (o *ScanSamplesParams) WithBody(body *models.MlscannerapiSamplesScanParameters) *ScanSamplesParams {
+func (o *ScanSamplesParams) WithBody(body *models.MlscannerSamplesScanParameters) *ScanSamplesParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the scan samples params
-func (o *ScanSamplesParams) SetBody(body *models.MlscannerapiSamplesScanParameters) {
+func (o *ScanSamplesParams) SetBody(body *models.MlscannerSamplesScanParameters) {
 	o.Body = body
 }
 

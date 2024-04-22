@@ -63,10 +63,7 @@ AddRoleParams contains all the parameters to send to the API endpoint
 */
 type AddRoleParams struct {
 
-	/* Body.
-
-	   'user_group_id', 'cid_group_id' and 'role_ids' fields are required. Remaining are populated by system.
-	*/
+	// Body.
 	Body *models.DomainMSSPRoleRequestV1
 
 	timeout    time.Duration

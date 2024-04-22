@@ -62,23 +62,16 @@ AzureDownloadCertificateParams contains all the parameters to send to the API en
 */
 type AzureDownloadCertificateParams struct {
 
-	/* Refresh.
-
-	   Setting to true will invalidate the current certificate and generate a new certificate
-	*/
-	Refresh *bool
+	// Refresh.
+	//
+	// Default: "false"
+	Refresh *string
 
 	/* TenantID.
 
 	   Azure Tenant ID
 	*/
 	TenantID []string
-
-	/* YearsValid.
-
-	   Years the certificate should be valid (only used when refresh=true)
-	*/
-	YearsValid *string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -98,7 +91,7 @@ func (o *AzureDownloadCertificateParams) WithDefaults() *AzureDownloadCertificat
 // All values with no default are reset to their zero value.
 func (o *AzureDownloadCertificateParams) SetDefaults() {
 	var (
-		refreshDefault = bool(false)
+		refreshDefault = string("false")
 	)
 
 	val := AzureDownloadCertificateParams{
@@ -145,13 +138,13 @@ func (o *AzureDownloadCertificateParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRefresh adds the refresh to the azure download certificate params
-func (o *AzureDownloadCertificateParams) WithRefresh(refresh *bool) *AzureDownloadCertificateParams {
+func (o *AzureDownloadCertificateParams) WithRefresh(refresh *string) *AzureDownloadCertificateParams {
 	o.SetRefresh(refresh)
 	return o
 }
 
 // SetRefresh adds the refresh to the azure download certificate params
-func (o *AzureDownloadCertificateParams) SetRefresh(refresh *bool) {
+func (o *AzureDownloadCertificateParams) SetRefresh(refresh *string) {
 	o.Refresh = refresh
 }
 
@@ -166,17 +159,6 @@ func (o *AzureDownloadCertificateParams) SetTenantID(tenantID []string) {
 	o.TenantID = tenantID
 }
 
-// WithYearsValid adds the yearsValid to the azure download certificate params
-func (o *AzureDownloadCertificateParams) WithYearsValid(yearsValid *string) *AzureDownloadCertificateParams {
-	o.SetYearsValid(yearsValid)
-	return o
-}
-
-// SetYearsValid adds the yearsValid to the azure download certificate params
-func (o *AzureDownloadCertificateParams) SetYearsValid(yearsValid *string) {
-	o.YearsValid = yearsValid
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *AzureDownloadCertificateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -188,12 +170,12 @@ func (o *AzureDownloadCertificateParams) WriteToRequest(r runtime.ClientRequest,
 	if o.Refresh != nil {
 
 		// query param refresh
-		var qrRefresh bool
+		var qrRefresh string
 
 		if o.Refresh != nil {
 			qrRefresh = *o.Refresh
 		}
-		qRefresh := swag.FormatBool(qrRefresh)
+		qRefresh := qrRefresh
 		if qRefresh != "" {
 
 			if err := r.SetQueryParam("refresh", qRefresh); err != nil {
@@ -210,23 +192,6 @@ func (o *AzureDownloadCertificateParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param tenant_id
 		if err := r.SetQueryParam("tenant_id", joinedTenantID...); err != nil {
 			return err
-		}
-	}
-
-	if o.YearsValid != nil {
-
-		// query param years_valid
-		var qrYearsValid string
-
-		if o.YearsValid != nil {
-			qrYearsValid = *o.YearsValid
-		}
-		qYearsValid := qrYearsValid
-		if qYearsValid != "" {
-
-			if err := r.SetQueryParam("years_valid", qYearsValid); err != nil {
-				return err
-			}
 		}
 	}
 

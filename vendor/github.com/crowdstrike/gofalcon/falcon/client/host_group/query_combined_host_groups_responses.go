@@ -56,7 +56,14 @@ func (o *QueryCombinedHostGroupsReader) ReadResponse(response runtime.ClientResp
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /devices/combined/host-groups/v1] queryCombinedHostGroups", response, response.Code())
+		result := NewQueryCombinedHostGroupsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type QueryCombinedHostGroupsOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type QueryCombinedHostGroupsOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.HostGroupsRespV1
+	Payload *models.ResponsesHostGroupsV1
 }
 
 // IsSuccess returns true when this query combined host groups o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *QueryCombinedHostGroupsOK) String() string {
 	return fmt.Sprintf("[GET /devices/combined/host-groups/v1][%d] queryCombinedHostGroupsOK  %+v", 200, o.Payload)
 }
 
-func (o *QueryCombinedHostGroupsOK) GetPayload() *models.HostGroupsRespV1 {
+func (o *QueryCombinedHostGroupsOK) GetPayload() *models.ResponsesHostGroupsV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedHostGroupsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *QueryCombinedHostGroupsOK) readResponse(response runtime.ClientResponse
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.HostGroupsRespV1)
+	o.Payload = new(models.ResponsesHostGroupsV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -182,10 +178,6 @@ Bad Request
 */
 type QueryCombinedHostGroupsBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -194,7 +186,7 @@ type QueryCombinedHostGroupsBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.HostGroupsRespV1
+	Payload *models.ResponsesHostGroupsV1
 }
 
 // IsSuccess returns true when this query combined host groups bad request response has a 2xx status code
@@ -235,18 +227,11 @@ func (o *QueryCombinedHostGroupsBadRequest) String() string {
 	return fmt.Sprintf("[GET /devices/combined/host-groups/v1][%d] queryCombinedHostGroupsBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *QueryCombinedHostGroupsBadRequest) GetPayload() *models.HostGroupsRespV1 {
+func (o *QueryCombinedHostGroupsBadRequest) GetPayload() *models.ResponsesHostGroupsV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedHostGroupsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -270,7 +255,7 @@ func (o *QueryCombinedHostGroupsBadRequest) readResponse(response runtime.Client
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.HostGroupsRespV1)
+	o.Payload = new(models.ResponsesHostGroupsV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -291,10 +276,6 @@ QueryCombinedHostGroupsForbidden describes a response with status code 403, with
 Forbidden
 */
 type QueryCombinedHostGroupsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *QueryCombinedHostGroupsForbidden) GetPayload() *models.MsaErrorsOnly {
 
 func (o *QueryCombinedHostGroupsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ QueryCombinedHostGroupsTooManyRequests describes a response with status code 429
 Too Many Requests
 */
 type QueryCombinedHostGroupsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *QueryCombinedHostGroupsTooManyRequests) GetPayload() *models.MsaReplyMe
 
 func (o *QueryCombinedHostGroupsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +490,6 @@ Internal Server Error
 */
 type QueryCombinedHostGroupsInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -539,7 +498,7 @@ type QueryCombinedHostGroupsInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.HostGroupsRespV1
+	Payload *models.ResponsesHostGroupsV1
 }
 
 // IsSuccess returns true when this query combined host groups internal server error response has a 2xx status code
@@ -580,18 +539,11 @@ func (o *QueryCombinedHostGroupsInternalServerError) String() string {
 	return fmt.Sprintf("[GET /devices/combined/host-groups/v1][%d] queryCombinedHostGroupsInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *QueryCombinedHostGroupsInternalServerError) GetPayload() *models.HostGroupsRespV1 {
+func (o *QueryCombinedHostGroupsInternalServerError) GetPayload() *models.ResponsesHostGroupsV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedHostGroupsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -615,7 +567,79 @@ func (o *QueryCombinedHostGroupsInternalServerError) readResponse(response runti
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.HostGroupsRespV1)
+	o.Payload = new(models.ResponsesHostGroupsV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryCombinedHostGroupsDefault creates a QueryCombinedHostGroupsDefault with default headers values
+func NewQueryCombinedHostGroupsDefault(code int) *QueryCombinedHostGroupsDefault {
+	return &QueryCombinedHostGroupsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryCombinedHostGroupsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryCombinedHostGroupsDefault struct {
+	_statusCode int
+
+	Payload *models.ResponsesHostGroupsV1
+}
+
+// IsSuccess returns true when this query combined host groups default response has a 2xx status code
+func (o *QueryCombinedHostGroupsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query combined host groups default response has a 3xx status code
+func (o *QueryCombinedHostGroupsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query combined host groups default response has a 4xx status code
+func (o *QueryCombinedHostGroupsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query combined host groups default response has a 5xx status code
+func (o *QueryCombinedHostGroupsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query combined host groups default response a status code equal to that given
+func (o *QueryCombinedHostGroupsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query combined host groups default response
+func (o *QueryCombinedHostGroupsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryCombinedHostGroupsDefault) Error() string {
+	return fmt.Sprintf("[GET /devices/combined/host-groups/v1][%d] queryCombinedHostGroups default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryCombinedHostGroupsDefault) String() string {
+	return fmt.Sprintf("[GET /devices/combined/host-groups/v1][%d] queryCombinedHostGroups default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryCombinedHostGroupsDefault) GetPayload() *models.ResponsesHostGroupsV1 {
+	return o.Payload
+}
+
+func (o *QueryCombinedHostGroupsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ResponsesHostGroupsV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

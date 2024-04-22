@@ -19,17 +19,17 @@ import (
 // swagger:model domain.Entity
 type DomainEntity struct {
 
-	// numerical id ensuring data integrity
+	// id
 	// Required: true
 	ID *int64 `json:"id"`
 
-	// name of the entity
+	// name
 	Name string `json:"name,omitempty"`
 
-	// search and url friendly value, usually lowercase representation of value with spaces replaced with dashes, except for countries where 2 letters codes are used
+	// slug
 	Slug string `json:"slug,omitempty"`
 
-	// string value of the generic entity which is searchable and filterable
+	// value
 	Value string `json:"value,omitempty"`
 }
 

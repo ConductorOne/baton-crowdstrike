@@ -19,9 +19,9 @@ import (
 // swagger:model falconx.MetaInfo
 type FalconxMetaInfo struct {
 
-	// meta info
+	// msa meta info
 	// Required: true
-	MetaInfo *MsaMetaInfo `json:"MetaInfo"`
+	MsaMetaInfo *MsaMetaInfo `json:"MsaMetaInfo"`
 
 	// quota
 	Quota *FalconxQuota `json:"quota,omitempty"`
@@ -31,7 +31,7 @@ type FalconxMetaInfo struct {
 func (m *FalconxMetaInfo) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateMetaInfo(formats); err != nil {
+	if err := m.validateMsaMetaInfo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -45,18 +45,18 @@ func (m *FalconxMetaInfo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *FalconxMetaInfo) validateMetaInfo(formats strfmt.Registry) error {
+func (m *FalconxMetaInfo) validateMsaMetaInfo(formats strfmt.Registry) error {
 
-	if err := validate.Required("MetaInfo", "body", m.MetaInfo); err != nil {
+	if err := validate.Required("MsaMetaInfo", "body", m.MsaMetaInfo); err != nil {
 		return err
 	}
 
-	if m.MetaInfo != nil {
-		if err := m.MetaInfo.Validate(formats); err != nil {
+	if m.MsaMetaInfo != nil {
+		if err := m.MsaMetaInfo.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("MetaInfo")
+				return ve.ValidateName("MsaMetaInfo")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("MetaInfo")
+				return ce.ValidateName("MsaMetaInfo")
 			}
 			return err
 		}
@@ -88,7 +88,7 @@ func (m *FalconxMetaInfo) validateQuota(formats strfmt.Registry) error {
 func (m *FalconxMetaInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateMetaInfo(ctx, formats); err != nil {
+	if err := m.contextValidateMsaMetaInfo(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -102,15 +102,14 @@ func (m *FalconxMetaInfo) ContextValidate(ctx context.Context, formats strfmt.Re
 	return nil
 }
 
-func (m *FalconxMetaInfo) contextValidateMetaInfo(ctx context.Context, formats strfmt.Registry) error {
+func (m *FalconxMetaInfo) contextValidateMsaMetaInfo(ctx context.Context, formats strfmt.Registry) error {
 
-	if m.MetaInfo != nil {
-
-		if err := m.MetaInfo.ContextValidate(ctx, formats); err != nil {
+	if m.MsaMetaInfo != nil {
+		if err := m.MsaMetaInfo.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("MetaInfo")
+				return ve.ValidateName("MsaMetaInfo")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("MetaInfo")
+				return ce.ValidateName("MsaMetaInfo")
 			}
 			return err
 		}
@@ -122,11 +121,6 @@ func (m *FalconxMetaInfo) contextValidateMetaInfo(ctx context.Context, formats s
 func (m *FalconxMetaInfo) contextValidateQuota(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Quota != nil {
-
-		if swag.IsZero(m.Quota) { // not required
-			return nil
-		}
-
 		if err := m.Quota.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("quota")

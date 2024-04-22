@@ -50,7 +50,14 @@ func (o *GetRuleGroupsReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /fwmgr/entities/rule-groups/v1] get-rule-groups", response, response.Code())
+		result := NewGetRuleGroupsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -188,7 +195,7 @@ type GetRuleGroupsBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.FwmgrMsaspecResponseFields
+	Payload *models.FwmgrMsaReplyMetaOnly
 }
 
 // IsSuccess returns true when this get rule groups bad request response has a 2xx status code
@@ -229,7 +236,7 @@ func (o *GetRuleGroupsBadRequest) String() string {
 	return fmt.Sprintf("[GET /fwmgr/entities/rule-groups/v1][%d] getRuleGroupsBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *GetRuleGroupsBadRequest) GetPayload() *models.FwmgrMsaspecResponseFields {
+func (o *GetRuleGroupsBadRequest) GetPayload() *models.FwmgrMsaReplyMetaOnly {
 	return o.Payload
 }
 
@@ -264,7 +271,7 @@ func (o *GetRuleGroupsBadRequest) readResponse(response runtime.ClientResponse, 
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.FwmgrMsaspecResponseFields)
+	o.Payload = new(models.FwmgrMsaReplyMetaOnly)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -500,6 +507,78 @@ func (o *GetRuleGroupsTooManyRequests) readResponse(response runtime.ClientRespo
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetRuleGroupsDefault creates a GetRuleGroupsDefault with default headers values
+func NewGetRuleGroupsDefault(code int) *GetRuleGroupsDefault {
+	return &GetRuleGroupsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetRuleGroupsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetRuleGroupsDefault struct {
+	_statusCode int
+
+	Payload *models.FwmgrAPIRuleGroupsResponse
+}
+
+// IsSuccess returns true when this get rule groups default response has a 2xx status code
+func (o *GetRuleGroupsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get rule groups default response has a 3xx status code
+func (o *GetRuleGroupsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get rule groups default response has a 4xx status code
+func (o *GetRuleGroupsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get rule groups default response has a 5xx status code
+func (o *GetRuleGroupsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get rule groups default response a status code equal to that given
+func (o *GetRuleGroupsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get rule groups default response
+func (o *GetRuleGroupsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetRuleGroupsDefault) Error() string {
+	return fmt.Sprintf("[GET /fwmgr/entities/rule-groups/v1][%d] get-rule-groups default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetRuleGroupsDefault) String() string {
+	return fmt.Sprintf("[GET /fwmgr/entities/rule-groups/v1][%d] get-rule-groups default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetRuleGroupsDefault) GetPayload() *models.FwmgrAPIRuleGroupsResponse {
+	return o.Payload
+}
+
+func (o *GetRuleGroupsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.FwmgrAPIRuleGroupsResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

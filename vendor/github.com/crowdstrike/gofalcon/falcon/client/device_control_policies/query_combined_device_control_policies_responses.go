@@ -56,7 +56,14 @@ func (o *QueryCombinedDeviceControlPoliciesReader) ReadResponse(response runtime
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /policy/combined/device-control/v1] queryCombinedDeviceControlPolicies", response, response.Code())
+		result := NewQueryCombinedDeviceControlPoliciesDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type QueryCombinedDeviceControlPoliciesOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type QueryCombinedDeviceControlPoliciesOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.DeviceControlRespV1
+	Payload *models.ResponsesDeviceControlPoliciesV1
 }
 
 // IsSuccess returns true when this query combined device control policies o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *QueryCombinedDeviceControlPoliciesOK) String() string {
 	return fmt.Sprintf("[GET /policy/combined/device-control/v1][%d] queryCombinedDeviceControlPoliciesOK  %+v", 200, o.Payload)
 }
 
-func (o *QueryCombinedDeviceControlPoliciesOK) GetPayload() *models.DeviceControlRespV1 {
+func (o *QueryCombinedDeviceControlPoliciesOK) GetPayload() *models.ResponsesDeviceControlPoliciesV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedDeviceControlPoliciesOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *QueryCombinedDeviceControlPoliciesOK) readResponse(response runtime.Cli
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.DeviceControlRespV1)
+	o.Payload = new(models.ResponsesDeviceControlPoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -182,10 +178,6 @@ Bad Request
 */
 type QueryCombinedDeviceControlPoliciesBadRequest struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -194,7 +186,7 @@ type QueryCombinedDeviceControlPoliciesBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.DeviceControlRespV1
+	Payload *models.ResponsesDeviceControlPoliciesV1
 }
 
 // IsSuccess returns true when this query combined device control policies bad request response has a 2xx status code
@@ -235,18 +227,11 @@ func (o *QueryCombinedDeviceControlPoliciesBadRequest) String() string {
 	return fmt.Sprintf("[GET /policy/combined/device-control/v1][%d] queryCombinedDeviceControlPoliciesBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *QueryCombinedDeviceControlPoliciesBadRequest) GetPayload() *models.DeviceControlRespV1 {
+func (o *QueryCombinedDeviceControlPoliciesBadRequest) GetPayload() *models.ResponsesDeviceControlPoliciesV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedDeviceControlPoliciesBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -270,7 +255,7 @@ func (o *QueryCombinedDeviceControlPoliciesBadRequest) readResponse(response run
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.DeviceControlRespV1)
+	o.Payload = new(models.ResponsesDeviceControlPoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -291,10 +276,6 @@ QueryCombinedDeviceControlPoliciesForbidden describes a response with status cod
 Forbidden
 */
 type QueryCombinedDeviceControlPoliciesForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *QueryCombinedDeviceControlPoliciesForbidden) GetPayload() *models.MsaEr
 
 func (o *QueryCombinedDeviceControlPoliciesForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ QueryCombinedDeviceControlPoliciesTooManyRequests describes a response with stat
 Too Many Requests
 */
 type QueryCombinedDeviceControlPoliciesTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *QueryCombinedDeviceControlPoliciesTooManyRequests) GetPayload() *models
 
 func (o *QueryCombinedDeviceControlPoliciesTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -527,10 +490,6 @@ Internal Server Error
 */
 type QueryCombinedDeviceControlPoliciesInternalServerError struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -539,7 +498,7 @@ type QueryCombinedDeviceControlPoliciesInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.DeviceControlRespV1
+	Payload *models.ResponsesDeviceControlPoliciesV1
 }
 
 // IsSuccess returns true when this query combined device control policies internal server error response has a 2xx status code
@@ -580,18 +539,11 @@ func (o *QueryCombinedDeviceControlPoliciesInternalServerError) String() string 
 	return fmt.Sprintf("[GET /policy/combined/device-control/v1][%d] queryCombinedDeviceControlPoliciesInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *QueryCombinedDeviceControlPoliciesInternalServerError) GetPayload() *models.DeviceControlRespV1 {
+func (o *QueryCombinedDeviceControlPoliciesInternalServerError) GetPayload() *models.ResponsesDeviceControlPoliciesV1 {
 	return o.Payload
 }
 
 func (o *QueryCombinedDeviceControlPoliciesInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -615,7 +567,79 @@ func (o *QueryCombinedDeviceControlPoliciesInternalServerError) readResponse(res
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.DeviceControlRespV1)
+	o.Payload = new(models.ResponsesDeviceControlPoliciesV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryCombinedDeviceControlPoliciesDefault creates a QueryCombinedDeviceControlPoliciesDefault with default headers values
+func NewQueryCombinedDeviceControlPoliciesDefault(code int) *QueryCombinedDeviceControlPoliciesDefault {
+	return &QueryCombinedDeviceControlPoliciesDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryCombinedDeviceControlPoliciesDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryCombinedDeviceControlPoliciesDefault struct {
+	_statusCode int
+
+	Payload *models.ResponsesDeviceControlPoliciesV1
+}
+
+// IsSuccess returns true when this query combined device control policies default response has a 2xx status code
+func (o *QueryCombinedDeviceControlPoliciesDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query combined device control policies default response has a 3xx status code
+func (o *QueryCombinedDeviceControlPoliciesDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query combined device control policies default response has a 4xx status code
+func (o *QueryCombinedDeviceControlPoliciesDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query combined device control policies default response has a 5xx status code
+func (o *QueryCombinedDeviceControlPoliciesDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query combined device control policies default response a status code equal to that given
+func (o *QueryCombinedDeviceControlPoliciesDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query combined device control policies default response
+func (o *QueryCombinedDeviceControlPoliciesDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryCombinedDeviceControlPoliciesDefault) Error() string {
+	return fmt.Sprintf("[GET /policy/combined/device-control/v1][%d] queryCombinedDeviceControlPolicies default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryCombinedDeviceControlPoliciesDefault) String() string {
+	return fmt.Sprintf("[GET /policy/combined/device-control/v1][%d] queryCombinedDeviceControlPolicies default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryCombinedDeviceControlPoliciesDefault) GetPayload() *models.ResponsesDeviceControlPoliciesV1 {
+	return o.Payload
+}
+
+func (o *QueryCombinedDeviceControlPoliciesDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ResponsesDeviceControlPoliciesV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

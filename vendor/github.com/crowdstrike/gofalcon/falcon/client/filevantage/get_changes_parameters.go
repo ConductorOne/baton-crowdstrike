@@ -64,7 +64,7 @@ type GetChangesParams struct {
 
 	/* Ids.
 
-	   One or more change ids in the form of ids=ID1&ids=ID2
+	   Comma separated values of change ids
 	*/
 	Ids []string
 

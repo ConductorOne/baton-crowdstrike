@@ -56,7 +56,14 @@ func (o *AddUserGroupMembersReader) ReadResponse(response runtime.ClientResponse
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /mssp/entities/user-group-members/v1] addUserGroupMembers", response, response.Code())
+		result := NewAddUserGroupMembersDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ AddUserGroupMembersOK describes a response with status code 200, with default he
 OK
 */
 type AddUserGroupMembersOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *AddUserGroupMembersOK) GetPayload() *models.DomainUserGroupMembersRespo
 
 func (o *AddUserGroupMembersOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ AddUserGroupMembersMultiStatus describes a response with status code 207, with d
 Multi-Status
 */
 type AddUserGroupMembersMultiStatus struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *AddUserGroupMembersMultiStatus) GetPayload() *models.DomainUserGroupMem
 
 func (o *AddUserGroupMembersMultiStatus) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ AddUserGroupMembersBadRequest describes a response with status code 400, with de
 Bad Request
 */
 type AddUserGroupMembersBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *AddUserGroupMembersBadRequest) GetPayload() *models.MsaErrorsOnly {
 
 func (o *AddUserGroupMembersBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ AddUserGroupMembersForbidden describes a response with status code 403, with def
 Forbidden
 */
 type AddUserGroupMembersForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -461,13 +431,6 @@ func (o *AddUserGroupMembersForbidden) GetPayload() *models.MsaErrorsOnly {
 
 func (o *AddUserGroupMembersForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -511,10 +474,6 @@ AddUserGroupMembersTooManyRequests describes a response with status code 429, wi
 Too Many Requests
 */
 type AddUserGroupMembersTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -575,13 +534,6 @@ func (o *AddUserGroupMembersTooManyRequests) GetPayload() *models.MsaReplyMetaOn
 
 func (o *AddUserGroupMembersTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *AddUserGroupMembersTooManyRequests) readResponse(response runtime.Clien
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewAddUserGroupMembersDefault creates a AddUserGroupMembersDefault with default headers values
+func NewAddUserGroupMembersDefault(code int) *AddUserGroupMembersDefault {
+	return &AddUserGroupMembersDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+AddUserGroupMembersDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type AddUserGroupMembersDefault struct {
+	_statusCode int
+
+	Payload *models.DomainUserGroupMembersResponseV1
+}
+
+// IsSuccess returns true when this add user group members default response has a 2xx status code
+func (o *AddUserGroupMembersDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this add user group members default response has a 3xx status code
+func (o *AddUserGroupMembersDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this add user group members default response has a 4xx status code
+func (o *AddUserGroupMembersDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this add user group members default response has a 5xx status code
+func (o *AddUserGroupMembersDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this add user group members default response a status code equal to that given
+func (o *AddUserGroupMembersDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the add user group members default response
+func (o *AddUserGroupMembersDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *AddUserGroupMembersDefault) Error() string {
+	return fmt.Sprintf("[POST /mssp/entities/user-group-members/v1][%d] addUserGroupMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *AddUserGroupMembersDefault) String() string {
+	return fmt.Sprintf("[POST /mssp/entities/user-group-members/v1][%d] addUserGroupMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *AddUserGroupMembersDefault) GetPayload() *models.DomainUserGroupMembersResponseV1 {
+	return o.Payload
+}
+
+func (o *AddUserGroupMembersDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.DomainUserGroupMembersResponseV1)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

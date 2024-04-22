@@ -62,7 +62,14 @@ func (o *QueryDeviceControlPolicyMembersReader) ReadResponse(response runtime.Cl
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /policy/queries/device-control-members/v1] queryDeviceControlPolicyMembers", response, response.Code())
+		result := NewQueryDeviceControlPolicyMembersDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -77,10 +84,6 @@ QueryDeviceControlPolicyMembersOK describes a response with status code 200, wit
 OK
 */
 type QueryDeviceControlPolicyMembersOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -137,13 +140,6 @@ func (o *QueryDeviceControlPolicyMembersOK) GetPayload() *models.MsaQueryRespons
 
 func (o *QueryDeviceControlPolicyMembersOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -187,10 +183,6 @@ QueryDeviceControlPolicyMembersBadRequest describes a response with status code 
 Bad Request
 */
 type QueryDeviceControlPolicyMembersBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -247,13 +239,6 @@ func (o *QueryDeviceControlPolicyMembersBadRequest) GetPayload() *models.MsaQuer
 
 func (o *QueryDeviceControlPolicyMembersBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -297,10 +282,6 @@ QueryDeviceControlPolicyMembersForbidden describes a response with status code 4
 Forbidden
 */
 type QueryDeviceControlPolicyMembersForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -357,13 +338,6 @@ func (o *QueryDeviceControlPolicyMembersForbidden) GetPayload() *models.MsaError
 
 func (o *QueryDeviceControlPolicyMembersForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -407,10 +381,6 @@ QueryDeviceControlPolicyMembersNotFound describes a response with status code 40
 Not Found
 */
 type QueryDeviceControlPolicyMembersNotFound struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -467,13 +437,6 @@ func (o *QueryDeviceControlPolicyMembersNotFound) GetPayload() *models.MsaQueryR
 
 func (o *QueryDeviceControlPolicyMembersNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -517,10 +480,6 @@ QueryDeviceControlPolicyMembersTooManyRequests describes a response with status 
 Too Many Requests
 */
 type QueryDeviceControlPolicyMembersTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -581,13 +540,6 @@ func (o *QueryDeviceControlPolicyMembersTooManyRequests) GetPayload() *models.Ms
 
 func (o *QueryDeviceControlPolicyMembersTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -642,10 +594,6 @@ QueryDeviceControlPolicyMembersInternalServerError describes a response with sta
 Internal Server Error
 */
 type QueryDeviceControlPolicyMembersInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -702,13 +650,6 @@ func (o *QueryDeviceControlPolicyMembersInternalServerError) GetPayload() *model
 
 func (o *QueryDeviceControlPolicyMembersInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -730,6 +671,78 @@ func (o *QueryDeviceControlPolicyMembersInternalServerError) readResponse(respon
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.MsaQueryResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewQueryDeviceControlPolicyMembersDefault creates a QueryDeviceControlPolicyMembersDefault with default headers values
+func NewQueryDeviceControlPolicyMembersDefault(code int) *QueryDeviceControlPolicyMembersDefault {
+	return &QueryDeviceControlPolicyMembersDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+QueryDeviceControlPolicyMembersDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type QueryDeviceControlPolicyMembersDefault struct {
+	_statusCode int
+
+	Payload *models.MsaQueryResponse
+}
+
+// IsSuccess returns true when this query device control policy members default response has a 2xx status code
+func (o *QueryDeviceControlPolicyMembersDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this query device control policy members default response has a 3xx status code
+func (o *QueryDeviceControlPolicyMembersDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this query device control policy members default response has a 4xx status code
+func (o *QueryDeviceControlPolicyMembersDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this query device control policy members default response has a 5xx status code
+func (o *QueryDeviceControlPolicyMembersDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this query device control policy members default response a status code equal to that given
+func (o *QueryDeviceControlPolicyMembersDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the query device control policy members default response
+func (o *QueryDeviceControlPolicyMembersDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *QueryDeviceControlPolicyMembersDefault) Error() string {
+	return fmt.Sprintf("[GET /policy/queries/device-control-members/v1][%d] queryDeviceControlPolicyMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryDeviceControlPolicyMembersDefault) String() string {
+	return fmt.Sprintf("[GET /policy/queries/device-control-members/v1][%d] queryDeviceControlPolicyMembers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *QueryDeviceControlPolicyMembersDefault) GetPayload() *models.MsaQueryResponse {
+	return o.Payload
+}
+
+func (o *QueryDeviceControlPolicyMembersDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.MsaQueryResponse)
 

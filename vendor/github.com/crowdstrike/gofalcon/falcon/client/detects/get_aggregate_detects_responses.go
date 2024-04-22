@@ -56,7 +56,14 @@ func (o *GetAggregateDetectsReader) ReadResponse(response runtime.ClientResponse
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /detects/aggregates/detects/GET/v1] GetAggregateDetects", response, response.Code())
+		result := NewGetAggregateDetectsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -71,10 +78,6 @@ GetAggregateDetectsOK describes a response with status code 200, with default he
 OK
 */
 type GetAggregateDetectsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -131,13 +134,6 @@ func (o *GetAggregateDetectsOK) GetPayload() *models.MsaAggregatesResponse {
 
 func (o *GetAggregateDetectsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -181,10 +177,6 @@ GetAggregateDetectsBadRequest describes a response with status code 400, with de
 Bad Request
 */
 type GetAggregateDetectsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *GetAggregateDetectsBadRequest) GetPayload() *models.MsaAggregatesRespon
 
 func (o *GetAggregateDetectsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ GetAggregateDetectsForbidden describes a response with status code 403, with def
 Forbidden
 */
 type GetAggregateDetectsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *GetAggregateDetectsForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *GetAggregateDetectsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ GetAggregateDetectsTooManyRequests describes a response with status code 429, wi
 Too Many Requests
 */
 type GetAggregateDetectsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *GetAggregateDetectsTooManyRequests) GetPayload() *models.MsaReplyMetaOn
 
 func (o *GetAggregateDetectsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ GetAggregateDetectsInternalServerError describes a response with status code 500
 Internal Server Error
 */
 type GetAggregateDetectsInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *GetAggregateDetectsInternalServerError) GetPayload() *models.MsaAggrega
 
 func (o *GetAggregateDetectsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -614,6 +566,78 @@ func (o *GetAggregateDetectsInternalServerError) readResponse(response runtime.C
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.MsaAggregatesResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetAggregateDetectsDefault creates a GetAggregateDetectsDefault with default headers values
+func NewGetAggregateDetectsDefault(code int) *GetAggregateDetectsDefault {
+	return &GetAggregateDetectsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetAggregateDetectsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetAggregateDetectsDefault struct {
+	_statusCode int
+
+	Payload *models.MsaAggregatesResponse
+}
+
+// IsSuccess returns true when this get aggregate detects default response has a 2xx status code
+func (o *GetAggregateDetectsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get aggregate detects default response has a 3xx status code
+func (o *GetAggregateDetectsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get aggregate detects default response has a 4xx status code
+func (o *GetAggregateDetectsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get aggregate detects default response has a 5xx status code
+func (o *GetAggregateDetectsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get aggregate detects default response a status code equal to that given
+func (o *GetAggregateDetectsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get aggregate detects default response
+func (o *GetAggregateDetectsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetAggregateDetectsDefault) Error() string {
+	return fmt.Sprintf("[POST /detects/aggregates/detects/GET/v1][%d] GetAggregateDetects default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetAggregateDetectsDefault) String() string {
+	return fmt.Sprintf("[POST /detects/aggregates/detects/GET/v1][%d] GetAggregateDetects default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetAggregateDetectsDefault) GetPayload() *models.MsaAggregatesResponse {
+	return o.Payload
+}
+
+func (o *GetAggregateDetectsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.MsaAggregatesResponse)
 

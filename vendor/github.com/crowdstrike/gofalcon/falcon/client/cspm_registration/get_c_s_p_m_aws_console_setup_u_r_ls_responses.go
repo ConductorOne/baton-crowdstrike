@@ -62,7 +62,14 @@ func (o *GetCSPMAwsConsoleSetupURLsReader) ReadResponse(response runtime.ClientR
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /cloud-connect-cspm-aws/entities/console-setup-urls/v1] GetCSPMAwsConsoleSetupURLs", response, response.Code())
+		result := NewGetCSPMAwsConsoleSetupURLsDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -77,10 +84,6 @@ GetCSPMAwsConsoleSetupURLsOK describes a response with status code 200, with def
 OK
 */
 type GetCSPMAwsConsoleSetupURLsOK struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -137,13 +140,6 @@ func (o *GetCSPMAwsConsoleSetupURLsOK) GetPayload() *models.RegistrationAWSAccou
 
 func (o *GetCSPMAwsConsoleSetupURLsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -187,10 +183,6 @@ GetCSPMAwsConsoleSetupURLsMultiStatus describes a response with status code 207,
 Multi-Status
 */
 type GetCSPMAwsConsoleSetupURLsMultiStatus struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -247,13 +239,6 @@ func (o *GetCSPMAwsConsoleSetupURLsMultiStatus) GetPayload() *models.Registratio
 
 func (o *GetCSPMAwsConsoleSetupURLsMultiStatus) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -297,10 +282,6 @@ GetCSPMAwsConsoleSetupURLsBadRequest describes a response with status code 400, 
 Bad Request
 */
 type GetCSPMAwsConsoleSetupURLsBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -357,13 +338,6 @@ func (o *GetCSPMAwsConsoleSetupURLsBadRequest) GetPayload() *models.Registration
 
 func (o *GetCSPMAwsConsoleSetupURLsBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -407,10 +381,6 @@ GetCSPMAwsConsoleSetupURLsForbidden describes a response with status code 403, w
 Forbidden
 */
 type GetCSPMAwsConsoleSetupURLsForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -467,13 +437,6 @@ func (o *GetCSPMAwsConsoleSetupURLsForbidden) GetPayload() *models.MsaReplyMetaO
 
 func (o *GetCSPMAwsConsoleSetupURLsForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -517,10 +480,6 @@ GetCSPMAwsConsoleSetupURLsTooManyRequests describes a response with status code 
 Too Many Requests
 */
 type GetCSPMAwsConsoleSetupURLsTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -581,13 +540,6 @@ func (o *GetCSPMAwsConsoleSetupURLsTooManyRequests) GetPayload() *models.MsaRepl
 
 func (o *GetCSPMAwsConsoleSetupURLsTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -642,10 +594,6 @@ GetCSPMAwsConsoleSetupURLsInternalServerError describes a response with status c
 Internal Server Error
 */
 type GetCSPMAwsConsoleSetupURLsInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -702,13 +650,6 @@ func (o *GetCSPMAwsConsoleSetupURLsInternalServerError) GetPayload() *models.Reg
 
 func (o *GetCSPMAwsConsoleSetupURLsInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -730,6 +671,78 @@ func (o *GetCSPMAwsConsoleSetupURLsInternalServerError) readResponse(response ru
 		}
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
+
+	o.Payload = new(models.RegistrationAWSAccountConsoleURL)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetCSPMAwsConsoleSetupURLsDefault creates a GetCSPMAwsConsoleSetupURLsDefault with default headers values
+func NewGetCSPMAwsConsoleSetupURLsDefault(code int) *GetCSPMAwsConsoleSetupURLsDefault {
+	return &GetCSPMAwsConsoleSetupURLsDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+GetCSPMAwsConsoleSetupURLsDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type GetCSPMAwsConsoleSetupURLsDefault struct {
+	_statusCode int
+
+	Payload *models.RegistrationAWSAccountConsoleURL
+}
+
+// IsSuccess returns true when this get c s p m aws console setup u r ls default response has a 2xx status code
+func (o *GetCSPMAwsConsoleSetupURLsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get c s p m aws console setup u r ls default response has a 3xx status code
+func (o *GetCSPMAwsConsoleSetupURLsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get c s p m aws console setup u r ls default response has a 4xx status code
+func (o *GetCSPMAwsConsoleSetupURLsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get c s p m aws console setup u r ls default response has a 5xx status code
+func (o *GetCSPMAwsConsoleSetupURLsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get c s p m aws console setup u r ls default response a status code equal to that given
+func (o *GetCSPMAwsConsoleSetupURLsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the get c s p m aws console setup u r ls default response
+func (o *GetCSPMAwsConsoleSetupURLsDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *GetCSPMAwsConsoleSetupURLsDefault) Error() string {
+	return fmt.Sprintf("[GET /cloud-connect-cspm-aws/entities/console-setup-urls/v1][%d] GetCSPMAwsConsoleSetupURLs default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetCSPMAwsConsoleSetupURLsDefault) String() string {
+	return fmt.Sprintf("[GET /cloud-connect-cspm-aws/entities/console-setup-urls/v1][%d] GetCSPMAwsConsoleSetupURLs default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetCSPMAwsConsoleSetupURLsDefault) GetPayload() *models.RegistrationAWSAccountConsoleURL {
+	return o.Payload
+}
+
+func (o *GetCSPMAwsConsoleSetupURLsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.RegistrationAWSAccountConsoleURL)
 

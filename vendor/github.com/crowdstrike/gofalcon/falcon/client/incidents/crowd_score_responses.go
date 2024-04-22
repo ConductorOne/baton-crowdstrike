@@ -56,7 +56,14 @@ func (o *CrowdScoreReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /incidents/combined/crowdscores/v1] CrowdScore", response, response.Code())
+		result := NewCrowdScoreDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -72,10 +79,6 @@ OK
 */
 type CrowdScoreOK struct {
 
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
-
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -84,7 +87,7 @@ type CrowdScoreOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.DomainMsaEnvironmentScoreResponse
+	Payload *models.APIMsaEnvironmentScoreResponse
 }
 
 // IsSuccess returns true when this crowd score o k response has a 2xx status code
@@ -125,18 +128,11 @@ func (o *CrowdScoreOK) String() string {
 	return fmt.Sprintf("[GET /incidents/combined/crowdscores/v1][%d] crowdScoreOK  %+v", 200, o.Payload)
 }
 
-func (o *CrowdScoreOK) GetPayload() *models.DomainMsaEnvironmentScoreResponse {
+func (o *CrowdScoreOK) GetPayload() *models.APIMsaEnvironmentScoreResponse {
 	return o.Payload
 }
 
 func (o *CrowdScoreOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -160,7 +156,7 @@ func (o *CrowdScoreOK) readResponse(response runtime.ClientResponse, consumer ru
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.DomainMsaEnvironmentScoreResponse)
+	o.Payload = new(models.APIMsaEnvironmentScoreResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -181,10 +177,6 @@ CrowdScoreBadRequest describes a response with status code 400, with default hea
 Bad Request
 */
 type CrowdScoreBadRequest struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -241,13 +233,6 @@ func (o *CrowdScoreBadRequest) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *CrowdScoreBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -291,10 +276,6 @@ CrowdScoreForbidden describes a response with status code 403, with default head
 Forbidden
 */
 type CrowdScoreForbidden struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -351,13 +332,6 @@ func (o *CrowdScoreForbidden) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *CrowdScoreForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -401,10 +375,6 @@ CrowdScoreTooManyRequests describes a response with status code 429, with defaul
 Too Many Requests
 */
 type CrowdScoreTooManyRequests struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -465,13 +435,6 @@ func (o *CrowdScoreTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *CrowdScoreTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -526,10 +489,6 @@ CrowdScoreInternalServerError describes a response with status code 500, with de
 Internal Server Error
 */
 type CrowdScoreInternalServerError struct {
-
-	/* Trace-ID: submit to support if resolving an issue
-	 */
-	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -586,13 +545,6 @@ func (o *CrowdScoreInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *CrowdScoreInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// hydrates response header X-CS-TRACEID
-	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
-
-	if hdrXCSTRACEID != "" {
-		o.XCSTRACEID = hdrXCSTRACEID
-	}
-
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -616,6 +568,78 @@ func (o *CrowdScoreInternalServerError) readResponse(response runtime.ClientResp
 	}
 
 	o.Payload = new(models.MsaReplyMetaOnly)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCrowdScoreDefault creates a CrowdScoreDefault with default headers values
+func NewCrowdScoreDefault(code int) *CrowdScoreDefault {
+	return &CrowdScoreDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+CrowdScoreDefault describes a response with status code -1, with default header values.
+
+OK
+*/
+type CrowdScoreDefault struct {
+	_statusCode int
+
+	Payload *models.APIMsaEnvironmentScoreResponse
+}
+
+// IsSuccess returns true when this crowd score default response has a 2xx status code
+func (o *CrowdScoreDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this crowd score default response has a 3xx status code
+func (o *CrowdScoreDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this crowd score default response has a 4xx status code
+func (o *CrowdScoreDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this crowd score default response has a 5xx status code
+func (o *CrowdScoreDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this crowd score default response a status code equal to that given
+func (o *CrowdScoreDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the crowd score default response
+func (o *CrowdScoreDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *CrowdScoreDefault) Error() string {
+	return fmt.Sprintf("[GET /incidents/combined/crowdscores/v1][%d] CrowdScore default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CrowdScoreDefault) String() string {
+	return fmt.Sprintf("[GET /incidents/combined/crowdscores/v1][%d] CrowdScore default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CrowdScoreDefault) GetPayload() *models.APIMsaEnvironmentScoreResponse {
+	return o.Payload
+}
+
+func (o *CrowdScoreDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.APIMsaEnvironmentScoreResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

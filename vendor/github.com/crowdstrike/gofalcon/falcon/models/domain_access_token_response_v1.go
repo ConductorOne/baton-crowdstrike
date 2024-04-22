@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DomainAccessTokenResponseV1 domain access token response v1
@@ -18,29 +20,64 @@ import (
 type DomainAccessTokenResponseV1 struct {
 
 	// access token
-	AccessToken string `json:"access_token,omitempty"`
+	// Required: true
+	AccessToken *string `json:"access_token"`
 
 	// expires in
-	ExpiresIn int64 `json:"expires_in,omitempty"`
-
-	// id token
-	IDToken string `json:"id_token,omitempty"`
-
-	// issued token type
-	IssuedTokenType string `json:"issued_token_type,omitempty"`
-
-	// refresh token
-	RefreshToken string `json:"refresh_token,omitempty"`
-
-	// scope
-	Scope string `json:"scope,omitempty"`
+	// Required: true
+	ExpiresIn *int64 `json:"expires_in"`
 
 	// token type
-	TokenType string `json:"token_type,omitempty"`
+	// Required: true
+	TokenType *string `json:"token_type"`
 }
 
 // Validate validates this domain access token response v1
 func (m *DomainAccessTokenResponseV1) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAccessToken(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExpiresIn(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTokenType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DomainAccessTokenResponseV1) validateAccessToken(formats strfmt.Registry) error {
+
+	if err := validate.Required("access_token", "body", m.AccessToken); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DomainAccessTokenResponseV1) validateExpiresIn(formats strfmt.Registry) error {
+
+	if err := validate.Required("expires_in", "body", m.ExpiresIn); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DomainAccessTokenResponseV1) validateTokenType(formats strfmt.Registry) error {
+
+	if err := validate.Required("token_type", "body", m.TokenType); err != nil {
+		return err
+	}
+
 	return nil
 }
 
