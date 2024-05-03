@@ -81,7 +81,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	// annotations for rate limits - user ids
 	rateLimitInfo = append(
 		rateLimitInfo,
-		*NewRateLimitInfo(
+		NewRateLimitInfo(
 			userIDs.XRateLimitLimit,
 			userIDs.XRateLimitRemaining,
 		),
@@ -132,7 +132,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	// annotations for rate limits - user details
 	rateLimitInfo = append(
 		rateLimitInfo,
-		*NewRateLimitInfo(
+		NewRateLimitInfo(
 			userDetails.XRateLimitLimit,
 			userDetails.XRateLimitRemaining,
 		),
