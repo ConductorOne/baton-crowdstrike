@@ -8,10 +8,8 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // FalconxSandboxParametersV1 falconx sandbox parameters v1
@@ -19,12 +17,11 @@ import (
 // swagger:model falconx.SandboxParametersV1
 type FalconxSandboxParametersV1 struct {
 
-	// interactivity
-	// Required: true
-	Interactivity *bool `json:"Interactivity"`
-
 	// action script
 	ActionScript string `json:"action_script,omitempty"`
+
+	// browser
+	Browser string `json:"browser,omitempty"`
 
 	// command line
 	CommandLine string `json:"command_line,omitempty"`
@@ -37,6 +34,9 @@ type FalconxSandboxParametersV1 struct {
 
 	// environment id
 	EnvironmentID int32 `json:"environment_id,omitempty"`
+
+	// interactivity
+	Interactivity bool `json:"interactivity,omitempty"`
 
 	// network settings
 	NetworkSettings string `json:"network_settings,omitempty"`
@@ -59,24 +59,6 @@ type FalconxSandboxParametersV1 struct {
 
 // Validate validates this falconx sandbox parameters v1
 func (m *FalconxSandboxParametersV1) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateInteractivity(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *FalconxSandboxParametersV1) validateInteractivity(formats strfmt.Registry) error {
-
-	if err := validate.Required("Interactivity", "body", m.Interactivity); err != nil {
-		return err
-	}
-
 	return nil
 }
 

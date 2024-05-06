@@ -10,7 +10,6 @@ import (
 	"github.com/crowdstrike/gofalcon/falcon"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
-	"github.com/crowdstrike/gofalcon/falcon/models"
 )
 
 var (
@@ -54,7 +53,7 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 	var limit int64 = 1
 
 	// get user ids
-	userIds, err := o.client.UserManagement.QueryUserV1(
+	_, err := o.client.UserManagement.QueryUserV1(
 		&user_management.QueryUserV1Params{
 			Limit:   &limit,
 			Context: ctx,
@@ -64,21 +63,8 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to query user ids: %w", err)
 	}
 
-	// get user details
-	_, err = o.client.UserManagement.RetrieveUsersGETV1(
-		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaspecIdsRequest{
-				Ids: userIds.Payload.Resources,
-			},
-			Context: ctx,
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to retrieve user details: %w", err)
-	}
-
 	// get role ids
-	roleIds, err := o.client.UserManagement.QueriesRolesV1(
+	roleIDs, err := o.client.UserManagement.QueriesRolesV1(
 		&user_management.QueriesRolesV1Params{
 			Context: ctx,
 		},
@@ -90,7 +76,7 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 	// get role details
 	_, err = o.client.UserManagement.EntitiesRolesV1(
 		&user_management.EntitiesRolesV1Params{
-			Ids:     roleIds.Payload.Resources,
+			Ids:     roleIDs.Payload.Resources,
 			Context: ctx,
 		},
 	)

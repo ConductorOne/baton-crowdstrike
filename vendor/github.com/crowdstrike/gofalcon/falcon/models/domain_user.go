@@ -36,6 +36,9 @@ type DomainUser struct {
 	// last name
 	LastName string `json:"last_name,omitempty"`
 
+	// status
+	Status string `json:"status,omitempty"`
+
 	// uid
 	UID string `json:"uid,omitempty"`
 

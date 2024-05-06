@@ -19,111 +19,144 @@ import (
 // swagger:model detects.Alert
 type DetectsAlert struct {
 
-	// agent id
+	// Device or sensor ID for which the Alert was generated
 	AgentID string `json:"agent_id,omitempty"`
 
-	// aggregate id
-	AggregateID string `json:"aggregate_id,omitempty"`
+	// Common linkage between multiple Alerts that belong to the same detection bouquet
+	// Required: true
+	AggregateID *string `json:"aggregate_id"`
 
-	// assigned to name
+	// Name of the person this Alert is assigned to
 	AssignedToName string `json:"assigned_to_name,omitempty"`
 
-	// assigned to uid
+	// UserID to which this Alert is assigned to
 	AssignedToUID string `json:"assigned_to_uid,omitempty"`
 
-	// assigned to uuid
+	// UUID to which this Alert is assigned to
 	AssignedToUUID string `json:"assigned_to_uuid,omitempty"`
 
-	// cid
+	// Unique ID of CrowdStrike customers
 	Cid string `json:"cid,omitempty"`
 
-	// composite id
+	// An opaque internal identifier that can uniquely identify an Alert
 	CompositeID string `json:"composite_id,omitempty"`
 
-	// confidence
+	// Confidence is a 1-100 integer value denoting the confidence that, when this Alert fires, it is indicative of malicious activity
 	Confidence int64 `json:"confidence,omitempty"`
 
-	// crawl edge ids
+	// internal only
 	CrawlEdgeIds map[string][]string `json:"crawl_edge_ids,omitempty"`
 
-	// crawl vertex ids
+	// internal only
 	CrawlVertexIds map[string][]string `json:"crawl_vertex_ids,omitempty"`
 
-	// crawled timestamp
+	// indicates when ThreatGraph was crawled to gather info for this alert creation/update
 	// Format: date-time
 	CrawledTimestamp strfmt.DateTime `json:"crawled_timestamp,omitempty"`
 
-	// created timestamp
+	// indicates when the Alert was first written to backend store
 	// Format: date-time
 	CreatedTimestamp strfmt.DateTime `json:"created_timestamp,omitempty"`
 
-	// description
+	// Data Domains represents domains to which this alert belongs to
+	DataDomains []string `json:"data_domains"`
+
+	// Short, customer-visible summary of the detected activity
 	Description string `json:"description,omitempty"`
 
-	// display name
+	// Customer visible name for the Alert's pattern
 	DisplayName string `json:"display_name,omitempty"`
 
-	// email sent
+	// Boolean to know if we sent email regarding this Alert
 	EmailSent bool `json:"email_sent,omitempty"`
 
-	// external
+	// internal only
+	EsDocID string `json:"es_doc_id,omitempty"`
+
+	// internal only
+	EsDocVersion int64 `json:"es_doc_version,omitempty"`
+
+	// internal only
+	EsRoutingID string `json:"es_routing_id,omitempty"`
+
+	// Boolean indicating if this Alert is internal or external
 	External bool `json:"external,omitempty"`
 
-	// id
-	// Required: true
-	ID *string `json:"id"`
+	// Vertex key which triggers the formation of the Alert
+	ID string `json:"id,omitempty"`
 
-	// name
+	// Pattern Name coming either from Taxonomy or directly from the ingested Alert
 	Name string `json:"name,omitempty"`
 
-	// objective
+	// End goal that an attack adversary intends to achieve according to MITRE
 	Objective string `json:"objective,omitempty"`
 
-	// pattern id
+	// Taxonomy patternID for this Alert
 	PatternID int64 `json:"pattern_id,omitempty"`
 
-	// platform
+	// Platform that this Alert was triggered on e.g. Android, Windows, etc..
 	Platform string `json:"platform,omitempty"`
 
-	// product
+	// poly id
+	PolyID string `json:"poly_id,omitempty"`
+
+	// Product specifies the SKU that this Alert belongs to e.g. mobile, idp, epp
 	Product string `json:"product,omitempty"`
 
-	// scenario
+	// indicates when the Alert was marked as 'Resolved'
+	// Format: date-time
+	ResolvedTimestamp strfmt.DateTime `json:"resolved_timestamp,omitempty"`
+
+	// Scenario was used pre-Handrails to display additional killchain context for UI alerts. With handrails, this field is mostly  obsolete in favor of tactic/technique. Still, it can be useful for determining specific pattern types that are not straightforward to distinguish from other fields alone
 	Scenario string `json:"scenario,omitempty"`
 
-	// severity
+	// Seconds To Resolved represents the seconds elapsed since this alert has been resolved
+	// Required: true
+	SecondsToResolved *int64 `json:"seconds_to_resolved"`
+
+	// Seconds To Triage represents the seconds elapsed since this alert has been triaged
+	// Required: true
+	SecondsToTriaged *int64 `json:"seconds_to_triaged"`
+
+	// Severity is also a 1-100 integer value, but unlike confidence severity impacts how a Alert is displayed in the UI
 	Severity int64 `json:"severity,omitempty"`
 
-	// show in ui
+	// Boolean indicating if this Alert will be shown in the UI or if it's hidden'
 	ShowInUI bool `json:"show_in_ui,omitempty"`
 
-	// status
+	// Source Products are products that produced events which contributed to this alert
+	SourceProducts []string `json:"source_products"`
+
+	// Source Vendors are vendors that produced events which contributed to this alert
+	SourceVendors []string `json:"source_vendors"`
+
+	// Could be one of the following - New, closed, in_progress, reopened
 	Status string `json:"status,omitempty"`
 
-	// tactic
+	// Tactic and Technique are references to MITRE ATT&CK, which is a public framework for tracking and modeling adversary tools techniques and procedures
 	Tactic string `json:"tactic,omitempty"`
 
-	// tactic id
+	// Unique ID for the tactic seen in the Alert
 	TacticID string `json:"tactic_id,omitempty"`
 
-	// tags
+	// Tags are string values associated with the alert that can be added or removed through the API
 	Tags []string `json:"tags"`
 
-	// technique
+	// Tactic and Technique are references to MITRE ATT&CK, which is a public framework for tracking and modeling adversary tools techniques and procedures
 	Technique string `json:"technique,omitempty"`
 
-	// technique id
+	// Unique ID for the technique seen in the Alert
 	TechniqueID string `json:"technique_id,omitempty"`
 
-	// timestamp
+	// stored value coming in directly from the ingested event or set by cloud in the absence of it
 	// Format: date-time
 	Timestamp strfmt.DateTime `json:"timestamp,omitempty"`
 
-	// type
+	// Type of definition Detections Extensibility use. Keyed-off of Pattern of the incoming events/Alerts
 	// Required: true
 	Type *string `json:"type"`
 
-	// updated timestamp
+	// indicates when the Alert was last modified
 	// Format: date-time
 	UpdatedTimestamp strfmt.DateTime `json:"updated_timestamp,omitempty"`
 }
@@ -131,6 +164,10 @@ type DetectsAlert struct {
 // Validate validates this detects alert
 func (m *DetectsAlert) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAggregateID(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateCrawledTimestamp(formats); err != nil {
 		res = append(res, err)
@@ -140,7 +177,15 @@ func (m *DetectsAlert) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateID(formats); err != nil {
+	if err := m.validateResolvedTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecondsToResolved(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecondsToTriaged(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -159,6 +204,15 @@ func (m *DetectsAlert) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DetectsAlert) validateAggregateID(formats strfmt.Registry) error {
+
+	if err := validate.Required("aggregate_id", "body", m.AggregateID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -186,9 +240,30 @@ func (m *DetectsAlert) validateCreatedTimestamp(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DetectsAlert) validateID(formats strfmt.Registry) error {
+func (m *DetectsAlert) validateResolvedTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.ResolvedTimestamp) { // not required
+		return nil
+	}
 
-	if err := validate.Required("id", "body", m.ID); err != nil {
+	if err := validate.FormatOf("resolved_timestamp", "body", "date-time", m.ResolvedTimestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DetectsAlert) validateSecondsToResolved(formats strfmt.Registry) error {
+
+	if err := validate.Required("seconds_to_resolved", "body", m.SecondsToResolved); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DetectsAlert) validateSecondsToTriaged(formats strfmt.Registry) error {
+
+	if err := validate.Required("seconds_to_triaged", "body", m.SecondsToTriaged); err != nil {
 		return err
 	}
 

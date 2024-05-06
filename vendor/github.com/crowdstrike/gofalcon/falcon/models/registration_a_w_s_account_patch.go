@@ -29,6 +29,9 @@ type RegistrationAWSAccountPatch struct {
 	// cloudtrail region
 	CloudtrailRegion string `json:"cloudtrail_region,omitempty"`
 
+	// environment
+	Environment string `json:"environment,omitempty"`
+
 	// iam role arn
 	// Required: true
 	IamRoleArn *string `json:"iam_role_arn"`
@@ -42,6 +45,9 @@ type RegistrationAWSAccountPatch struct {
 
 	// sensor management enabled
 	SensorManagementEnabled bool `json:"sensor_management_enabled,omitempty"`
+
+	// target ous
+	TargetOus []string `json:"target_ous"`
 }
 
 // Validate validates this registration a w s account patch

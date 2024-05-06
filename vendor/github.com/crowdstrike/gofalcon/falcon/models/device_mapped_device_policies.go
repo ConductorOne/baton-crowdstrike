@@ -42,6 +42,9 @@ type DeviceMappedDevicePolicies struct {
 	// global config
 	GlobalConfig *DeviceDevicePolicy `json:"global_config,omitempty"`
 
+	// host retention
+	HostRetention *DeviceDevicePolicy `json:"host-retention,omitempty"`
+
 	// identity protection
 	IdentityProtection *DeviceDevicePolicy `json:"identity-protection,omitempty"`
 
@@ -71,6 +74,9 @@ type DeviceMappedDevicePolicies struct {
 
 	// system tray
 	SystemTray *DeviceDevicePolicy `json:"system-tray,omitempty"`
+
+	// vulnerability management
+	VulnerabilityManagement *DeviceDevicePolicy `json:"vulnerability-management,omitempty"`
 
 	// ztl
 	Ztl *DeviceDevicePolicy `json:"ztl,omitempty"`
@@ -112,6 +118,10 @@ func (m *DeviceMappedDevicePolicies) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateHostRetention(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIdentityProtection(formats); err != nil {
 		res = append(res, err)
 	}
@@ -149,6 +159,10 @@ func (m *DeviceMappedDevicePolicies) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSystemTray(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVulnerabilityManagement(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -306,6 +320,25 @@ func (m *DeviceMappedDevicePolicies) validateGlobalConfig(formats strfmt.Registr
 				return ve.ValidateName("global_config")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("global_config")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) validateHostRetention(formats strfmt.Registry) error {
+	if swag.IsZero(m.HostRetention) { // not required
+		return nil
+	}
+
+	if m.HostRetention != nil {
+		if err := m.HostRetention.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("host-retention")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("host-retention")
 			}
 			return err
 		}
@@ -504,6 +537,25 @@ func (m *DeviceMappedDevicePolicies) validateSystemTray(formats strfmt.Registry)
 	return nil
 }
 
+func (m *DeviceMappedDevicePolicies) validateVulnerabilityManagement(formats strfmt.Registry) error {
+	if swag.IsZero(m.VulnerabilityManagement) { // not required
+		return nil
+	}
+
+	if m.VulnerabilityManagement != nil {
+		if err := m.VulnerabilityManagement.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vulnerability-management")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("vulnerability-management")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DeviceMappedDevicePolicies) validateZtl(formats strfmt.Registry) error {
 	if swag.IsZero(m.Ztl) { // not required
 		return nil
@@ -559,6 +611,10 @@ func (m *DeviceMappedDevicePolicies) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateHostRetention(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIdentityProtection(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -596,6 +652,10 @@ func (m *DeviceMappedDevicePolicies) ContextValidate(ctx context.Context, format
 	}
 
 	if err := m.contextValidateSystemTray(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVulnerabilityManagement(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -769,6 +829,27 @@ func (m *DeviceMappedDevicePolicies) contextValidateGlobalConfig(ctx context.Con
 				return ve.ValidateName("global_config")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("global_config")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) contextValidateHostRetention(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.HostRetention != nil {
+
+		if swag.IsZero(m.HostRetention) { // not required
+			return nil
+		}
+
+		if err := m.HostRetention.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("host-retention")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("host-retention")
 			}
 			return err
 		}
@@ -979,6 +1060,27 @@ func (m *DeviceMappedDevicePolicies) contextValidateSystemTray(ctx context.Conte
 				return ve.ValidateName("system-tray")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("system-tray")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) contextValidateVulnerabilityManagement(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.VulnerabilityManagement != nil {
+
+		if swag.IsZero(m.VulnerabilityManagement) { // not required
+			return nil
+		}
+
+		if err := m.VulnerabilityManagement.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vulnerability-management")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("vulnerability-management")
 			}
 			return err
 		}

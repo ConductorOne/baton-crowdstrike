@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"time"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
@@ -23,22 +24,38 @@ func (u *userResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 }
 
 // Create a new connector resource for an CrowdStrike User.
-func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, error) {
+func userResource(user *models.DomainUser) (*v2.Resource, error) {
 	// user `uid` is represented as a username which can also be an email address
 	// unique identifier for the user is under `uuid`
 	profile := map[string]interface{}{
+		"cid":        user.Cid,
 		"login":      user.UID,
 		"user_id":    user.UUID,
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
 	}
 
+	var status v2.UserTrait_Status_Status
+	switch user.Status {
+	case "active":
+		status = v2.UserTrait_Status_STATUS_ENABLED
+	case "inactive":
+		status = v2.UserTrait_Status_STATUS_DISABLED
+	default:
+		status = v2.UserTrait_Status_STATUS_UNSPECIFIED
+	}
+
 	userTraitOptions := []rs.UserTraitOption{
 		rs.WithUserProfile(profile),
-		rs.WithStatus(v2.UserTrait_Status_STATUS_ENABLED),
+		rs.WithStatus(status),
+	}
+
+	if !user.LastLoginAt.IsZero() {
+		userTraitOptions = append(userTraitOptions, rs.WithLastLogin(time.Time(user.LastLoginAt)))
 	}
 
 	// check if `uid` is an email address
+	// TODO: use .Email when library fixes this
 	if validateEmail(user.UID) {
 		userTraitOptions = append(userTraitOptions, rs.WithEmail(user.UID, true))
 	}
@@ -63,7 +80,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		return nil, "", nil, err
 	}
 
-	userIds, err := u.client.UserManagement.QueryUserV1(
+	userIDs, err := u.client.UserManagement.QueryUserV1(
 		&user_management.QueryUserV1Params{
 			Limit:   &ResourcesPageSize,
 			Offset:  &offset,
@@ -72,6 +89,24 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	)
 	if err != nil {
 		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to list users: %w", err)
+	}
+
+	var rateLimitInfo []RateLimitInfo
+
+	// annotations for rate limits - user ids
+	rateLimitInfo = append(
+		rateLimitInfo,
+		NewRateLimitInfo(
+			userIDs.XRateLimitLimit,
+			userIDs.XRateLimitRemaining,
+		),
+	)
+
+	// continue syncing other resources if no users are found
+	if len(userIDs.Payload.Resources) == 0 {
+		annos := WithRateLimitAnnotations(rateLimitInfo...)
+
+		return nil, "", annos, nil
 	}
 
 	nextPage, err := handleNextPage(bag, offset+ResourcesPageSize)
@@ -83,7 +118,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	userDetails, err := u.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
 			Body: &models.MsaspecIdsRequest{
-				Ids: userIds.Payload.Resources,
+				Ids: userIDs.Payload.Resources,
 			},
 			Context: ctx,
 		},
@@ -94,8 +129,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 
 	var rv []*v2.Resource
 	for _, user := range userDetails.Payload.Resources {
-		userCopy := user
-		ur, err := userResource(ctx, userCopy)
+		ur, err := userResource(user)
 
 		if err != nil {
 			return nil, "", nil, err
@@ -104,22 +138,21 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		rv = append(rv, ur)
 	}
 
-	isLastPage, err := userIds.Payload.Meta.Pagination.LastPage()
+	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
 	if err != nil {
 		return nil, "", nil, err
 	}
 
-	// annotations for rate limits
-	annos := WithRateLimitAnnotations(
-		NewRateLimitInfo(
-			userIds.XRateLimitLimit,
-			userIds.XRateLimitRemaining,
-		),
+	// annotations for rate limits - user details
+	rateLimitInfo = append(
+		rateLimitInfo,
 		NewRateLimitInfo(
 			userDetails.XRateLimitLimit,
 			userDetails.XRateLimitRemaining,
 		),
 	)
+
+	annos := WithRateLimitAnnotations(rateLimitInfo...)
 
 	if isLastPage {
 		return rv, "", annos, nil

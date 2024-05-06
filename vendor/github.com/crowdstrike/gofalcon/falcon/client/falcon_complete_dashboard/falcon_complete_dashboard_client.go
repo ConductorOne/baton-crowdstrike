@@ -30,6 +30,8 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	AggregateAlerts(params *AggregateAlertsParams, opts ...ClientOption) (*AggregateAlertsOK, error)
+
 	AggregateAllowList(params *AggregateAllowListParams, opts ...ClientOption) (*AggregateAllowListOK, error)
 
 	AggregateBlockList(params *AggregateBlockListParams, opts ...ClientOption) (*AggregateBlockListOK, error)
@@ -42,9 +44,19 @@ type ClientService interface {
 
 	AggregateFCIncidents(params *AggregateFCIncidentsParams, opts ...ClientOption) (*AggregateFCIncidentsOK, error)
 
+	AggregatePreventionPolicy(params *AggregatePreventionPolicyParams, opts ...ClientOption) (*AggregatePreventionPolicyOK, error)
+
 	AggregateRemediations(params *AggregateRemediationsParams, opts ...ClientOption) (*AggregateRemediationsOK, error)
 
+	AggregateSensorUpdatePolicy(params *AggregateSensorUpdatePolicyParams, opts ...ClientOption) (*AggregateSensorUpdatePolicyOK, error)
+
+	AggregateSupportIssues(params *AggregateSupportIssuesParams, opts ...ClientOption) (*AggregateSupportIssuesOK, error)
+
+	AggregateTotalDeviceCounts(params *AggregateTotalDeviceCountsParams, opts ...ClientOption) (*AggregateTotalDeviceCountsOK, error)
+
 	GetDeviceCountCollectionQueriesByFilter(params *GetDeviceCountCollectionQueriesByFilterParams, opts ...ClientOption) (*GetDeviceCountCollectionQueriesByFilterOK, error)
+
+	QueryAlertIdsByFilter(params *QueryAlertIdsByFilterParams, opts ...ClientOption) (*QueryAlertIdsByFilterOK, error)
 
 	QueryAllowListFilter(params *QueryAllowListFilterParams, opts ...ClientOption) (*QueryAllowListFilterOK, error)
 
@@ -59,6 +71,44 @@ type ClientService interface {
 	QueryRemediationsFilter(params *QueryRemediationsFilterParams, opts ...ClientOption) (*QueryRemediationsFilterOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+AggregateAlerts retrieves aggregate alerts values based on the matched filter
+*/
+func (a *Client) AggregateAlerts(params *AggregateAlertsParams, opts ...ClientOption) (*AggregateAlertsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAggregateAlertsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "AggregateAlerts",
+		Method:             "POST",
+		PathPattern:        "/falcon-complete-dashboards/aggregates/alerts/GET/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AggregateAlertsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AggregateAlertsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for AggregateAlerts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -344,6 +394,44 @@ func (a *Client) AggregateFCIncidents(params *AggregateFCIncidentsParams, opts .
 }
 
 /*
+AggregatePreventionPolicy retrieves prevention policies aggregate values based on the matched filter
+*/
+func (a *Client) AggregatePreventionPolicy(params *AggregatePreventionPolicyParams, opts ...ClientOption) (*AggregatePreventionPolicyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAggregatePreventionPolicyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "AggregatePreventionPolicy",
+		Method:             "POST",
+		PathPattern:        "/falcon-complete-dashboards/aggregates/prevention-policies/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AggregatePreventionPolicyReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AggregatePreventionPolicyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for AggregatePreventionPolicy: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 AggregateRemediations retrieves aggregate remediation ticket values based on the matched filter
 */
 func (a *Client) AggregateRemediations(params *AggregateRemediationsParams, opts ...ClientOption) (*AggregateRemediationsOK, error) {
@@ -382,6 +470,120 @@ func (a *Client) AggregateRemediations(params *AggregateRemediationsParams, opts
 }
 
 /*
+AggregateSensorUpdatePolicy retrieves sensor update policies aggregate values
+*/
+func (a *Client) AggregateSensorUpdatePolicy(params *AggregateSensorUpdatePolicyParams, opts ...ClientOption) (*AggregateSensorUpdatePolicyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAggregateSensorUpdatePolicyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "AggregateSensorUpdatePolicy",
+		Method:             "POST",
+		PathPattern:        "/falcon-complete-dashboards/aggregates/sensor-update-policies/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AggregateSensorUpdatePolicyReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AggregateSensorUpdatePolicyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for AggregateSensorUpdatePolicy: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+AggregateSupportIssues retrieves aggregate support issue ticket values based on the matched filter
+*/
+func (a *Client) AggregateSupportIssues(params *AggregateSupportIssuesParams, opts ...ClientOption) (*AggregateSupportIssuesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAggregateSupportIssuesParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "AggregateSupportIssues",
+		Method:             "POST",
+		PathPattern:        "/falcon-complete-dashboards/aggregates/support-issues/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AggregateSupportIssuesReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AggregateSupportIssuesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for AggregateSupportIssues: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+AggregateTotalDeviceCounts retrieves aggregate total host devices based on the matched filter
+*/
+func (a *Client) AggregateTotalDeviceCounts(params *AggregateTotalDeviceCountsParams, opts ...ClientOption) (*AggregateTotalDeviceCountsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAggregateTotalDeviceCountsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "AggregateTotalDeviceCounts",
+		Method:             "POST",
+		PathPattern:        "/falcon-complete-dashboards/aggregates/total-device-counts/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AggregateTotalDeviceCountsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AggregateTotalDeviceCountsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for AggregateTotalDeviceCounts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 GetDeviceCountCollectionQueriesByFilter retrieves device count collection ids that match the provided f q l filter criteria with scrolling enabled
 */
 func (a *Client) GetDeviceCountCollectionQueriesByFilter(params *GetDeviceCountCollectionQueriesByFilterParams, opts ...ClientOption) (*GetDeviceCountCollectionQueriesByFilterOK, error) {
@@ -416,6 +618,44 @@ func (a *Client) GetDeviceCountCollectionQueriesByFilter(params *GetDeviceCountC
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetDeviceCountCollectionQueriesByFilter: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+QueryAlertIdsByFilter retrieves alerts ids that match the provided f q l filter criteria with scrolling enabled
+*/
+func (a *Client) QueryAlertIdsByFilter(params *QueryAlertIdsByFilterParams, opts ...ClientOption) (*QueryAlertIdsByFilterOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewQueryAlertIdsByFilterParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "QueryAlertIdsByFilter",
+		Method:             "GET",
+		PathPattern:        "/falcon-complete-dashboards/queries/alerts/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &QueryAlertIdsByFilterReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*QueryAlertIdsByFilterOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for QueryAlertIdsByFilter: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
