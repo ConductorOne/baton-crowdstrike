@@ -20,6 +20,9 @@ type FalconxSandboxParametersV1 struct {
 	// action script
 	ActionScript string `json:"action_script,omitempty"`
 
+	// browser
+	Browser string `json:"browser,omitempty"`
+
 	// command line
 	CommandLine string `json:"command_line,omitempty"`
 
@@ -31,6 +34,9 @@ type FalconxSandboxParametersV1 struct {
 
 	// environment id
 	EnvironmentID int32 `json:"environment_id,omitempty"`
+
+	// interactivity
+	Interactivity bool `json:"interactivity,omitempty"`
 
 	// network settings
 	NetworkSettings string `json:"network_settings,omitempty"`

@@ -29,6 +29,9 @@ type DeviceDevice struct {
 	// agent version
 	AgentVersion string `json:"agent_version,omitempty"`
 
+	// base image version
+	BaseImageVersion string `json:"base_image_version,omitempty"`
+
 	// bios manufacturer
 	BiosManufacturer string `json:"bios_manufacturer,omitempty"`
 
@@ -37,6 +40,12 @@ type DeviceDevice struct {
 
 	// build number
 	BuildNumber string `json:"build_number,omitempty"`
+
+	// chassis type
+	ChassisType string `json:"chassis_type,omitempty"`
+
+	// chassis type desc
+	ChassisTypeDesc string `json:"chassis_type_desc,omitempty"`
 
 	// cid
 	// Required: true
@@ -51,8 +60,23 @@ type DeviceDevice struct {
 	// config id platform
 	ConfigIDPlatform string `json:"config_id_platform,omitempty"`
 
+	// connection ip
+	ConnectionIP string `json:"connection_ip,omitempty"`
+
+	// connection mac address
+	ConnectionMacAddress string `json:"connection_mac_address,omitempty"`
+
 	// cpu signature
 	CPUSignature string `json:"cpu_signature,omitempty"`
+
+	// cpu vendor
+	CPUVendor string `json:"cpu_vendor,omitempty"`
+
+	// default gateway ip
+	DefaultGatewayIP string `json:"default_gateway_ip,omitempty"`
+
+	// deployment type
+	DeploymentType string `json:"deployment_type,omitempty"`
 
 	// detection suppression status
 	DetectionSuppressionStatus string `json:"detection_suppression_status,omitempty"`
@@ -88,20 +112,50 @@ type DeviceDevice struct {
 	// host hidden status
 	HostHiddenStatus string `json:"host_hidden_status,omitempty"`
 
+	// host utc offset
+	HostUtcOffset string `json:"host_utc_offset,omitempty"`
+
 	// hostname
 	Hostname string `json:"hostname,omitempty"`
 
 	// instance id
 	InstanceID string `json:"instance_id,omitempty"`
 
+	// internet exposure
+	InternetExposure string `json:"internet_exposure,omitempty"`
+
+	// k8s cluster git version
+	K8sClusterGitVersion string `json:"k8s_cluster_git_version,omitempty"`
+
+	// k8s cluster id
+	K8sClusterID string `json:"k8s_cluster_id,omitempty"`
+
+	// k8s cluster version
+	K8sClusterVersion string `json:"k8s_cluster_version,omitempty"`
+
+	// kernel version
+	KernelVersion string `json:"kernel_version,omitempty"`
+
 	// last login timestamp
 	LastLoginTimestamp string `json:"last_login_timestamp,omitempty"`
+
+	// last login uid
+	LastLoginUID string `json:"last_login_uid,omitempty"`
 
 	// last login user
 	LastLoginUser string `json:"last_login_user,omitempty"`
 
+	// last login user sid
+	LastLoginUserSid string `json:"last_login_user_sid,omitempty"`
+
+	// last reboot
+	LastReboot string `json:"last_reboot,omitempty"`
+
 	// last seen
 	LastSeen string `json:"last_seen,omitempty"`
+
+	// linux sensor mode
+	LinuxSensorMode string `json:"linux_sensor_mode,omitempty"`
 
 	// local ip
 	LocalIP string `json:"local_ip,omitempty"`
@@ -121,6 +175,9 @@ type DeviceDevice struct {
 	// meta
 	Meta *DeviceDeviceMeta `json:"meta,omitempty"`
 
+	// migration completed time
+	MigrationCompletedTime string `json:"migration_completed_time,omitempty"`
+
 	// minor version
 	MinorVersion string `json:"minor_version,omitempty"`
 
@@ -132,6 +189,9 @@ type DeviceDevice struct {
 
 	// os build
 	OsBuild string `json:"os_build,omitempty"`
+
+	// os product name
+	OsProductName string `json:"os_product_name,omitempty"`
 
 	// os version
 	OsVersion string `json:"os_version,omitempty"`
@@ -198,6 +258,9 @@ type DeviceDevice struct {
 
 	// release group
 	ReleaseGroup string `json:"release_group,omitempty"`
+
+	// rtr state
+	RtrState string `json:"rtr_state,omitempty"`
 
 	// serial number
 	SerialNumber string `json:"serial_number,omitempty"`
@@ -400,6 +463,11 @@ func (m *DeviceDevice) ContextValidate(ctx context.Context, formats strfmt.Regis
 func (m *DeviceDevice) contextValidateDevicePolicies(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.DevicePolicies != nil {
+
+		if swag.IsZero(m.DevicePolicies) { // not required
+			return nil
+		}
+
 		if err := m.DevicePolicies.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("device_policies")
@@ -416,6 +484,11 @@ func (m *DeviceDevice) contextValidateDevicePolicies(ctx context.Context, format
 func (m *DeviceDevice) contextValidateManagedApps(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ManagedApps != nil {
+
+		if swag.IsZero(m.ManagedApps) { // not required
+			return nil
+		}
+
 		if err := m.ManagedApps.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("managed_apps")
@@ -432,6 +505,11 @@ func (m *DeviceDevice) contextValidateManagedApps(ctx context.Context, formats s
 func (m *DeviceDevice) contextValidateMeta(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Meta != nil {
+
+		if swag.IsZero(m.Meta) { // not required
+			return nil
+		}
+
 		if err := m.Meta.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("meta")
@@ -450,6 +528,11 @@ func (m *DeviceDevice) contextValidatePolicies(ctx context.Context, formats strf
 	for i := 0; i < len(m.Policies); i++ {
 
 		if m.Policies[i] != nil {
+
+			if swag.IsZero(m.Policies[i]) { // not required
+				return nil
+			}
+
 			if err := m.Policies[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("policies" + "." + strconv.Itoa(i))

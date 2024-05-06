@@ -19,9 +19,9 @@ import (
 // swagger:model domain.Device
 type DomainDevice struct {
 
-	// platform ID numeric
+	//
 	// Required: true
-	PlatformIDNumeric *int32 `json:"PlatformIDNumeric"`
+	Nr *int32 `json:"_"`
 
 	// agent version
 	AgentVersion string `json:"agent_version,omitempty"`
@@ -38,6 +38,9 @@ type DomainDevice struct {
 	// device id
 	// Required: true
 	DeviceID *string `json:"device_id"`
+
+	// device policies
+	DevicePolicies *DomainMappedDevicePolicies `json:"device_policies,omitempty"`
 
 	// external ip
 	ExternalIP string `json:"external_ip,omitempty"`
@@ -128,11 +131,15 @@ type DomainDevice struct {
 func (m *DomainDevice) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validatePlatformIDNumeric(formats); err != nil {
+	if err := m.validateNr(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateDeviceID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDevicePolicies(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -142,9 +149,9 @@ func (m *DomainDevice) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DomainDevice) validatePlatformIDNumeric(formats strfmt.Registry) error {
+func (m *DomainDevice) validateNr(formats strfmt.Registry) error {
 
-	if err := validate.Required("PlatformIDNumeric", "body", m.PlatformIDNumeric); err != nil {
+	if err := validate.Required("_", "body", m.Nr); err != nil {
 		return err
 	}
 
@@ -160,8 +167,57 @@ func (m *DomainDevice) validateDeviceID(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this domain device based on context it is used
+func (m *DomainDevice) validateDevicePolicies(formats strfmt.Registry) error {
+	if swag.IsZero(m.DevicePolicies) { // not required
+		return nil
+	}
+
+	if m.DevicePolicies != nil {
+		if err := m.DevicePolicies.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("device_policies")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("device_policies")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this domain device based on the context it is used
 func (m *DomainDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDevicePolicies(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DomainDevice) contextValidateDevicePolicies(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DevicePolicies != nil {
+
+		if swag.IsZero(m.DevicePolicies) { // not required
+			return nil
+		}
+
+		if err := m.DevicePolicies.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("device_policies")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("device_policies")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

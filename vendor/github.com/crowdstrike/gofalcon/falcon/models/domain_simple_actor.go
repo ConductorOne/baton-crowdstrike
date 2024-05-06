@@ -19,6 +19,9 @@ import (
 // swagger:model domain.SimpleActor
 type DomainSimpleActor struct {
 
+	// entitlements
+	Entitlements []DomainEntity `json:"entitlements"`
+
 	// id
 	// Required: true
 	ID *int64 `json:"id"`
@@ -99,6 +102,11 @@ func (m *DomainSimpleActor) ContextValidate(ctx context.Context, formats strfmt.
 func (m *DomainSimpleActor) contextValidateThumbnail(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Thumbnail != nil {
+
+		if swag.IsZero(m.Thumbnail) { // not required
+			return nil
+		}
+
 		if err := m.Thumbnail.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("thumbnail")

@@ -62,6 +62,12 @@ GetCSPMAzureAccountParams contains all the parameters to send to the API endpoin
 */
 type GetCSPMAzureAccountParams struct {
 
+	/* CspmLite.
+
+	   Only return CSPM Lite accounts
+	*/
+	CspmLite *string
+
 	/* Ids.
 
 	   SubscriptionIDs of accounts to select for this status operation. If this is empty then all accounts are returned.
@@ -93,6 +99,12 @@ type GetCSPMAzureAccountParams struct {
 	   Account status to filter results by.
 	*/
 	Status *string
+
+	/* TenantIds.
+
+	   Tenant ids to filter azure accounts
+	*/
+	TenantIds []string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -158,6 +170,17 @@ func (o *GetCSPMAzureAccountParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithCspmLite adds the cspmLite to the get c s p m azure account params
+func (o *GetCSPMAzureAccountParams) WithCspmLite(cspmLite *string) *GetCSPMAzureAccountParams {
+	o.SetCspmLite(cspmLite)
+	return o
+}
+
+// SetCspmLite adds the cspmLite to the get c s p m azure account params
+func (o *GetCSPMAzureAccountParams) SetCspmLite(cspmLite *string) {
+	o.CspmLite = cspmLite
+}
+
 // WithIds adds the ids to the get c s p m azure account params
 func (o *GetCSPMAzureAccountParams) WithIds(ids []string) *GetCSPMAzureAccountParams {
 	o.SetIds(ids)
@@ -213,6 +236,17 @@ func (o *GetCSPMAzureAccountParams) SetStatus(status *string) {
 	o.Status = status
 }
 
+// WithTenantIds adds the tenantIds to the get c s p m azure account params
+func (o *GetCSPMAzureAccountParams) WithTenantIds(tenantIds []string) *GetCSPMAzureAccountParams {
+	o.SetTenantIds(tenantIds)
+	return o
+}
+
+// SetTenantIds adds the tenantIds to the get c s p m azure account params
+func (o *GetCSPMAzureAccountParams) SetTenantIds(tenantIds []string) {
+	o.TenantIds = tenantIds
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *GetCSPMAzureAccountParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -220,6 +254,23 @@ func (o *GetCSPMAzureAccountParams) WriteToRequest(r runtime.ClientRequest, reg 
 		return err
 	}
 	var res []error
+
+	if o.CspmLite != nil {
+
+		// query param cspm_lite
+		var qrCspmLite string
+
+		if o.CspmLite != nil {
+			qrCspmLite = *o.CspmLite
+		}
+		qCspmLite := qrCspmLite
+		if qCspmLite != "" {
+
+			if err := r.SetQueryParam("cspm_lite", qCspmLite); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Ids != nil {
 
@@ -300,6 +351,17 @@ func (o *GetCSPMAzureAccountParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.TenantIds != nil {
+
+		// binding items for tenant_ids
+		joinedTenantIds := o.bindParamTenantIds(reg)
+
+		// query array param tenant_ids
+		if err := r.SetQueryParam("tenant_ids", joinedTenantIds...); err != nil {
+			return err
+		}
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -321,4 +383,21 @@ func (o *GetCSPMAzureAccountParams) bindParamIds(formats strfmt.Registry) []stri
 	idsIS := swag.JoinByFormat(idsIC, "multi")
 
 	return idsIS
+}
+
+// bindParamGetCSPMAzureAccount binds the parameter tenant_ids
+func (o *GetCSPMAzureAccountParams) bindParamTenantIds(formats strfmt.Registry) []string {
+	tenantIdsIR := o.TenantIds
+
+	var tenantIdsIC []string
+	for _, tenantIdsIIR := range tenantIdsIR { // explode []string
+
+		tenantIdsIIV := tenantIdsIIR // string as string
+		tenantIdsIC = append(tenantIdsIC, tenantIdsIIV)
+	}
+
+	// items.CollectionFormat: "multi"
+	tenantIdsIS := swag.JoinByFormat(tenantIdsIC, "multi")
+
+	return tenantIdsIS
 }

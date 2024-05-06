@@ -62,14 +62,7 @@ func (o *TokensUpdateReader) ReadResponse(response runtime.ClientResponse, consu
 		}
 		return nil, result
 	default:
-		result := NewTokensUpdateDefault(response.Code())
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		if response.Code()/100 == 2 {
-			return result, nil
-		}
-		return nil, result
+		return nil, runtime.NewAPIError("[PATCH /installation-tokens/entities/tokens/v1] tokens-update", response, response.Code())
 	}
 }
 
@@ -85,6 +78,10 @@ OK
 */
 type TokensUpdateOK struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -93,7 +90,7 @@ type TokensUpdateOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaQueryResponse
+	Payload *models.MsaspecQueryResponse
 }
 
 // IsSuccess returns true when this tokens update o k response has a 2xx status code
@@ -134,11 +131,18 @@ func (o *TokensUpdateOK) String() string {
 	return fmt.Sprintf("[PATCH /installation-tokens/entities/tokens/v1][%d] tokensUpdateOK  %+v", 200, o.Payload)
 }
 
-func (o *TokensUpdateOK) GetPayload() *models.MsaQueryResponse {
+func (o *TokensUpdateOK) GetPayload() *models.MsaspecQueryResponse {
 	return o.Payload
 }
 
 func (o *TokensUpdateOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -162,7 +166,7 @@ func (o *TokensUpdateOK) readResponse(response runtime.ClientResponse, consumer 
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaQueryResponse)
+	o.Payload = new(models.MsaspecQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -184,6 +188,10 @@ Bad Request
 */
 type TokensUpdateBadRequest struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -192,7 +200,7 @@ type TokensUpdateBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this tokens update bad request response has a 2xx status code
@@ -233,11 +241,18 @@ func (o *TokensUpdateBadRequest) String() string {
 	return fmt.Sprintf("[PATCH /installation-tokens/entities/tokens/v1][%d] tokensUpdateBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *TokensUpdateBadRequest) GetPayload() *models.MsaReplyMetaOnly {
+func (o *TokensUpdateBadRequest) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *TokensUpdateBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -261,7 +276,7 @@ func (o *TokensUpdateBadRequest) readResponse(response runtime.ClientResponse, c
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -283,6 +298,10 @@ Forbidden
 */
 type TokensUpdateForbidden struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -291,7 +310,7 @@ type TokensUpdateForbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this tokens update forbidden response has a 2xx status code
@@ -332,11 +351,18 @@ func (o *TokensUpdateForbidden) String() string {
 	return fmt.Sprintf("[PATCH /installation-tokens/entities/tokens/v1][%d] tokensUpdateForbidden  %+v", 403, o.Payload)
 }
 
-func (o *TokensUpdateForbidden) GetPayload() *models.MsaReplyMetaOnly {
+func (o *TokensUpdateForbidden) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *TokensUpdateForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -360,7 +386,7 @@ func (o *TokensUpdateForbidden) readResponse(response runtime.ClientResponse, co
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -382,6 +408,10 @@ Not Found
 */
 type TokensUpdateNotFound struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -390,7 +420,7 @@ type TokensUpdateNotFound struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaQueryResponse
+	Payload *models.MsaspecQueryResponse
 }
 
 // IsSuccess returns true when this tokens update not found response has a 2xx status code
@@ -431,11 +461,18 @@ func (o *TokensUpdateNotFound) String() string {
 	return fmt.Sprintf("[PATCH /installation-tokens/entities/tokens/v1][%d] tokensUpdateNotFound  %+v", 404, o.Payload)
 }
 
-func (o *TokensUpdateNotFound) GetPayload() *models.MsaQueryResponse {
+func (o *TokensUpdateNotFound) GetPayload() *models.MsaspecQueryResponse {
 	return o.Payload
 }
 
 func (o *TokensUpdateNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -459,7 +496,7 @@ func (o *TokensUpdateNotFound) readResponse(response runtime.ClientResponse, con
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaQueryResponse)
+	o.Payload = new(models.MsaspecQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -480,6 +517,10 @@ TokensUpdateTooManyRequests describes a response with status code 429, with defa
 Too Many Requests
 */
 type TokensUpdateTooManyRequests struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -540,6 +581,13 @@ func (o *TokensUpdateTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *TokensUpdateTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -595,6 +643,10 @@ Internal Server Error
 */
 type TokensUpdateInternalServerError struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -603,7 +655,7 @@ type TokensUpdateInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this tokens update internal server error response has a 2xx status code
@@ -644,11 +696,18 @@ func (o *TokensUpdateInternalServerError) String() string {
 	return fmt.Sprintf("[PATCH /installation-tokens/entities/tokens/v1][%d] tokensUpdateInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *TokensUpdateInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
+func (o *TokensUpdateInternalServerError) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *TokensUpdateInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -672,79 +731,7 @@ func (o *TokensUpdateInternalServerError) readResponse(response runtime.ClientRe
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
-}
-
-// NewTokensUpdateDefault creates a TokensUpdateDefault with default headers values
-func NewTokensUpdateDefault(code int) *TokensUpdateDefault {
-	return &TokensUpdateDefault{
-		_statusCode: code,
-	}
-}
-
-/*
-TokensUpdateDefault describes a response with status code -1, with default header values.
-
-OK
-*/
-type TokensUpdateDefault struct {
-	_statusCode int
-
-	Payload *models.MsaQueryResponse
-}
-
-// IsSuccess returns true when this tokens update default response has a 2xx status code
-func (o *TokensUpdateDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this tokens update default response has a 3xx status code
-func (o *TokensUpdateDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this tokens update default response has a 4xx status code
-func (o *TokensUpdateDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this tokens update default response has a 5xx status code
-func (o *TokensUpdateDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this tokens update default response a status code equal to that given
-func (o *TokensUpdateDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
-// Code gets the status code for the tokens update default response
-func (o *TokensUpdateDefault) Code() int {
-	return o._statusCode
-}
-
-func (o *TokensUpdateDefault) Error() string {
-	return fmt.Sprintf("[PATCH /installation-tokens/entities/tokens/v1][%d] tokens-update default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *TokensUpdateDefault) String() string {
-	return fmt.Sprintf("[PATCH /installation-tokens/entities/tokens/v1][%d] tokens-update default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *TokensUpdateDefault) GetPayload() *models.MsaQueryResponse {
-	return o.Payload
-}
-
-func (o *TokensUpdateDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.MsaQueryResponse)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

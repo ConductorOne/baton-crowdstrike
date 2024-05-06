@@ -24,6 +24,12 @@ type DeviceMappedDevicePolicies struct {
 	// automox
 	Automox *DeviceDevicePolicy `json:"automox,omitempty"`
 
+	// aws verified access
+	AwsVerifiedAccess *DeviceDevicePolicy `json:"aws-verified-access,omitempty"`
+
+	// data protection
+	DataProtection *DeviceDevicePolicy `json:"data-protection,omitempty"`
+
 	// device control
 	DeviceControl *DeviceDevicePolicy `json:"device_control,omitempty"`
 
@@ -36,11 +42,17 @@ type DeviceMappedDevicePolicies struct {
 	// global config
 	GlobalConfig *DeviceDevicePolicy `json:"global_config,omitempty"`
 
+	// host retention
+	HostRetention *DeviceDevicePolicy `json:"host-retention,omitempty"`
+
 	// identity protection
 	IdentityProtection *DeviceDevicePolicy `json:"identity-protection,omitempty"`
 
 	// jumpcloud
 	Jumpcloud *DeviceDevicePolicy `json:"jumpcloud,omitempty"`
+
+	// kubernetes admission control
+	KubernetesAdmissionControl *DeviceDevicePolicy `json:"kubernetes-admission-control,omitempty"`
 
 	// mobile
 	Mobile *DeviceDevicePolicy `json:"mobile,omitempty"`
@@ -54,8 +66,20 @@ type DeviceMappedDevicePolicies struct {
 	// remote response
 	RemoteResponse *DeviceDevicePolicy `json:"remote_response,omitempty"`
 
+	// sca
+	Sca *DeviceDevicePolicy `json:"sca,omitempty"`
+
 	// sensor update
 	SensorUpdate *DeviceDevicePolicy `json:"sensor_update,omitempty"`
+
+	// system tray
+	SystemTray *DeviceDevicePolicy `json:"system-tray,omitempty"`
+
+	// vulnerability management
+	VulnerabilityManagement *DeviceDevicePolicy `json:"vulnerability-management,omitempty"`
+
+	// ztl
+	Ztl *DeviceDevicePolicy `json:"ztl,omitempty"`
 }
 
 // Validate validates this device mapped device policies
@@ -67,6 +91,14 @@ func (m *DeviceMappedDevicePolicies) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateAutomox(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAwsVerifiedAccess(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDataProtection(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -86,11 +118,19 @@ func (m *DeviceMappedDevicePolicies) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateHostRetention(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateIdentityProtection(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateJumpcloud(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateKubernetesAdmissionControl(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -110,7 +150,23 @@ func (m *DeviceMappedDevicePolicies) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateSca(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSensorUpdate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSystemTray(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVulnerabilityManagement(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateZtl(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -150,6 +206,44 @@ func (m *DeviceMappedDevicePolicies) validateAutomox(formats strfmt.Registry) er
 				return ve.ValidateName("automox")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("automox")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) validateAwsVerifiedAccess(formats strfmt.Registry) error {
+	if swag.IsZero(m.AwsVerifiedAccess) { // not required
+		return nil
+	}
+
+	if m.AwsVerifiedAccess != nil {
+		if err := m.AwsVerifiedAccess.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aws-verified-access")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("aws-verified-access")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) validateDataProtection(formats strfmt.Registry) error {
+	if swag.IsZero(m.DataProtection) { // not required
+		return nil
+	}
+
+	if m.DataProtection != nil {
+		if err := m.DataProtection.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("data-protection")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("data-protection")
 			}
 			return err
 		}
@@ -234,6 +328,25 @@ func (m *DeviceMappedDevicePolicies) validateGlobalConfig(formats strfmt.Registr
 	return nil
 }
 
+func (m *DeviceMappedDevicePolicies) validateHostRetention(formats strfmt.Registry) error {
+	if swag.IsZero(m.HostRetention) { // not required
+		return nil
+	}
+
+	if m.HostRetention != nil {
+		if err := m.HostRetention.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("host-retention")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("host-retention")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DeviceMappedDevicePolicies) validateIdentityProtection(formats strfmt.Registry) error {
 	if swag.IsZero(m.IdentityProtection) { // not required
 		return nil
@@ -264,6 +377,25 @@ func (m *DeviceMappedDevicePolicies) validateJumpcloud(formats strfmt.Registry) 
 				return ve.ValidateName("jumpcloud")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("jumpcloud")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) validateKubernetesAdmissionControl(formats strfmt.Registry) error {
+	if swag.IsZero(m.KubernetesAdmissionControl) { // not required
+		return nil
+	}
+
+	if m.KubernetesAdmissionControl != nil {
+		if err := m.KubernetesAdmissionControl.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("kubernetes-admission-control")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("kubernetes-admission-control")
 			}
 			return err
 		}
@@ -348,6 +480,25 @@ func (m *DeviceMappedDevicePolicies) validateRemoteResponse(formats strfmt.Regis
 	return nil
 }
 
+func (m *DeviceMappedDevicePolicies) validateSca(formats strfmt.Registry) error {
+	if swag.IsZero(m.Sca) { // not required
+		return nil
+	}
+
+	if m.Sca != nil {
+		if err := m.Sca.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("sca")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("sca")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DeviceMappedDevicePolicies) validateSensorUpdate(formats strfmt.Registry) error {
 	if swag.IsZero(m.SensorUpdate) { // not required
 		return nil
@@ -359,6 +510,63 @@ func (m *DeviceMappedDevicePolicies) validateSensorUpdate(formats strfmt.Registr
 				return ve.ValidateName("sensor_update")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("sensor_update")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) validateSystemTray(formats strfmt.Registry) error {
+	if swag.IsZero(m.SystemTray) { // not required
+		return nil
+	}
+
+	if m.SystemTray != nil {
+		if err := m.SystemTray.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system-tray")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("system-tray")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) validateVulnerabilityManagement(formats strfmt.Registry) error {
+	if swag.IsZero(m.VulnerabilityManagement) { // not required
+		return nil
+	}
+
+	if m.VulnerabilityManagement != nil {
+		if err := m.VulnerabilityManagement.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vulnerability-management")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("vulnerability-management")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) validateZtl(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ztl) { // not required
+		return nil
+	}
+
+	if m.Ztl != nil {
+		if err := m.Ztl.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ztl")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("ztl")
 			}
 			return err
 		}
@@ -379,6 +587,14 @@ func (m *DeviceMappedDevicePolicies) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAwsVerifiedAccess(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataProtection(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDeviceControl(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -395,11 +611,19 @@ func (m *DeviceMappedDevicePolicies) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateHostRetention(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateIdentityProtection(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateJumpcloud(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateKubernetesAdmissionControl(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -419,7 +643,23 @@ func (m *DeviceMappedDevicePolicies) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSca(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSensorUpdate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSystemTray(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVulnerabilityManagement(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateZtl(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -432,6 +672,11 @@ func (m *DeviceMappedDevicePolicies) ContextValidate(ctx context.Context, format
 func (m *DeviceMappedDevicePolicies) contextValidateAirlock(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Airlock != nil {
+
+		if swag.IsZero(m.Airlock) { // not required
+			return nil
+		}
+
 		if err := m.Airlock.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("airlock")
@@ -448,6 +693,11 @@ func (m *DeviceMappedDevicePolicies) contextValidateAirlock(ctx context.Context,
 func (m *DeviceMappedDevicePolicies) contextValidateAutomox(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Automox != nil {
+
+		if swag.IsZero(m.Automox) { // not required
+			return nil
+		}
+
 		if err := m.Automox.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("automox")
@@ -461,9 +711,56 @@ func (m *DeviceMappedDevicePolicies) contextValidateAutomox(ctx context.Context,
 	return nil
 }
 
+func (m *DeviceMappedDevicePolicies) contextValidateAwsVerifiedAccess(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AwsVerifiedAccess != nil {
+
+		if swag.IsZero(m.AwsVerifiedAccess) { // not required
+			return nil
+		}
+
+		if err := m.AwsVerifiedAccess.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("aws-verified-access")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("aws-verified-access")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) contextValidateDataProtection(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DataProtection != nil {
+
+		if swag.IsZero(m.DataProtection) { // not required
+			return nil
+		}
+
+		if err := m.DataProtection.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("data-protection")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("data-protection")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DeviceMappedDevicePolicies) contextValidateDeviceControl(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.DeviceControl != nil {
+
+		if swag.IsZero(m.DeviceControl) { // not required
+			return nil
+		}
+
 		if err := m.DeviceControl.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("device_control")
@@ -480,6 +777,11 @@ func (m *DeviceMappedDevicePolicies) contextValidateDeviceControl(ctx context.Co
 func (m *DeviceMappedDevicePolicies) contextValidateFim(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Fim != nil {
+
+		if swag.IsZero(m.Fim) { // not required
+			return nil
+		}
+
 		if err := m.Fim.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("fim")
@@ -496,6 +798,11 @@ func (m *DeviceMappedDevicePolicies) contextValidateFim(ctx context.Context, for
 func (m *DeviceMappedDevicePolicies) contextValidateFirewall(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Firewall != nil {
+
+		if swag.IsZero(m.Firewall) { // not required
+			return nil
+		}
+
 		if err := m.Firewall.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("firewall")
@@ -512,6 +819,11 @@ func (m *DeviceMappedDevicePolicies) contextValidateFirewall(ctx context.Context
 func (m *DeviceMappedDevicePolicies) contextValidateGlobalConfig(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.GlobalConfig != nil {
+
+		if swag.IsZero(m.GlobalConfig) { // not required
+			return nil
+		}
+
 		if err := m.GlobalConfig.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("global_config")
@@ -525,9 +837,35 @@ func (m *DeviceMappedDevicePolicies) contextValidateGlobalConfig(ctx context.Con
 	return nil
 }
 
+func (m *DeviceMappedDevicePolicies) contextValidateHostRetention(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.HostRetention != nil {
+
+		if swag.IsZero(m.HostRetention) { // not required
+			return nil
+		}
+
+		if err := m.HostRetention.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("host-retention")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("host-retention")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DeviceMappedDevicePolicies) contextValidateIdentityProtection(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.IdentityProtection != nil {
+
+		if swag.IsZero(m.IdentityProtection) { // not required
+			return nil
+		}
+
 		if err := m.IdentityProtection.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("identity-protection")
@@ -544,6 +882,11 @@ func (m *DeviceMappedDevicePolicies) contextValidateIdentityProtection(ctx conte
 func (m *DeviceMappedDevicePolicies) contextValidateJumpcloud(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Jumpcloud != nil {
+
+		if swag.IsZero(m.Jumpcloud) { // not required
+			return nil
+		}
+
 		if err := m.Jumpcloud.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("jumpcloud")
@@ -557,9 +900,35 @@ func (m *DeviceMappedDevicePolicies) contextValidateJumpcloud(ctx context.Contex
 	return nil
 }
 
+func (m *DeviceMappedDevicePolicies) contextValidateKubernetesAdmissionControl(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.KubernetesAdmissionControl != nil {
+
+		if swag.IsZero(m.KubernetesAdmissionControl) { // not required
+			return nil
+		}
+
+		if err := m.KubernetesAdmissionControl.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("kubernetes-admission-control")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("kubernetes-admission-control")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DeviceMappedDevicePolicies) contextValidateMobile(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Mobile != nil {
+
+		if swag.IsZero(m.Mobile) { // not required
+			return nil
+		}
+
 		if err := m.Mobile.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("mobile")
@@ -576,6 +945,11 @@ func (m *DeviceMappedDevicePolicies) contextValidateMobile(ctx context.Context, 
 func (m *DeviceMappedDevicePolicies) contextValidateNetskope(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Netskope != nil {
+
+		if swag.IsZero(m.Netskope) { // not required
+			return nil
+		}
+
 		if err := m.Netskope.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("netskope")
@@ -592,6 +966,11 @@ func (m *DeviceMappedDevicePolicies) contextValidateNetskope(ctx context.Context
 func (m *DeviceMappedDevicePolicies) contextValidatePrevention(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Prevention != nil {
+
+		if swag.IsZero(m.Prevention) { // not required
+			return nil
+		}
+
 		if err := m.Prevention.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("prevention")
@@ -608,6 +987,11 @@ func (m *DeviceMappedDevicePolicies) contextValidatePrevention(ctx context.Conte
 func (m *DeviceMappedDevicePolicies) contextValidateRemoteResponse(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.RemoteResponse != nil {
+
+		if swag.IsZero(m.RemoteResponse) { // not required
+			return nil
+		}
+
 		if err := m.RemoteResponse.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("remote_response")
@@ -621,14 +1005,103 @@ func (m *DeviceMappedDevicePolicies) contextValidateRemoteResponse(ctx context.C
 	return nil
 }
 
+func (m *DeviceMappedDevicePolicies) contextValidateSca(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Sca != nil {
+
+		if swag.IsZero(m.Sca) { // not required
+			return nil
+		}
+
+		if err := m.Sca.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("sca")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("sca")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DeviceMappedDevicePolicies) contextValidateSensorUpdate(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.SensorUpdate != nil {
+
+		if swag.IsZero(m.SensorUpdate) { // not required
+			return nil
+		}
+
 		if err := m.SensorUpdate.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("sensor_update")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("sensor_update")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) contextValidateSystemTray(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SystemTray != nil {
+
+		if swag.IsZero(m.SystemTray) { // not required
+			return nil
+		}
+
+		if err := m.SystemTray.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("system-tray")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("system-tray")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) contextValidateVulnerabilityManagement(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.VulnerabilityManagement != nil {
+
+		if swag.IsZero(m.VulnerabilityManagement) { // not required
+			return nil
+		}
+
+		if err := m.VulnerabilityManagement.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("vulnerability-management")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("vulnerability-management")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceMappedDevicePolicies) contextValidateZtl(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ztl != nil {
+
+		if swag.IsZero(m.Ztl) { // not required
+			return nil
+		}
+
+		if err := m.Ztl.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ztl")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("ztl")
 			}
 			return err
 		}

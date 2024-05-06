@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -18,6 +19,10 @@ import (
 //
 // swagger:model domain.NotificationV1
 type DomainNotificationV1 struct {
+
+	// actor slug
+	// Required: true
+	ActorSlug *string `json:"actor_slug"`
 
 	// The email of the user who is assigned to this notification
 	AssignedToUID string `json:"assigned_to_uid,omitempty"`
@@ -72,9 +77,21 @@ type DomainNotificationV1 struct {
 	// Required: true
 	ItemType *string `json:"item_type"`
 
+	// logs
+	Logs []*SadomainNotificationLog `json:"logs"`
+
 	// ID of the raw intel item that matched the rule
 	// Required: true
 	RawIntelID *string `json:"raw_intel_id"`
+
+	// The name of the user who created the rule
+	RuleCreatorName string `json:"rule_creator_name,omitempty"`
+
+	// The user ID of the user who created the rule
+	RuleCreatorUID string `json:"rule_creator_uid,omitempty"`
+
+	// The unique UUID of the user who created the rule
+	RuleCreatorUUID string `json:"rule_creator_uuid,omitempty"`
 
 	// The ID of the rule that generated this notification
 	// Required: true
@@ -112,6 +129,10 @@ type DomainNotificationV1 struct {
 func (m *DomainNotificationV1) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateActorSlug(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateBreachSummary(formats); err != nil {
 		res = append(res, err)
 	}
@@ -137,6 +158,10 @@ func (m *DomainNotificationV1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateItemType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLogs(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -175,6 +200,15 @@ func (m *DomainNotificationV1) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DomainNotificationV1) validateActorSlug(formats strfmt.Registry) error {
+
+	if err := validate.Required("actor_slug", "body", m.ActorSlug); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -254,6 +288,32 @@ func (m *DomainNotificationV1) validateItemType(formats strfmt.Registry) error {
 
 	if err := validate.Required("item_type", "body", m.ItemType); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *DomainNotificationV1) validateLogs(formats strfmt.Registry) error {
+	if swag.IsZero(m.Logs) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Logs); i++ {
+		if swag.IsZero(m.Logs[i]) { // not required
+			continue
+		}
+
+		if m.Logs[i] != nil {
+			if err := m.Logs[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("logs" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("logs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -353,6 +413,10 @@ func (m *DomainNotificationV1) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateLogs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateTyposquatting(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -366,6 +430,11 @@ func (m *DomainNotificationV1) ContextValidate(ctx context.Context, formats strf
 func (m *DomainNotificationV1) contextValidateBreachSummary(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.BreachSummary != nil {
+
+		if swag.IsZero(m.BreachSummary) { // not required
+			return nil
+		}
+
 		if err := m.BreachSummary.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("breach_summary")
@@ -379,9 +448,39 @@ func (m *DomainNotificationV1) contextValidateBreachSummary(ctx context.Context,
 	return nil
 }
 
+func (m *DomainNotificationV1) contextValidateLogs(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Logs); i++ {
+
+		if m.Logs[i] != nil {
+
+			if swag.IsZero(m.Logs[i]) { // not required
+				return nil
+			}
+
+			if err := m.Logs[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("logs" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("logs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *DomainNotificationV1) contextValidateTyposquatting(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Typosquatting != nil {
+
+		if swag.IsZero(m.Typosquatting) { // not required
+			return nil
+		}
+
 		if err := m.Typosquatting.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("typosquatting")

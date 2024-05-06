@@ -30,12 +30,18 @@ type DomainScanMetadata struct {
 	// Required: true
 	HostID *string `json:"host_id"`
 
+	// host name
+	HostName string `json:"host_name,omitempty"`
+
 	// host scan id
 	HostScanID string `json:"host_scan_id,omitempty"`
 
 	// last updated
 	// Format: date-time
 	LastUpdated strfmt.DateTime `json:"last_updated,omitempty"`
+
+	// scan control reason
+	ScanControlReason string `json:"scan_control_reason,omitempty"`
 
 	// scan host metadata id
 	ScanHostMetadataID string `json:"scan_host_metadata_id,omitempty"`
@@ -162,6 +168,11 @@ func (m *DomainScanMetadata) ContextValidate(ctx context.Context, formats strfmt
 func (m *DomainScanMetadata) contextValidateFilecount(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Filecount != nil {
+
+		if swag.IsZero(m.Filecount) { // not required
+			return nil
+		}
+
 		if err := m.Filecount.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("filecount")

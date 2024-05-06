@@ -19,6 +19,10 @@ import (
 // swagger:model sadomain.CreateRuleRequestV1
 type SadomainCreateRuleRequestV1 struct {
 
+	// Monitor only for breach data. Must be accompanied by breach_monitoring_enabled:true.
+	// Required: true
+	BreachMonitorOnly *bool `json:"breach_monitor_only"`
+
 	// Whether to monitor for breach data. Available only for `Company Domains` and `Email addresses` rule topics. When enabled, ownership of the monitored domains or emails is required
 	// Required: true
 	BreachMonitoringEnabled *bool `json:"breach_monitoring_enabled"`
@@ -31,11 +35,15 @@ type SadomainCreateRuleRequestV1 struct {
 	// Required: true
 	Name *string `json:"name"`
 
-	// The permissions for a given rule which specifies the rule's access by other users. Possible values: `private`, `public`
+	// If the rule was generated based on a template, the id of the template
+	// Required: true
+	OriginatingTemplateID *string `json:"originating_template_id"`
+
+	// The permissions for a given rule which specifies the rule's access by other users. Possible values: [`public`, `private`]
 	// Required: true
 	Permissions *string `json:"permissions"`
 
-	// The priority for a given rule. Possible values: `low`, `medium`, `high`
+	// The priority for a given rule. Possible values: [`low`, `medium`, `high`]
 	// Required: true
 	Priority *string `json:"priority"`
 
@@ -43,7 +51,7 @@ type SadomainCreateRuleRequestV1 struct {
 	// Required: true
 	SubstringMatchingEnabled *bool `json:"substring_matching_enabled"`
 
-	// The topic of a given rule. Possible values: `SA_BRAND_PRODUCT`, `SA_VIP`, `SA_IP`, `SA_CVE`, `SA_BIN`, `SA_DOMAIN`, `SA_TYPOSQUATTING`, `SA_THIRD_PARTY`, `SA_EMAIL`, `SA_ALIAS`, `SA_AUTHOR`, `SA_CUSTOM`
+	// The topic of a given rule. Possible values: [`SA_BRAND_PRODUCT`, `SA_VIP`, `SA_THIRD_PARTY`, `SA_IP`, `SA_CVE`, `SA_BIN`, `SA_DOMAIN`, `SA_EMAIL`, `SA_ALIAS`, `SA_AUTHOR`, `SA_CUSTOM`, `SA_TYPOSQUATTING`]
 	// Required: true
 	Topic *string `json:"topic"`
 }
@@ -51,6 +59,10 @@ type SadomainCreateRuleRequestV1 struct {
 // Validate validates this sadomain create rule request v1
 func (m *SadomainCreateRuleRequestV1) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateBreachMonitorOnly(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateBreachMonitoringEnabled(formats); err != nil {
 		res = append(res, err)
@@ -61,6 +73,10 @@ func (m *SadomainCreateRuleRequestV1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOriginatingTemplateID(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -86,6 +102,15 @@ func (m *SadomainCreateRuleRequestV1) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SadomainCreateRuleRequestV1) validateBreachMonitorOnly(formats strfmt.Registry) error {
+
+	if err := validate.Required("breach_monitor_only", "body", m.BreachMonitorOnly); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SadomainCreateRuleRequestV1) validateBreachMonitoringEnabled(formats strfmt.Registry) error {
 
 	if err := validate.Required("breach_monitoring_enabled", "body", m.BreachMonitoringEnabled); err != nil {
@@ -107,6 +132,15 @@ func (m *SadomainCreateRuleRequestV1) validateFilter(formats strfmt.Registry) er
 func (m *SadomainCreateRuleRequestV1) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SadomainCreateRuleRequestV1) validateOriginatingTemplateID(formats strfmt.Registry) error {
+
+	if err := validate.Required("originating_template_id", "body", m.OriginatingTemplateID); err != nil {
 		return err
 	}
 

@@ -70,11 +70,12 @@ type QueryVulnerabilitiesParams struct {
 
 	/* Filter.
 
-	     Filter items using a query in Falcon Query Language (FQL). Wildcards * are unsupported.
+	     Filter items using a query in Falcon Query Language (FQL). Wildcards * and empty filter values are unsupported.
+				Available filter fields that supports match (~): N/A
+				Available filter fields that supports exact match: aid, cid, last_seen_within, status, cve.id, cve.is_cisa_kev, cve.remediation_level, cve.cps_rating, cve.exprt_rating, cve.exploit_status_to_include, cve.severity, cve.types, host_info.asset_criticality, host_info.asset_roles, host_info.internet_exposure, host_info.tags, host_info.groups, host_info.product_type_desc, host_info.platform_name, suppression_info.is_suppressed, suppression_info.reason
+				Available filter fields that supports wildcard (*): N/A
+				Available filter fields that supports range comparisons (>, <, >=, <=): created_timestamp, closed_timestamp, updated_timestamp
 
-	Common filter options include:
-
-	<ul><li>created_timestamp:>'2019-11-25T22:36:12Z'</li><li>closed_timestamp:>'2019-11-25T22:36:12Z'</li><li>aid:'8e7656b27d8c49a34a1af416424d6231'</li></ul>
 	*/
 	Filter string
 
@@ -86,9 +87,9 @@ type QueryVulnerabilitiesParams struct {
 
 	/* Sort.
 
-	     Sort vulnerabilities by their properties. Common sort options include:
+	     Sort vulnerabilities by their properties. Available sort options:
 
-	<ul><li>created_timestamp|desc</li><li>closed_timestamp|asc</li></ul>
+	<ul><li>updated_timestamp|asc/desc</li><li>closed_timestamp|asc</li><li>updated_timestamp|asc/desc</li></ul>. Can be used in a format <field>|asc for ascending order or <field>|desc for descending order.
 	*/
 	Sort *string
 

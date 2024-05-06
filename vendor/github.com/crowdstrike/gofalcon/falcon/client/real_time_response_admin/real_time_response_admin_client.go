@@ -44,6 +44,8 @@ type ClientService interface {
 
 	RTRExecuteAdminCommand(params *RTRExecuteAdminCommandParams, opts ...ClientOption) (*RTRExecuteAdminCommandCreated, error)
 
+	RTRGetFalconScripts(params *RTRGetFalconScriptsParams, opts ...ClientOption) (*RTRGetFalconScriptsOK, error)
+
 	RTRGetPutFiles(params *RTRGetPutFilesParams, opts ...ClientOption) (*RTRGetPutFilesOK, error)
 
 	RTRGetPutFilesV2(params *RTRGetPutFilesV2Params, opts ...ClientOption) (*RTRGetPutFilesV2OK, error)
@@ -52,11 +54,13 @@ type ClientService interface {
 
 	RTRGetScriptsV2(params *RTRGetScriptsV2Params, opts ...ClientOption) (*RTRGetScriptsV2OK, error)
 
+	RTRListFalconScripts(params *RTRListFalconScriptsParams, opts ...ClientOption) (*RTRListFalconScriptsOK, error)
+
 	RTRListPutFiles(params *RTRListPutFilesParams, opts ...ClientOption) (*RTRListPutFilesOK, error)
 
 	RTRListScripts(params *RTRListScriptsParams, opts ...ClientOption) (*RTRListScriptsOK, error)
 
-	RTRUpdateScripts(params *RTRUpdateScriptsParams, opts ...ClientOption) (*RTRUpdateScriptsOK, error)
+	RTRUpdateScripts(params *RTRUpdateScriptsParams, opts ...ClientOption) (*RTRUpdateScriptsAccepted, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -132,8 +136,9 @@ func (a *Client) RTRCheckAdminCommandStatus(params *RTRCheckAdminCommandStatusPa
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRCheckAdminCommandStatusDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-CheckAdminCommandStatus: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -169,8 +174,9 @@ func (a *Client) RTRCreatePutFiles(params *RTRCreatePutFilesParams, opts ...Clie
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRCreatePutFilesDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-CreatePut-Files: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -206,8 +212,9 @@ func (a *Client) RTRCreateScripts(params *RTRCreateScriptsParams, opts ...Client
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRCreateScriptsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-CreateScripts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -243,8 +250,9 @@ func (a *Client) RTRDeletePutFiles(params *RTRDeletePutFilesParams, opts ...Clie
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRDeletePutFilesDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-DeletePut-Files: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -280,8 +288,9 @@ func (a *Client) RTRDeleteScripts(params *RTRDeleteScriptsParams, opts ...Client
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRDeleteScriptsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-DeleteScripts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -323,6 +332,44 @@ func (a *Client) RTRExecuteAdminCommand(params *RTRExecuteAdminCommandParams, op
 }
 
 /*
+RTRGetFalconScripts gets falcon scripts with metadata and content of script
+*/
+func (a *Client) RTRGetFalconScripts(params *RTRGetFalconScriptsParams, opts ...ClientOption) (*RTRGetFalconScriptsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRTRGetFalconScriptsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "RTR-GetFalconScripts",
+		Method:             "GET",
+		PathPattern:        "/real-time-response/entities/falcon-scripts/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &RTRGetFalconScriptsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RTRGetFalconScriptsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-GetFalconScripts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 RTRGetPutFiles gets put files based on the ID s given these are used for the r t r put command
 */
 func (a *Client) RTRGetPutFiles(params *RTRGetPutFilesParams, opts ...ClientOption) (*RTRGetPutFilesOK, error) {
@@ -355,8 +402,9 @@ func (a *Client) RTRGetPutFiles(params *RTRGetPutFilesParams, opts ...ClientOpti
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRGetPutFilesDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-GetPut-Files: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -392,8 +440,9 @@ func (a *Client) RTRGetPutFilesV2(params *RTRGetPutFilesV2Params, opts ...Client
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRGetPutFilesV2Default)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-GetPut-FilesV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -429,8 +478,9 @@ func (a *Client) RTRGetScripts(params *RTRGetScriptsParams, opts ...ClientOption
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRGetScriptsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-GetScripts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -466,8 +516,47 @@ func (a *Client) RTRGetScriptsV2(params *RTRGetScriptsV2Params, opts ...ClientOp
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRGetScriptsV2Default)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-GetScriptsV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+RTRListFalconScripts gets a list of falcon script i ds available to the user to run
+*/
+func (a *Client) RTRListFalconScripts(params *RTRListFalconScriptsParams, opts ...ClientOption) (*RTRListFalconScriptsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRTRListFalconScriptsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "RTR-ListFalconScripts",
+		Method:             "GET",
+		PathPattern:        "/real-time-response/queries/falcon-scripts/v1",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &RTRListFalconScriptsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RTRListFalconScriptsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-ListFalconScripts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -503,8 +592,9 @@ func (a *Client) RTRListPutFiles(params *RTRListPutFilesParams, opts ...ClientOp
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRListPutFilesDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-ListPut-Files: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -540,14 +630,15 @@ func (a *Client) RTRListScripts(params *RTRListScriptsParams, opts ...ClientOpti
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRListScriptsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-ListScripts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
 RTRUpdateScripts uploads a new scripts to replace an existing one
 */
-func (a *Client) RTRUpdateScripts(params *RTRUpdateScriptsParams, opts ...ClientOption) (*RTRUpdateScriptsOK, error) {
+func (a *Client) RTRUpdateScripts(params *RTRUpdateScriptsParams, opts ...ClientOption) (*RTRUpdateScriptsAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewRTRUpdateScriptsParams()
@@ -572,13 +663,14 @@ func (a *Client) RTRUpdateScripts(params *RTRUpdateScriptsParams, opts ...Client
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*RTRUpdateScriptsOK)
+	success, ok := result.(*RTRUpdateScriptsAccepted)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*RTRUpdateScriptsDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RTR-UpdateScripts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 // SetTransport changes the transport on the client

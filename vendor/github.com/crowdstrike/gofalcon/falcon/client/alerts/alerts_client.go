@@ -6,6 +6,8 @@ package alerts
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -28,9 +30,11 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	GetAggregateV2(params *GetAggregateV2Params, opts ...ClientOption) (*GetAggregateV2OK, error)
+
 	GetQueriesAlertsV1(params *GetQueriesAlertsV1Params, opts ...ClientOption) (*GetQueriesAlertsV1OK, error)
 
-	PatchEntitiesAlertsV1(params *PatchEntitiesAlertsV1Params, opts ...ClientOption) (*PatchEntitiesAlertsV1OK, error)
+	GetV2(params *GetV2Params, opts ...ClientOption) (*GetV2OK, error)
 
 	PatchEntitiesAlertsV2(params *PatchEntitiesAlertsV2Params, opts ...ClientOption) (*PatchEntitiesAlertsV2OK, error)
 
@@ -38,7 +42,49 @@ type ClientService interface {
 
 	PostEntitiesAlertsV1(params *PostEntitiesAlertsV1Params, opts ...ClientOption) (*PostEntitiesAlertsV1OK, error)
 
+	QueryV2(params *QueryV2Params, opts ...ClientOption) (*QueryV2OK, error)
+
+	UpdateV3(params *UpdateV3Params, opts ...ClientOption) (*UpdateV3OK, error)
+
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+GetAggregateV2 retrieves aggregate values for alerts across all c i ds
+*/
+func (a *Client) GetAggregateV2(params *GetAggregateV2Params, opts ...ClientOption) (*GetAggregateV2OK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetAggregateV2Params()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetAggregateV2",
+		Method:             "POST",
+		PathPattern:        "/alerts/aggregates/alerts/v2",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetAggregateV2Reader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetAggregateV2OK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetAggregateV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -74,27 +120,28 @@ func (a *Client) GetQueriesAlertsV1(params *GetQueriesAlertsV1Params, opts ...Cl
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*GetQueriesAlertsV1Default)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetQueriesAlertsV1: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
-PatchEntitiesAlertsV1 performs actions on detections identified by detection ID s in request each action has a name and a description which describes what the action does remove tag remove a tag from 1 or more detection s assign to user id assign 1 or more detection s to a user identified by user id eg user1 at example com unassign unassign an previously assigned user from 1 or more detection s the value passed to this action is ignored new behavior processed adds a newly processed behavior to 1 or more detection s update status update status for 1 or more detection s assign to uuid assign 1 or more detection s to a user identified by UUID add tag add a tag to 1 or more detection s remove tags by prefix remove tags with given prefix from 1 or more detection s append comment appends new comment to existing comments assign to name assign 1 or more detection s to a user identified by user name show in ui shows 1 or more detection s on UI if set to true hides otherwise an empty nil value is also valid skip side effects internal only command to skip side effects during beta phase
+GetV2 retrieves all alerts given their composite ids
 */
-func (a *Client) PatchEntitiesAlertsV1(params *PatchEntitiesAlertsV1Params, opts ...ClientOption) (*PatchEntitiesAlertsV1OK, error) {
+func (a *Client) GetV2(params *GetV2Params, opts ...ClientOption) (*GetV2OK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPatchEntitiesAlertsV1Params()
+		params = NewGetV2Params()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PatchEntitiesAlertsV1",
-		Method:             "PATCH",
-		PathPattern:        "/alerts/entities/alerts/v1",
+		ID:                 "GetV2",
+		Method:             "POST",
+		PathPattern:        "/alerts/entities/alerts/v2",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
-		Reader:             &PatchEntitiesAlertsV1Reader{formats: a.formats},
+		Reader:             &GetV2Reader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -106,17 +153,18 @@ func (a *Client) PatchEntitiesAlertsV1(params *PatchEntitiesAlertsV1Params, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PatchEntitiesAlertsV1OK)
+	success, ok := result.(*GetV2OK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*PatchEntitiesAlertsV1Default)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
-PatchEntitiesAlertsV2 performs actions on detections identified by detection ID s in request each action has a name and a description which describes what the action does
+PatchEntitiesAlertsV2 performs actions on alerts identified by composite ID s in request each action has a name and a description which describes what the action does if a request adds and removes tag in a single request the order of processing would be to remove tags before adding new ones in
 */
 func (a *Client) PatchEntitiesAlertsV2(params *PatchEntitiesAlertsV2Params, opts ...ClientOption) (*PatchEntitiesAlertsV2OK, error) {
 	// TODO: Validate the params before sending
@@ -148,12 +196,13 @@ func (a *Client) PatchEntitiesAlertsV2(params *PatchEntitiesAlertsV2Params, opts
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*PatchEntitiesAlertsV2Default)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PatchEntitiesAlertsV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
-PostAggregatesAlertsV1 retrieves aggregates for alerts across all c i ds
+PostAggregatesAlertsV1 retrieves aggregate values for alerts across all c i ds
 */
 func (a *Client) PostAggregatesAlertsV1(params *PostAggregatesAlertsV1Params, opts ...ClientOption) (*PostAggregatesAlertsV1OK, error) {
 	// TODO: Validate the params before sending
@@ -185,8 +234,9 @@ func (a *Client) PostAggregatesAlertsV1(params *PostAggregatesAlertsV1Params, op
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*PostAggregatesAlertsV1Default)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostAggregatesAlertsV1: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -222,8 +272,85 @@ func (a *Client) PostEntitiesAlertsV1(params *PostEntitiesAlertsV1Params, opts .
 		return success, nil
 	}
 	// unexpected success response
-	unexpectedSuccess := result.(*PostEntitiesAlertsV1Default)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostEntitiesAlertsV1: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+QueryV2 retrieves all alerts ids that match a given query
+*/
+func (a *Client) QueryV2(params *QueryV2Params, opts ...ClientOption) (*QueryV2OK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewQueryV2Params()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "QueryV2",
+		Method:             "GET",
+		PathPattern:        "/alerts/queries/alerts/v2",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &QueryV2Reader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*QueryV2OK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for QueryV2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+UpdateV3 performs actions on alerts identified by composite ID s in request each action has a name and a description which describes what the action does if a request adds and removes tag in a single request the order of processing would be to remove tags before adding new ones in
+*/
+func (a *Client) UpdateV3(params *UpdateV3Params, opts ...ClientOption) (*UpdateV3OK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdateV3Params()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "UpdateV3",
+		Method:             "PATCH",
+		PathPattern:        "/alerts/entities/alerts/v3",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UpdateV3Reader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UpdateV3OK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for UpdateV3: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 // SetTransport changes the transport on the client

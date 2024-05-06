@@ -49,6 +49,12 @@ func (o *CreateCSPMAzureAccountReader) ReadResponse(response runtime.ClientRespo
 			return nil, err
 		}
 		return nil, result
+	case 409:
+		result := NewCreateCSPMAzureAccountConflict()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	case 429:
 		result := NewCreateCSPMAzureAccountTooManyRequests()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -62,7 +68,7 @@ func (o *CreateCSPMAzureAccountReader) ReadResponse(response runtime.ClientRespo
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[POST /cloud-connect-cspm-azure/entities/account/v1] CreateCSPMAzureAccount", response, response.Code())
 	}
 }
 
@@ -77,6 +83,10 @@ CreateCSPMAzureAccountCreated describes a response with status code 201, with de
 Created
 */
 type CreateCSPMAzureAccountCreated struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -133,6 +143,13 @@ func (o *CreateCSPMAzureAccountCreated) GetPayload() *models.RegistrationAzureAc
 
 func (o *CreateCSPMAzureAccountCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -176,6 +193,10 @@ CreateCSPMAzureAccountMultiStatus describes a response with status code 207, wit
 Multi-Status
 */
 type CreateCSPMAzureAccountMultiStatus struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -232,6 +253,13 @@ func (o *CreateCSPMAzureAccountMultiStatus) GetPayload() *models.RegistrationAzu
 
 func (o *CreateCSPMAzureAccountMultiStatus) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -275,6 +303,10 @@ CreateCSPMAzureAccountBadRequest describes a response with status code 400, with
 Bad Request
 */
 type CreateCSPMAzureAccountBadRequest struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -331,6 +363,13 @@ func (o *CreateCSPMAzureAccountBadRequest) GetPayload() *models.RegistrationAzur
 
 func (o *CreateCSPMAzureAccountBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -374,6 +413,10 @@ CreateCSPMAzureAccountForbidden describes a response with status code 403, with 
 Forbidden
 */
 type CreateCSPMAzureAccountForbidden struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -430,6 +473,13 @@ func (o *CreateCSPMAzureAccountForbidden) GetPayload() *models.MsaReplyMetaOnly 
 
 func (o *CreateCSPMAzureAccountForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -462,6 +512,116 @@ func (o *CreateCSPMAzureAccountForbidden) readResponse(response runtime.ClientRe
 	return nil
 }
 
+// NewCreateCSPMAzureAccountConflict creates a CreateCSPMAzureAccountConflict with default headers values
+func NewCreateCSPMAzureAccountConflict() *CreateCSPMAzureAccountConflict {
+	return &CreateCSPMAzureAccountConflict{}
+}
+
+/*
+CreateCSPMAzureAccountConflict describes a response with status code 409, with default header values.
+
+Conflict
+*/
+type CreateCSPMAzureAccountConflict struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
+	/* Request limit per minute.
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests remaining for the sliding one minute window.
+	 */
+	XRateLimitRemaining int64
+
+	Payload *models.RegistrationAzureAccountResponseV1
+}
+
+// IsSuccess returns true when this create c s p m azure account conflict response has a 2xx status code
+func (o *CreateCSPMAzureAccountConflict) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this create c s p m azure account conflict response has a 3xx status code
+func (o *CreateCSPMAzureAccountConflict) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create c s p m azure account conflict response has a 4xx status code
+func (o *CreateCSPMAzureAccountConflict) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this create c s p m azure account conflict response has a 5xx status code
+func (o *CreateCSPMAzureAccountConflict) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create c s p m azure account conflict response a status code equal to that given
+func (o *CreateCSPMAzureAccountConflict) IsCode(code int) bool {
+	return code == 409
+}
+
+// Code gets the status code for the create c s p m azure account conflict response
+func (o *CreateCSPMAzureAccountConflict) Code() int {
+	return 409
+}
+
+func (o *CreateCSPMAzureAccountConflict) Error() string {
+	return fmt.Sprintf("[POST /cloud-connect-cspm-azure/entities/account/v1][%d] createCSPMAzureAccountConflict  %+v", 409, o.Payload)
+}
+
+func (o *CreateCSPMAzureAccountConflict) String() string {
+	return fmt.Sprintf("[POST /cloud-connect-cspm-azure/entities/account/v1][%d] createCSPMAzureAccountConflict  %+v", 409, o.Payload)
+}
+
+func (o *CreateCSPMAzureAccountConflict) GetPayload() *models.RegistrationAzureAccountResponseV1 {
+	return o.Payload
+}
+
+func (o *CreateCSPMAzureAccountConflict) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
+	// hydrates response header X-RateLimit-Limit
+	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("X-RateLimit-Limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header X-RateLimit-Remaining
+	hdrXRateLimitRemaining := response.GetHeader("X-RateLimit-Remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("X-RateLimit-Remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	o.Payload = new(models.RegistrationAzureAccountResponseV1)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewCreateCSPMAzureAccountTooManyRequests creates a CreateCSPMAzureAccountTooManyRequests with default headers values
 func NewCreateCSPMAzureAccountTooManyRequests() *CreateCSPMAzureAccountTooManyRequests {
 	return &CreateCSPMAzureAccountTooManyRequests{}
@@ -473,6 +633,10 @@ CreateCSPMAzureAccountTooManyRequests describes a response with status code 429,
 Too Many Requests
 */
 type CreateCSPMAzureAccountTooManyRequests struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -533,6 +697,13 @@ func (o *CreateCSPMAzureAccountTooManyRequests) GetPayload() *models.MsaReplyMet
 
 func (o *CreateCSPMAzureAccountTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -588,6 +759,10 @@ Internal Server Error
 */
 type CreateCSPMAzureAccountInternalServerError struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -642,6 +817,13 @@ func (o *CreateCSPMAzureAccountInternalServerError) GetPayload() *models.Registr
 }
 
 func (o *CreateCSPMAzureAccountInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")

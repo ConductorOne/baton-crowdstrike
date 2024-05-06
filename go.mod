@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/conductorone/baton-sdk v0.1.33
-	github.com/crowdstrike/gofalcon v0.3.1
+	github.com/crowdstrike/gofalcon v0.6.1-0.20240426204036-ac8ce2b4f2d7
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/spf13/cobra v1.8.0
 	go.uber.org/zap v1.27.0

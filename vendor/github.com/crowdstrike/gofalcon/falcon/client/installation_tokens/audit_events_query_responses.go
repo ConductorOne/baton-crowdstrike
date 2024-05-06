@@ -56,14 +56,7 @@ func (o *AuditEventsQueryReader) ReadResponse(response runtime.ClientResponse, c
 		}
 		return nil, result
 	default:
-		result := NewAuditEventsQueryDefault(response.Code())
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		if response.Code()/100 == 2 {
-			return result, nil
-		}
-		return nil, result
+		return nil, runtime.NewAPIError("[GET /installation-tokens/queries/audit-events/v1] audit-events-query", response, response.Code())
 	}
 }
 
@@ -79,6 +72,10 @@ OK
 */
 type AuditEventsQueryOK struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -87,7 +84,7 @@ type AuditEventsQueryOK struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaQueryResponse
+	Payload *models.MsaspecQueryResponse
 }
 
 // IsSuccess returns true when this audit events query o k response has a 2xx status code
@@ -128,11 +125,18 @@ func (o *AuditEventsQueryOK) String() string {
 	return fmt.Sprintf("[GET /installation-tokens/queries/audit-events/v1][%d] auditEventsQueryOK  %+v", 200, o.Payload)
 }
 
-func (o *AuditEventsQueryOK) GetPayload() *models.MsaQueryResponse {
+func (o *AuditEventsQueryOK) GetPayload() *models.MsaspecQueryResponse {
 	return o.Payload
 }
 
 func (o *AuditEventsQueryOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -156,7 +160,7 @@ func (o *AuditEventsQueryOK) readResponse(response runtime.ClientResponse, consu
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaQueryResponse)
+	o.Payload = new(models.MsaspecQueryResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -178,6 +182,10 @@ Bad Request
 */
 type AuditEventsQueryBadRequest struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -186,7 +194,7 @@ type AuditEventsQueryBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this audit events query bad request response has a 2xx status code
@@ -227,11 +235,18 @@ func (o *AuditEventsQueryBadRequest) String() string {
 	return fmt.Sprintf("[GET /installation-tokens/queries/audit-events/v1][%d] auditEventsQueryBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *AuditEventsQueryBadRequest) GetPayload() *models.MsaReplyMetaOnly {
+func (o *AuditEventsQueryBadRequest) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *AuditEventsQueryBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -255,7 +270,7 @@ func (o *AuditEventsQueryBadRequest) readResponse(response runtime.ClientRespons
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -277,6 +292,10 @@ Forbidden
 */
 type AuditEventsQueryForbidden struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -285,7 +304,7 @@ type AuditEventsQueryForbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this audit events query forbidden response has a 2xx status code
@@ -326,11 +345,18 @@ func (o *AuditEventsQueryForbidden) String() string {
 	return fmt.Sprintf("[GET /installation-tokens/queries/audit-events/v1][%d] auditEventsQueryForbidden  %+v", 403, o.Payload)
 }
 
-func (o *AuditEventsQueryForbidden) GetPayload() *models.MsaReplyMetaOnly {
+func (o *AuditEventsQueryForbidden) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *AuditEventsQueryForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -354,7 +380,7 @@ func (o *AuditEventsQueryForbidden) readResponse(response runtime.ClientResponse
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -375,6 +401,10 @@ AuditEventsQueryTooManyRequests describes a response with status code 429, with 
 Too Many Requests
 */
 type AuditEventsQueryTooManyRequests struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -435,6 +465,13 @@ func (o *AuditEventsQueryTooManyRequests) GetPayload() *models.MsaReplyMetaOnly 
 
 func (o *AuditEventsQueryTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -490,6 +527,10 @@ Internal Server Error
 */
 type AuditEventsQueryInternalServerError struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -498,7 +539,7 @@ type AuditEventsQueryInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this audit events query internal server error response has a 2xx status code
@@ -539,11 +580,18 @@ func (o *AuditEventsQueryInternalServerError) String() string {
 	return fmt.Sprintf("[GET /installation-tokens/queries/audit-events/v1][%d] auditEventsQueryInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *AuditEventsQueryInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
+func (o *AuditEventsQueryInternalServerError) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *AuditEventsQueryInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -567,79 +615,7 @@ func (o *AuditEventsQueryInternalServerError) readResponse(response runtime.Clie
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
-}
-
-// NewAuditEventsQueryDefault creates a AuditEventsQueryDefault with default headers values
-func NewAuditEventsQueryDefault(code int) *AuditEventsQueryDefault {
-	return &AuditEventsQueryDefault{
-		_statusCode: code,
-	}
-}
-
-/*
-AuditEventsQueryDefault describes a response with status code -1, with default header values.
-
-OK
-*/
-type AuditEventsQueryDefault struct {
-	_statusCode int
-
-	Payload *models.MsaQueryResponse
-}
-
-// IsSuccess returns true when this audit events query default response has a 2xx status code
-func (o *AuditEventsQueryDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this audit events query default response has a 3xx status code
-func (o *AuditEventsQueryDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this audit events query default response has a 4xx status code
-func (o *AuditEventsQueryDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this audit events query default response has a 5xx status code
-func (o *AuditEventsQueryDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this audit events query default response a status code equal to that given
-func (o *AuditEventsQueryDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
-// Code gets the status code for the audit events query default response
-func (o *AuditEventsQueryDefault) Code() int {
-	return o._statusCode
-}
-
-func (o *AuditEventsQueryDefault) Error() string {
-	return fmt.Sprintf("[GET /installation-tokens/queries/audit-events/v1][%d] audit-events-query default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *AuditEventsQueryDefault) String() string {
-	return fmt.Sprintf("[GET /installation-tokens/queries/audit-events/v1][%d] audit-events-query default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *AuditEventsQueryDefault) GetPayload() *models.MsaQueryResponse {
-	return o.Payload
-}
-
-func (o *AuditEventsQueryDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.MsaQueryResponse)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

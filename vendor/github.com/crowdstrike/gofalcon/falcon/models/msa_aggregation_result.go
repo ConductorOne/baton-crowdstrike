@@ -24,6 +24,9 @@ type MsaAggregationResult struct {
 	// Required: true
 	Buckets []*MsaAggregationResultItem `json:"buckets"`
 
+	// doc count error upper bound
+	DocCountErrorUpperBound int64 `json:"doc_count_error_upper_bound,omitempty"`
+
 	// name
 	// Required: true
 	Name *string `json:"name"`
@@ -105,6 +108,11 @@ func (m *MsaAggregationResult) contextValidateBuckets(ctx context.Context, forma
 	for i := 0; i < len(m.Buckets); i++ {
 
 		if m.Buckets[i] != nil {
+
+			if swag.IsZero(m.Buckets[i]) { // not required
+				return nil
+			}
+
 			if err := m.Buckets[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("buckets" + "." + strconv.Itoa(i))

@@ -26,6 +26,9 @@ type APINotificationExposedDataRecordV1 struct {
 	// The ID of the author within Recon
 	AuthorID string `json:"author_id,omitempty"`
 
+	// Information about the bot stealer log data
+	Bot *APIExposedDataRecordBotV1 `json:"bot,omitempty"`
+
 	// The customer ID
 	// Required: true
 	Cid *string `json:"cid"`
@@ -38,14 +41,26 @@ type APINotificationExposedDataRecordV1 struct {
 	// Format: date-time
 	CreatedDate *strfmt.DateTime `json:"created_date"`
 
+	// The status set after deduplication. Possible values: 'newly_detected', 'previously_reported', 'other'
+	CredentialStatus string `json:"credential_status,omitempty"`
+
+	// The domain where the credentials are valid
+	CredentialsDomain string `json:"credentials_domain,omitempty"`
+
+	// The IP where the credentials are valid
+	CredentialsIP string `json:"credentials_ip,omitempty"`
+
+	// The URL where the credentials are valid
+	CredentialsURL string `json:"credentials_url,omitempty"`
+
 	// The nickname of the user on the impacted site
 	DisplayName string `json:"display_name,omitempty"`
 
+	// The domain of the email linked to the impacted site
+	Domain string `json:"domain,omitempty"`
+
 	// The email linked to the impacted site
 	Email string `json:"email,omitempty"`
-
-	// The domain of the email
-	EmailDomain string `json:"email_domain,omitempty"`
 
 	// The approximate date when the event occurred
 	// Required: true
@@ -72,15 +87,6 @@ type APINotificationExposedDataRecordV1 struct {
 	// Required: true
 	ID *string `json:"id"`
 
-	// The domain where the credentials are valid
-	ImpactedDomain string `json:"impacted_domain,omitempty"`
-
-	// The IP where the credentials are valid
-	ImpactedIP string `json:"impacted_ip,omitempty"`
-
-	// The URL where the credentials are valid
-	ImpactedURL string `json:"impacted_url,omitempty"`
-
 	// The users job at the company
 	JobPosition string `json:"job_position,omitempty"`
 
@@ -89,6 +95,9 @@ type APINotificationExposedDataRecordV1 struct {
 
 	// login id
 	LoginID string `json:"login_id,omitempty"`
+
+	// Information of the bot malware family
+	MalwareFamily string `json:"malware_family,omitempty"`
 
 	// The ID of the parent notification associated with this entity
 	// Required: true
@@ -144,6 +153,10 @@ func (m *APINotificationExposedDataRecordV1) Validate(formats strfmt.Registry) e
 	var res []error
 
 	if err := m.validateAuthor(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -217,6 +230,25 @@ func (m *APINotificationExposedDataRecordV1) validateAuthor(formats strfmt.Regis
 
 	if err := validate.Required("author", "body", m.Author); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *APINotificationExposedDataRecordV1) validateBot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Bot) { // not required
+		return nil
+	}
+
+	if m.Bot != nil {
+		if err := m.Bot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("bot")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("bot")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -420,6 +452,10 @@ func (m *APINotificationExposedDataRecordV1) validateUserUUID(formats strfmt.Reg
 func (m *APINotificationExposedDataRecordV1) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateBot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFile(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -446,9 +482,35 @@ func (m *APINotificationExposedDataRecordV1) ContextValidate(ctx context.Context
 	return nil
 }
 
+func (m *APINotificationExposedDataRecordV1) contextValidateBot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Bot != nil {
+
+		if swag.IsZero(m.Bot) { // not required
+			return nil
+		}
+
+		if err := m.Bot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("bot")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("bot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *APINotificationExposedDataRecordV1) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.File != nil {
+
+		if swag.IsZero(m.File) { // not required
+			return nil
+		}
+
 		if err := m.File.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("file")
@@ -465,6 +527,11 @@ func (m *APINotificationExposedDataRecordV1) contextValidateFile(ctx context.Con
 func (m *APINotificationExposedDataRecordV1) contextValidateFinancial(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Financial != nil {
+
+		if swag.IsZero(m.Financial) { // not required
+			return nil
+		}
+
 		if err := m.Financial.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("financial")
@@ -481,6 +548,11 @@ func (m *APINotificationExposedDataRecordV1) contextValidateFinancial(ctx contex
 func (m *APINotificationExposedDataRecordV1) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Location != nil {
+
+		if swag.IsZero(m.Location) { // not required
+			return nil
+		}
+
 		if err := m.Location.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("location")
@@ -497,6 +569,7 @@ func (m *APINotificationExposedDataRecordV1) contextValidateLocation(ctx context
 func (m *APINotificationExposedDataRecordV1) contextValidateRule(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Rule != nil {
+
 		if err := m.Rule.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rule")
@@ -513,6 +586,11 @@ func (m *APINotificationExposedDataRecordV1) contextValidateRule(ctx context.Con
 func (m *APINotificationExposedDataRecordV1) contextValidateSocial(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Social != nil {
+
+		if swag.IsZero(m.Social) { // not required
+			return nil
+		}
+
 		if err := m.Social.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("social")

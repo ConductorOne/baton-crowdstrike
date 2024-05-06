@@ -41,6 +41,10 @@ type DomainAPIEvaluationLogicItemV1 struct {
 	// negate
 	Negate bool `json:"negate,omitempty"`
 
+	// status
+	// Required: true
+	Status *string `json:"status"`
+
 	// title
 	// Required: true
 	Title *string `json:"title"`
@@ -55,6 +59,10 @@ func (m *DomainAPIEvaluationLogicItemV1) Validate(formats strfmt.Registry) error
 	var res []error
 
 	if err := m.validateComparisons(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -86,6 +94,15 @@ func (m *DomainAPIEvaluationLogicItemV1) validateComparisons(formats strfmt.Regi
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *DomainAPIEvaluationLogicItemV1) validateStatus(formats strfmt.Registry) error {
+
+	if err := validate.Required("status", "body", m.Status); err != nil {
+		return err
 	}
 
 	return nil
@@ -126,6 +143,11 @@ func (m *DomainAPIEvaluationLogicItemV1) ContextValidate(ctx context.Context, fo
 func (m *DomainAPIEvaluationLogicItemV1) contextValidateComparisons(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Comparisons != nil {
+
+		if swag.IsZero(m.Comparisons) { // not required
+			return nil
+		}
+
 		if err := m.Comparisons.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("comparisons")

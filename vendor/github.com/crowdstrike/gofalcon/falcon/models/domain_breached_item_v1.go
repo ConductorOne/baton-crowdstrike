@@ -19,16 +19,25 @@ import (
 // swagger:model domain.BreachedItemV1
 type DomainBreachedItemV1 struct {
 
-	// company
+	// The stealer log bot information
+	Bot *DomainExposedDataRecordBotV1 `json:"bot,omitempty"`
+
+	// The company of the user
 	Company string `json:"company,omitempty"`
 
-	// credentials ip
+	// The status set after deduplication. Possible values: 'newly_detected', 'previously_reported', 'other'
+	CredentialStatus string `json:"credential_status,omitempty"`
+
+	// The domain where the credentials are valid
+	CredentialsDomain string `json:"credentials_domain,omitempty"`
+
+	// The IP where the credentials are valid
 	CredentialsIP string `json:"credentials_ip,omitempty"`
 
-	// credentials url
+	// The URL where the credentials are valid
 	CredentialsURL string `json:"credentials_url,omitempty"`
 
-	// display name
+	// The nickname of the user on the impacted site
 	DisplayName string `json:"display_name,omitempty"`
 
 	// The domain associated with the breached account.
@@ -39,22 +48,25 @@ type DomainBreachedItemV1 struct {
 	// Required: true
 	Email *string `json:"email"`
 
-	// financial
+	// User financial information
 	Financial *DomainExposedDataRecordFinancialV1 `json:"financial,omitempty"`
 
 	// The original hashing algorithm applied to the breached password. Possible values: 'plain', 'unknown', 'base64', 'md5', 'sha1', 'bcrypt', etc. The value 'plain' means that the password was originally found as plaintext.
 	// Required: true
 	HashType *string `json:"hash_type"`
 
-	// job position
+	// The user's job at the company
 	JobPosition string `json:"job_position,omitempty"`
 
-	// location
+	// User location information
 	Location *DomainExposedDataRecordLocationV1 `json:"location,omitempty"`
 
 	// The username of the breached account.
 	// Required: true
 	LoginID *string `json:"login_id"`
+
+	// The stealer log bot malware family
+	MalwareFamily string `json:"malware_family,omitempty"`
 
 	// The name of the person associated with the breached account.
 	// Required: true
@@ -64,29 +76,33 @@ type DomainBreachedItemV1 struct {
 	// Required: true
 	Password *string `json:"password"`
 
-	// password hash
+	// The password hash
 	PasswordHash string `json:"password_hash,omitempty"`
 
-	// password salt
+	// The password salt
 	PasswordSalt string `json:"password_salt,omitempty"`
 
 	// The phone number of the person associated with the breached account.
 	// Required: true
 	Phone *string `json:"phone"`
 
-	// social
+	// User social media information
 	Social *DomainExposedDataRecordSocialV1 `json:"social,omitempty"`
 
-	// user id
+	// The ID of the user on the impacted site
 	UserID string `json:"user_id,omitempty"`
 
-	// user ip
+	// The IP of the user on the impacted site
 	UserIP string `json:"user_ip,omitempty"`
 }
 
 // Validate validates this domain breached item v1
 func (m *DomainBreachedItemV1) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateBot(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateDomain(formats); err != nil {
 		res = append(res, err)
@@ -131,6 +147,25 @@ func (m *DomainBreachedItemV1) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DomainBreachedItemV1) validateBot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Bot) { // not required
+		return nil
+	}
+
+	if m.Bot != nil {
+		if err := m.Bot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("bot")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("bot")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -258,6 +293,10 @@ func (m *DomainBreachedItemV1) validateSocial(formats strfmt.Registry) error {
 func (m *DomainBreachedItemV1) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateBot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFinancial(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -276,9 +315,35 @@ func (m *DomainBreachedItemV1) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
+func (m *DomainBreachedItemV1) contextValidateBot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Bot != nil {
+
+		if swag.IsZero(m.Bot) { // not required
+			return nil
+		}
+
+		if err := m.Bot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("bot")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("bot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *DomainBreachedItemV1) contextValidateFinancial(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Financial != nil {
+
+		if swag.IsZero(m.Financial) { // not required
+			return nil
+		}
+
 		if err := m.Financial.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("financial")
@@ -295,6 +360,11 @@ func (m *DomainBreachedItemV1) contextValidateFinancial(ctx context.Context, for
 func (m *DomainBreachedItemV1) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Location != nil {
+
+		if swag.IsZero(m.Location) { // not required
+			return nil
+		}
+
 		if err := m.Location.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("location")
@@ -311,6 +381,11 @@ func (m *DomainBreachedItemV1) contextValidateLocation(ctx context.Context, form
 func (m *DomainBreachedItemV1) contextValidateSocial(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Social != nil {
+
+		if swag.IsZero(m.Social) { // not required
+			return nil
+		}
+
 		if err := m.Social.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("social")

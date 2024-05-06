@@ -56,14 +56,7 @@ func (o *CreateCaseReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		return nil, result
 	default:
-		result := NewCreateCaseDefault(response.Code())
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		if response.Code()/100 == 2 {
-			return result, nil
-		}
-		return nil, result
+		return nil, runtime.NewAPIError("[POST /message-center/entities/case/v1] CreateCase", response, response.Code())
 	}
 }
 
@@ -201,7 +194,7 @@ type CreateCaseBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this create case bad request response has a 2xx status code
@@ -242,7 +235,7 @@ func (o *CreateCaseBadRequest) String() string {
 	return fmt.Sprintf("[POST /message-center/entities/case/v1][%d] createCaseBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *CreateCaseBadRequest) GetPayload() *models.MsaReplyMetaOnly {
+func (o *CreateCaseBadRequest) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
@@ -277,7 +270,7 @@ func (o *CreateCaseBadRequest) readResponse(response runtime.ClientResponse, con
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -311,7 +304,7 @@ type CreateCaseForbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this create case forbidden response has a 2xx status code
@@ -352,7 +345,7 @@ func (o *CreateCaseForbidden) String() string {
 	return fmt.Sprintf("[POST /message-center/entities/case/v1][%d] createCaseForbidden  %+v", 403, o.Payload)
 }
 
-func (o *CreateCaseForbidden) GetPayload() *models.MsaReplyMetaOnly {
+func (o *CreateCaseForbidden) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
@@ -387,7 +380,7 @@ func (o *CreateCaseForbidden) readResponse(response runtime.ClientResponse, cons
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -546,7 +539,7 @@ type CreateCaseInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this create case internal server error response has a 2xx status code
@@ -587,7 +580,7 @@ func (o *CreateCaseInternalServerError) String() string {
 	return fmt.Sprintf("[POST /message-center/entities/case/v1][%d] createCaseInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *CreateCaseInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
+func (o *CreateCaseInternalServerError) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
@@ -622,79 +615,7 @@ func (o *CreateCaseInternalServerError) readResponse(response runtime.ClientResp
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
-}
-
-// NewCreateCaseDefault creates a CreateCaseDefault with default headers values
-func NewCreateCaseDefault(code int) *CreateCaseDefault {
-	return &CreateCaseDefault{
-		_statusCode: code,
-	}
-}
-
-/*
-CreateCaseDefault describes a response with status code -1, with default header values.
-
-OK
-*/
-type CreateCaseDefault struct {
-	_statusCode int
-
-	Payload *models.MsaReplyAffectedEntities
-}
-
-// IsSuccess returns true when this create case default response has a 2xx status code
-func (o *CreateCaseDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this create case default response has a 3xx status code
-func (o *CreateCaseDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this create case default response has a 4xx status code
-func (o *CreateCaseDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this create case default response has a 5xx status code
-func (o *CreateCaseDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this create case default response a status code equal to that given
-func (o *CreateCaseDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
-// Code gets the status code for the create case default response
-func (o *CreateCaseDefault) Code() int {
-	return o._statusCode
-}
-
-func (o *CreateCaseDefault) Error() string {
-	return fmt.Sprintf("[POST /message-center/entities/case/v1][%d] CreateCase default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *CreateCaseDefault) String() string {
-	return fmt.Sprintf("[POST /message-center/entities/case/v1][%d] CreateCase default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *CreateCaseDefault) GetPayload() *models.MsaReplyAffectedEntities {
-	return o.Payload
-}
-
-func (o *CreateCaseDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.MsaReplyAffectedEntities)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

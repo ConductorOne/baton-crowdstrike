@@ -26,6 +26,15 @@ type DomainMatchedBreachSummaryV1 struct {
 	// The level of confidence regarding data veridicality. Options for likely authentic, confirmed authentic (default: unverified).
 	ConfidenceLevel string `json:"confidence_level,omitempty"`
 
+	// A list of statuses for the exposed data records contained in the notification. Possible values: 'newly_detected', 'previously_reported' and/or 'other'
+	CredentialStatuses []string `json:"credential_statuses"`
+
+	// credentials domains
+	CredentialsDomains []string `json:"credentials_domains"`
+
+	// credentials ips
+	CredentialsIps []string `json:"credentials_ips"`
+
 	// The description of the breach
 	// Required: true
 	Description *string `json:"description"`
@@ -47,11 +56,16 @@ type DomainMatchedBreachSummaryV1 struct {
 	// Metadata regarding the file(s) where exposed data records where found.
 	Files []*DomainFileDetailsV1 `json:"files"`
 
-	// Where the exposed data event happened. (e.g. LinkedIn or linkedin[.]com)
-	ImpactedDomains []string `json:"impacted_domains"`
+	// idp send date
+	// Format: date-time
+	IdpSendDate strfmt.DateTime `json:"idp_send_date,omitempty"`
 
-	// Where the exposed data event happened
-	ImpactedIps []string `json:"impacted_ips"`
+	// idp send status
+	IdpSendStatus string `json:"idp_send_status,omitempty"`
+
+	// (Boolean) If the notification was processed before the introduction of exposed data deduplication
+	// Required: true
+	IsRetroactivelyDeduped *bool `json:"is_retroactively_deduped"`
 
 	// The name of the breach
 	// Required: true
@@ -81,6 +95,14 @@ func (m *DomainMatchedBreachSummaryV1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateFiles(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIdpSendDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateIsRetroactivelyDeduped(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -150,6 +172,27 @@ func (m *DomainMatchedBreachSummaryV1) validateFiles(formats strfmt.Registry) er
 	return nil
 }
 
+func (m *DomainMatchedBreachSummaryV1) validateIdpSendDate(formats strfmt.Registry) error {
+	if swag.IsZero(m.IdpSendDate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("idp_send_date", "body", "date-time", m.IdpSendDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DomainMatchedBreachSummaryV1) validateIsRetroactivelyDeduped(formats strfmt.Registry) error {
+
+	if err := validate.Required("is_retroactively_deduped", "body", m.IsRetroactivelyDeduped); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *DomainMatchedBreachSummaryV1) validateName(formats strfmt.Registry) error {
 
 	if err := validate.Required("name", "body", m.Name); err != nil {
@@ -178,6 +221,11 @@ func (m *DomainMatchedBreachSummaryV1) contextValidateFiles(ctx context.Context,
 	for i := 0; i < len(m.Files); i++ {
 
 		if m.Files[i] != nil {
+
+			if swag.IsZero(m.Files[i]) { // not required
+				return nil
+			}
+
 			if err := m.Files[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("files" + "." + strconv.Itoa(i))

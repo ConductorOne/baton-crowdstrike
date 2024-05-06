@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewGetCSPMAwsAccountScriptsAttachmentParams creates a new GetCSPMAwsAccountScriptsAttachmentParams object,
@@ -60,6 +61,52 @@ GetCSPMAwsAccountScriptsAttachmentParams contains all the parameters to send to 
 	Typically these are written to a http.Request.
 */
 type GetCSPMAwsAccountScriptsAttachmentParams struct {
+
+	/* Accounts.
+
+	   The list of accounts to register
+	*/
+	Accounts []string
+
+	/* AwsProfile.
+
+	   The AWS profile to be used during registration
+	*/
+	AwsProfile *string
+
+	// BehaviorAssessmentEnabled.
+	BehaviorAssessmentEnabled *string
+
+	/* CustomRoleName.
+
+	   The custom IAM role to be used during registration
+	*/
+	CustomRoleName *string
+
+	/* Ids.
+
+	   AWS account IDs
+	*/
+	Ids []string
+
+	/* OrganizationID.
+
+	   The AWS organization ID to be registered
+	*/
+	OrganizationID *string
+
+	// SensorManagementEnabled.
+	SensorManagementEnabled *string
+
+	/* Template.
+
+	   Template to be rendered
+	*/
+	Template *string
+
+	// UseExistingCloudtrail.
+	UseExistingCloudtrail *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -113,6 +160,105 @@ func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetHTTPClient(client *http.Cl
 	o.HTTPClient = client
 }
 
+// WithAccounts adds the accounts to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithAccounts(accounts []string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetAccounts(accounts)
+	return o
+}
+
+// SetAccounts adds the accounts to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetAccounts(accounts []string) {
+	o.Accounts = accounts
+}
+
+// WithAwsProfile adds the awsProfile to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithAwsProfile(awsProfile *string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetAwsProfile(awsProfile)
+	return o
+}
+
+// SetAwsProfile adds the awsProfile to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetAwsProfile(awsProfile *string) {
+	o.AwsProfile = awsProfile
+}
+
+// WithBehaviorAssessmentEnabled adds the behaviorAssessmentEnabled to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithBehaviorAssessmentEnabled(behaviorAssessmentEnabled *string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetBehaviorAssessmentEnabled(behaviorAssessmentEnabled)
+	return o
+}
+
+// SetBehaviorAssessmentEnabled adds the behaviorAssessmentEnabled to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetBehaviorAssessmentEnabled(behaviorAssessmentEnabled *string) {
+	o.BehaviorAssessmentEnabled = behaviorAssessmentEnabled
+}
+
+// WithCustomRoleName adds the customRoleName to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithCustomRoleName(customRoleName *string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetCustomRoleName(customRoleName)
+	return o
+}
+
+// SetCustomRoleName adds the customRoleName to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetCustomRoleName(customRoleName *string) {
+	o.CustomRoleName = customRoleName
+}
+
+// WithIds adds the ids to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithIds(ids []string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetIds(ids)
+	return o
+}
+
+// SetIds adds the ids to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetIds(ids []string) {
+	o.Ids = ids
+}
+
+// WithOrganizationID adds the organizationID to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithOrganizationID(organizationID *string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetOrganizationID(organizationID)
+	return o
+}
+
+// SetOrganizationID adds the organizationId to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetOrganizationID(organizationID *string) {
+	o.OrganizationID = organizationID
+}
+
+// WithSensorManagementEnabled adds the sensorManagementEnabled to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithSensorManagementEnabled(sensorManagementEnabled *string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetSensorManagementEnabled(sensorManagementEnabled)
+	return o
+}
+
+// SetSensorManagementEnabled adds the sensorManagementEnabled to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetSensorManagementEnabled(sensorManagementEnabled *string) {
+	o.SensorManagementEnabled = sensorManagementEnabled
+}
+
+// WithTemplate adds the template to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithTemplate(template *string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetTemplate(template)
+	return o
+}
+
+// SetTemplate adds the template to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetTemplate(template *string) {
+	o.Template = template
+}
+
+// WithUseExistingCloudtrail adds the useExistingCloudtrail to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) WithUseExistingCloudtrail(useExistingCloudtrail *string) *GetCSPMAwsAccountScriptsAttachmentParams {
+	o.SetUseExistingCloudtrail(useExistingCloudtrail)
+	return o
+}
+
+// SetUseExistingCloudtrail adds the useExistingCloudtrail to the get c s p m aws account scripts attachment params
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) SetUseExistingCloudtrail(useExistingCloudtrail *string) {
+	o.UseExistingCloudtrail = useExistingCloudtrail
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *GetCSPMAwsAccountScriptsAttachmentParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -121,8 +267,183 @@ func (o *GetCSPMAwsAccountScriptsAttachmentParams) WriteToRequest(r runtime.Clie
 	}
 	var res []error
 
+	if o.Accounts != nil {
+
+		// binding items for accounts
+		joinedAccounts := o.bindParamAccounts(reg)
+
+		// query array param accounts
+		if err := r.SetQueryParam("accounts", joinedAccounts...); err != nil {
+			return err
+		}
+	}
+
+	if o.AwsProfile != nil {
+
+		// query param aws_profile
+		var qrAwsProfile string
+
+		if o.AwsProfile != nil {
+			qrAwsProfile = *o.AwsProfile
+		}
+		qAwsProfile := qrAwsProfile
+		if qAwsProfile != "" {
+
+			if err := r.SetQueryParam("aws_profile", qAwsProfile); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BehaviorAssessmentEnabled != nil {
+
+		// query param behavior_assessment_enabled
+		var qrBehaviorAssessmentEnabled string
+
+		if o.BehaviorAssessmentEnabled != nil {
+			qrBehaviorAssessmentEnabled = *o.BehaviorAssessmentEnabled
+		}
+		qBehaviorAssessmentEnabled := qrBehaviorAssessmentEnabled
+		if qBehaviorAssessmentEnabled != "" {
+
+			if err := r.SetQueryParam("behavior_assessment_enabled", qBehaviorAssessmentEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CustomRoleName != nil {
+
+		// query param custom_role_name
+		var qrCustomRoleName string
+
+		if o.CustomRoleName != nil {
+			qrCustomRoleName = *o.CustomRoleName
+		}
+		qCustomRoleName := qrCustomRoleName
+		if qCustomRoleName != "" {
+
+			if err := r.SetQueryParam("custom_role_name", qCustomRoleName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Ids != nil {
+
+		// binding items for ids
+		joinedIds := o.bindParamIds(reg)
+
+		// query array param ids
+		if err := r.SetQueryParam("ids", joinedIds...); err != nil {
+			return err
+		}
+	}
+
+	if o.OrganizationID != nil {
+
+		// query param organization_id
+		var qrOrganizationID string
+
+		if o.OrganizationID != nil {
+			qrOrganizationID = *o.OrganizationID
+		}
+		qOrganizationID := qrOrganizationID
+		if qOrganizationID != "" {
+
+			if err := r.SetQueryParam("organization_id", qOrganizationID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SensorManagementEnabled != nil {
+
+		// query param sensor_management_enabled
+		var qrSensorManagementEnabled string
+
+		if o.SensorManagementEnabled != nil {
+			qrSensorManagementEnabled = *o.SensorManagementEnabled
+		}
+		qSensorManagementEnabled := qrSensorManagementEnabled
+		if qSensorManagementEnabled != "" {
+
+			if err := r.SetQueryParam("sensor_management_enabled", qSensorManagementEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Template != nil {
+
+		// query param template
+		var qrTemplate string
+
+		if o.Template != nil {
+			qrTemplate = *o.Template
+		}
+		qTemplate := qrTemplate
+		if qTemplate != "" {
+
+			if err := r.SetQueryParam("template", qTemplate); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UseExistingCloudtrail != nil {
+
+		// query param use_existing_cloudtrail
+		var qrUseExistingCloudtrail string
+
+		if o.UseExistingCloudtrail != nil {
+			qrUseExistingCloudtrail = *o.UseExistingCloudtrail
+		}
+		qUseExistingCloudtrail := qrUseExistingCloudtrail
+		if qUseExistingCloudtrail != "" {
+
+			if err := r.SetQueryParam("use_existing_cloudtrail", qUseExistingCloudtrail); err != nil {
+				return err
+			}
+		}
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
+}
+
+// bindParamGetCSPMAwsAccountScriptsAttachment binds the parameter accounts
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) bindParamAccounts(formats strfmt.Registry) []string {
+	accountsIR := o.Accounts
+
+	var accountsIC []string
+	for _, accountsIIR := range accountsIR { // explode []string
+
+		accountsIIV := accountsIIR // string as string
+		accountsIC = append(accountsIC, accountsIIV)
+	}
+
+	// items.CollectionFormat: "multi"
+	accountsIS := swag.JoinByFormat(accountsIC, "multi")
+
+	return accountsIS
+}
+
+// bindParamGetCSPMAwsAccountScriptsAttachment binds the parameter ids
+func (o *GetCSPMAwsAccountScriptsAttachmentParams) bindParamIds(formats strfmt.Registry) []string {
+	idsIR := o.Ids
+
+	var idsIC []string
+	for _, idsIIR := range idsIR { // explode []string
+
+		idsIIV := idsIIR // string as string
+		idsIC = append(idsIC, idsIIV)
+	}
+
+	// items.CollectionFormat: "multi"
+	idsIS := swag.JoinByFormat(idsIC, "multi")
+
+	return idsIS
 }

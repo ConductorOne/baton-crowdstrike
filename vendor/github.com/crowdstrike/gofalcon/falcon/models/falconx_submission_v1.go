@@ -25,8 +25,23 @@ type FalconxSubmissionV1 struct {
 	// created timestamp
 	CreatedTimestamp string `json:"created_timestamp,omitempty"`
 
+	// error message
+	ErrorMessage string `json:"error_message,omitempty"`
+
+	// error origin
+	ErrorOrigin string `json:"error_origin,omitempty"`
+
+	// error type
+	ErrorType string `json:"error_type,omitempty"`
+
 	// id
 	ID string `json:"id,omitempty"`
+
+	// index timestamp
+	IndexTimestamp string `json:"index_timestamp,omitempty"`
+
+	// interactive phase
+	InteractivePhase string `json:"interactive_phase,omitempty"`
 
 	// origin
 	Origin string `json:"origin,omitempty"`
@@ -112,6 +127,11 @@ func (m *FalconxSubmissionV1) contextValidateSandbox(ctx context.Context, format
 	for i := 0; i < len(m.Sandbox); i++ {
 
 		if m.Sandbox[i] != nil {
+
+			if swag.IsZero(m.Sandbox[i]) { // not required
+				return nil
+			}
+
 			if err := m.Sandbox[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("sandbox" + "." + strconv.Itoa(i))

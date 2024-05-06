@@ -43,6 +43,12 @@ func (o *TokensCreateReader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return nil, result
+	case 409:
+		result := NewTokensCreateConflict()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	case 429:
 		result := NewTokensCreateTooManyRequests()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -56,7 +62,7 @@ func (o *TokensCreateReader) ReadResponse(response runtime.ClientResponse, consu
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[POST /installation-tokens/entities/tokens/v1] tokens-create", response, response.Code())
 	}
 }
 
@@ -71,6 +77,10 @@ TokensCreateCreated describes a response with status code 201, with default head
 Created
 */
 type TokensCreateCreated struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -127,6 +137,13 @@ func (o *TokensCreateCreated) GetPayload() *models.APITokenDetailsResponseV1 {
 
 func (o *TokensCreateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -171,6 +188,10 @@ Bad Request
 */
 type TokensCreateBadRequest struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -179,7 +200,7 @@ type TokensCreateBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this tokens create bad request response has a 2xx status code
@@ -220,11 +241,18 @@ func (o *TokensCreateBadRequest) String() string {
 	return fmt.Sprintf("[POST /installation-tokens/entities/tokens/v1][%d] tokensCreateBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *TokensCreateBadRequest) GetPayload() *models.MsaReplyMetaOnly {
+func (o *TokensCreateBadRequest) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *TokensCreateBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -248,7 +276,7 @@ func (o *TokensCreateBadRequest) readResponse(response runtime.ClientResponse, c
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -270,6 +298,10 @@ Forbidden
 */
 type TokensCreateForbidden struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -278,7 +310,7 @@ type TokensCreateForbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this tokens create forbidden response has a 2xx status code
@@ -319,11 +351,18 @@ func (o *TokensCreateForbidden) String() string {
 	return fmt.Sprintf("[POST /installation-tokens/entities/tokens/v1][%d] tokensCreateForbidden  %+v", 403, o.Payload)
 }
 
-func (o *TokensCreateForbidden) GetPayload() *models.MsaReplyMetaOnly {
+func (o *TokensCreateForbidden) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *TokensCreateForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -347,7 +386,117 @@ func (o *TokensCreateForbidden) readResponse(response runtime.ClientResponse, co
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewTokensCreateConflict creates a TokensCreateConflict with default headers values
+func NewTokensCreateConflict() *TokensCreateConflict {
+	return &TokensCreateConflict{}
+}
+
+/*
+TokensCreateConflict describes a response with status code 409, with default header values.
+
+Conflict
+*/
+type TokensCreateConflict struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
+	/* Request limit per minute.
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests remaining for the sliding one minute window.
+	 */
+	XRateLimitRemaining int64
+
+	Payload *models.MsaspecResponseFields
+}
+
+// IsSuccess returns true when this tokens create conflict response has a 2xx status code
+func (o *TokensCreateConflict) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this tokens create conflict response has a 3xx status code
+func (o *TokensCreateConflict) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this tokens create conflict response has a 4xx status code
+func (o *TokensCreateConflict) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this tokens create conflict response has a 5xx status code
+func (o *TokensCreateConflict) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this tokens create conflict response a status code equal to that given
+func (o *TokensCreateConflict) IsCode(code int) bool {
+	return code == 409
+}
+
+// Code gets the status code for the tokens create conflict response
+func (o *TokensCreateConflict) Code() int {
+	return 409
+}
+
+func (o *TokensCreateConflict) Error() string {
+	return fmt.Sprintf("[POST /installation-tokens/entities/tokens/v1][%d] tokensCreateConflict  %+v", 409, o.Payload)
+}
+
+func (o *TokensCreateConflict) String() string {
+	return fmt.Sprintf("[POST /installation-tokens/entities/tokens/v1][%d] tokensCreateConflict  %+v", 409, o.Payload)
+}
+
+func (o *TokensCreateConflict) GetPayload() *models.MsaspecResponseFields {
+	return o.Payload
+}
+
+func (o *TokensCreateConflict) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
+	// hydrates response header X-RateLimit-Limit
+	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("X-RateLimit-Limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header X-RateLimit-Remaining
+	hdrXRateLimitRemaining := response.GetHeader("X-RateLimit-Remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("X-RateLimit-Remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -368,6 +517,10 @@ TokensCreateTooManyRequests describes a response with status code 429, with defa
 Too Many Requests
 */
 type TokensCreateTooManyRequests struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -428,6 +581,13 @@ func (o *TokensCreateTooManyRequests) GetPayload() *models.MsaReplyMetaOnly {
 
 func (o *TokensCreateTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -483,6 +643,10 @@ Internal Server Error
 */
 type TokensCreateInternalServerError struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -491,7 +655,7 @@ type TokensCreateInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this tokens create internal server error response has a 2xx status code
@@ -532,11 +696,18 @@ func (o *TokensCreateInternalServerError) String() string {
 	return fmt.Sprintf("[POST /installation-tokens/entities/tokens/v1][%d] tokensCreateInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *TokensCreateInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
+func (o *TokensCreateInternalServerError) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *TokensCreateInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -560,7 +731,7 @@ func (o *TokensCreateInternalServerError) readResponse(response runtime.ClientRe
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

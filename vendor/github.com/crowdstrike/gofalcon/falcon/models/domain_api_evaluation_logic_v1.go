@@ -26,6 +26,9 @@ type DomainAPIEvaluationLogicV1 struct {
 	// cid
 	Cid string `json:"cid,omitempty"`
 
+	// complex check operator
+	ComplexCheckOperator string `json:"complex_check_operator,omitempty"`
+
 	// created timestamp
 	CreatedTimestamp string `json:"created_timestamp,omitempty"`
 
@@ -112,6 +115,11 @@ func (m *DomainAPIEvaluationLogicV1) contextValidateLogic(ctx context.Context, f
 	for i := 0; i < len(m.Logic); i++ {
 
 		if m.Logic[i] != nil {
+
+			if swag.IsZero(m.Logic[i]) { // not required
+				return nil
+			}
+
 			if err := m.Logic[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("logic" + "." + strconv.Itoa(i))

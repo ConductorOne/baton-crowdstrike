@@ -56,14 +56,7 @@ func (o *CustomerSettingsReadReader) ReadResponse(response runtime.ClientRespons
 		}
 		return nil, result
 	default:
-		result := NewCustomerSettingsReadDefault(response.Code())
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		if response.Code()/100 == 2 {
-			return result, nil
-		}
-		return nil, result
+		return nil, runtime.NewAPIError("[GET /installation-tokens/entities/customer-settings/v1] customer-settings-read", response, response.Code())
 	}
 }
 
@@ -78,6 +71,10 @@ CustomerSettingsReadOK describes a response with status code 200, with default h
 OK
 */
 type CustomerSettingsReadOK struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -134,6 +131,13 @@ func (o *CustomerSettingsReadOK) GetPayload() *models.APICustomerSettingsRespons
 
 func (o *CustomerSettingsReadOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -178,6 +182,10 @@ Bad Request
 */
 type CustomerSettingsReadBadRequest struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -186,7 +194,7 @@ type CustomerSettingsReadBadRequest struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this customer settings read bad request response has a 2xx status code
@@ -227,11 +235,18 @@ func (o *CustomerSettingsReadBadRequest) String() string {
 	return fmt.Sprintf("[GET /installation-tokens/entities/customer-settings/v1][%d] customerSettingsReadBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *CustomerSettingsReadBadRequest) GetPayload() *models.MsaReplyMetaOnly {
+func (o *CustomerSettingsReadBadRequest) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *CustomerSettingsReadBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -255,7 +270,7 @@ func (o *CustomerSettingsReadBadRequest) readResponse(response runtime.ClientRes
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -277,6 +292,10 @@ Forbidden
 */
 type CustomerSettingsReadForbidden struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -285,7 +304,7 @@ type CustomerSettingsReadForbidden struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this customer settings read forbidden response has a 2xx status code
@@ -326,11 +345,18 @@ func (o *CustomerSettingsReadForbidden) String() string {
 	return fmt.Sprintf("[GET /installation-tokens/entities/customer-settings/v1][%d] customerSettingsReadForbidden  %+v", 403, o.Payload)
 }
 
-func (o *CustomerSettingsReadForbidden) GetPayload() *models.MsaReplyMetaOnly {
+func (o *CustomerSettingsReadForbidden) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *CustomerSettingsReadForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -354,7 +380,7 @@ func (o *CustomerSettingsReadForbidden) readResponse(response runtime.ClientResp
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -375,6 +401,10 @@ CustomerSettingsReadTooManyRequests describes a response with status code 429, w
 Too Many Requests
 */
 type CustomerSettingsReadTooManyRequests struct {
+
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
 
 	/* Request limit per minute.
 	 */
@@ -435,6 +465,13 @@ func (o *CustomerSettingsReadTooManyRequests) GetPayload() *models.MsaReplyMetaO
 
 func (o *CustomerSettingsReadTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
+
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
 
@@ -490,6 +527,10 @@ Internal Server Error
 */
 type CustomerSettingsReadInternalServerError struct {
 
+	/* Trace-ID: submit to support if resolving an issue
+	 */
+	XCSTRACEID string
+
 	/* Request limit per minute.
 	 */
 	XRateLimitLimit int64
@@ -498,7 +539,7 @@ type CustomerSettingsReadInternalServerError struct {
 	 */
 	XRateLimitRemaining int64
 
-	Payload *models.MsaReplyMetaOnly
+	Payload *models.MsaspecResponseFields
 }
 
 // IsSuccess returns true when this customer settings read internal server error response has a 2xx status code
@@ -539,11 +580,18 @@ func (o *CustomerSettingsReadInternalServerError) String() string {
 	return fmt.Sprintf("[GET /installation-tokens/entities/customer-settings/v1][%d] customerSettingsReadInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *CustomerSettingsReadInternalServerError) GetPayload() *models.MsaReplyMetaOnly {
+func (o *CustomerSettingsReadInternalServerError) GetPayload() *models.MsaspecResponseFields {
 	return o.Payload
 }
 
 func (o *CustomerSettingsReadInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header X-CS-TRACEID
+	hdrXCSTRACEID := response.GetHeader("X-CS-TRACEID")
+
+	if hdrXCSTRACEID != "" {
+		o.XCSTRACEID = hdrXCSTRACEID
+	}
 
 	// hydrates response header X-RateLimit-Limit
 	hdrXRateLimitLimit := response.GetHeader("X-RateLimit-Limit")
@@ -567,79 +615,7 @@ func (o *CustomerSettingsReadInternalServerError) readResponse(response runtime.
 		o.XRateLimitRemaining = valxRateLimitRemaining
 	}
 
-	o.Payload = new(models.MsaReplyMetaOnly)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
-		return err
-	}
-
-	return nil
-}
-
-// NewCustomerSettingsReadDefault creates a CustomerSettingsReadDefault with default headers values
-func NewCustomerSettingsReadDefault(code int) *CustomerSettingsReadDefault {
-	return &CustomerSettingsReadDefault{
-		_statusCode: code,
-	}
-}
-
-/*
-CustomerSettingsReadDefault describes a response with status code -1, with default header values.
-
-OK
-*/
-type CustomerSettingsReadDefault struct {
-	_statusCode int
-
-	Payload *models.APICustomerSettingsResponseV1
-}
-
-// IsSuccess returns true when this customer settings read default response has a 2xx status code
-func (o *CustomerSettingsReadDefault) IsSuccess() bool {
-	return o._statusCode/100 == 2
-}
-
-// IsRedirect returns true when this customer settings read default response has a 3xx status code
-func (o *CustomerSettingsReadDefault) IsRedirect() bool {
-	return o._statusCode/100 == 3
-}
-
-// IsClientError returns true when this customer settings read default response has a 4xx status code
-func (o *CustomerSettingsReadDefault) IsClientError() bool {
-	return o._statusCode/100 == 4
-}
-
-// IsServerError returns true when this customer settings read default response has a 5xx status code
-func (o *CustomerSettingsReadDefault) IsServerError() bool {
-	return o._statusCode/100 == 5
-}
-
-// IsCode returns true when this customer settings read default response a status code equal to that given
-func (o *CustomerSettingsReadDefault) IsCode(code int) bool {
-	return o._statusCode == code
-}
-
-// Code gets the status code for the customer settings read default response
-func (o *CustomerSettingsReadDefault) Code() int {
-	return o._statusCode
-}
-
-func (o *CustomerSettingsReadDefault) Error() string {
-	return fmt.Sprintf("[GET /installation-tokens/entities/customer-settings/v1][%d] customer-settings-read default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *CustomerSettingsReadDefault) String() string {
-	return fmt.Sprintf("[GET /installation-tokens/entities/customer-settings/v1][%d] customer-settings-read default  %+v", o._statusCode, o.Payload)
-}
-
-func (o *CustomerSettingsReadDefault) GetPayload() *models.APICustomerSettingsResponseV1 {
-	return o.Payload
-}
-
-func (o *CustomerSettingsReadDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.APICustomerSettingsResponseV1)
+	o.Payload = new(models.MsaspecResponseFields)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
