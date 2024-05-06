@@ -31,7 +31,7 @@ func (r *roleResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 }
 
 // Create a new connector resource for an CrowdStrike Role.
-func roleResource(ctx context.Context, role *models.DomainUserRole) (*v2.Resource, error) {
+func roleResource(role *models.DomainRole) (*v2.Resource, error) {
 	id, displayName, description := *role.ID, *role.DisplayName, *role.Description
 
 	profile := map[string]interface{}{
@@ -81,8 +81,7 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 
 	var rv []*v2.Resource
 	for _, role := range roleDetails.Payload.Resources {
-		roleCopy := role
-		ur, err := roleResource(ctx, roleCopy)
+		ur, err := roleResource(role)
 
 		if err != nil {
 			return nil, "", nil, err
@@ -225,7 +224,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// 3. get details for users under fetched ids
 	users, err := r.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaIdsRequest{
+			Body: &models.MsaspecIdsRequest{
 				Ids: targetUserIDs,
 			},
 			Context: ctx,
@@ -247,11 +246,9 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// 4. create grants for users
 	var rv []*v2.Grant
 	for _, user := range users.Payload.Resources {
-		userCopy := user
-
-		ur, err := userResource(ctx, userCopy)
+		uID, err := rs.NewResourceID(resourceTypeUser, user.UUID)
 		if err != nil {
-			return nil, "", nil, err
+			return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to create user resource id: %w", err)
 		}
 
 		rv = append(
@@ -259,7 +256,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 			grant.NewGrant(
 				resource,
 				roleMembership,
-				ur.Id,
+				uID,
 			),
 		)
 	}

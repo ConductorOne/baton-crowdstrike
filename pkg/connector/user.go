@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"time"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
@@ -23,7 +24,7 @@ func (u *userResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 }
 
 // Create a new connector resource for an CrowdStrike User.
-func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, error) {
+func userResource(user *models.DomainUser) (*v2.Resource, error) {
 	// user `uid` is represented as a username which can also be an email address
 	// unique identifier for the user is under `uuid`
 	profile := map[string]interface{}{
@@ -34,9 +35,23 @@ func userResource(ctx context.Context, user *models.DomainUser) (*v2.Resource, e
 		"last_name":  user.LastName,
 	}
 
+	var status v2.UserTrait_Status_Status
+	switch user.Status {
+	case "active":
+		status = v2.UserTrait_Status_STATUS_ENABLED
+	case "inactive":
+		status = v2.UserTrait_Status_STATUS_DISABLED
+	default:
+		status = v2.UserTrait_Status_STATUS_UNSPECIFIED
+	}
+
 	userTraitOptions := []rs.UserTraitOption{
 		rs.WithUserProfile(profile),
-		rs.WithStatus(v2.UserTrait_Status_STATUS_ENABLED),
+		rs.WithStatus(status),
+	}
+
+	if !user.LastLoginAt.IsZero() {
+		userTraitOptions = append(userTraitOptions, rs.WithLastLogin(time.Time(user.LastLoginAt)))
 	}
 
 	// check if `uid` is an email address
@@ -102,7 +117,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	// get details for users under fetched ids
 	userDetails, err := u.client.UserManagement.RetrieveUsersGETV1(
 		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaIdsRequest{
+			Body: &models.MsaspecIdsRequest{
 				Ids: userIDs.Payload.Resources,
 			},
 			Context: ctx,
@@ -114,8 +129,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 
 	var rv []*v2.Resource
 	for _, user := range userDetails.Payload.Resources {
-		userCopy := user
-		ur, err := userResource(ctx, userCopy)
+		ur, err := userResource(user)
 
 		if err != nil {
 			return nil, "", nil, err
