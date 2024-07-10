@@ -1,3 +1,4 @@
+version: 2
 project_name: baton-crowdstrike
 builds:
   - binary: baton-crowdstrike
@@ -51,4 +52,4 @@ checksum:
 release:
   disable: true
 changelog:
-  skip: true
+  disable: true
