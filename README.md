@@ -65,19 +65,23 @@ Usage:
   baton-crowdstrike [command]
 
 Available Commands:
+  capabilities       Get connector capabilities
   completion         Generate the autocompletion script for the specified shell
   help               Help about any command
 
 Flags:
       --client-id string                   The client ID used to authenticate with ConductorOne ($BATON_CLIENT_ID)
       --client-secret string               The client secret used to authenticate with ConductorOne ($BATON_CLIENT_SECRET)
-      --crowdstrike-client-id string       CrowdStrike client ID used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_ID)
-      --crowdstrike-client-secret string   CrowdStrike client secret used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_SECRET)
+      --crowdstrike-client-id string       required: CrowdStrike client ID used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_ID)
+      --crowdstrike-client-secret string   required: CrowdStrike client secret used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_SECRET)
   -f, --file string                        The path to the c1z file to sync with ($BATON_FILE) (default "sync.c1z")
   -h, --help                               help for baton-crowdstrike
       --log-format string                  The output format for logs: json, console ($BATON_LOG_FORMAT) (default "json")
       --log-level string                   The log level: debug, info, warn, error ($BATON_LOG_LEVEL) (default "info")
-      --region string                      CrowdStrike region to connect to. ($BATON_REGION) (default "us-1")
+  -p, --provisioning                       This must be set in order for provisioning actions to be enabled ($BATON_PROVISIONING)
+      --region string                      required: CrowdStrike region to connect to. ($BATON_REGION)
+      --skip-full-sync                     This must be set to skip a full sync ($BATON_SKIP_FULL_SYNC)
+      --ticketing                          This must be set to enable ticketing support ($BATON_TICKETING)
   -v, --version                            version for baton-crowdstrike
 
 Use "baton-crowdstrike [command] --help" for more information about a command.
