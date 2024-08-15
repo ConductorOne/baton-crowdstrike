@@ -21,9 +21,22 @@ const (
 )
 
 var (
-	clientId            = field.StringField(connector.ClientId, field.WithRequired(true), field.WithDescription("CrowdStrike client ID used to generate the access token."))
-	clientSecret        = field.StringField(connector.ClientSecret, field.WithRequired(true), field.WithDescription("CrowdStrike client secret used to generate the access token."))
-	region              = field.StringField(connector.Region, field.WithRequired(true), field.WithDescription("CrowdStrike region to connect to."))
+	clientId = field.StringField(
+		connector.ClientId,
+		field.WithRequired(true),
+		field.WithDescription("CrowdStrike client ID used to generate the access token."),
+	)
+	clientSecret = field.StringField(
+		connector.ClientSecret,
+		field.WithRequired(true),
+		field.WithDescription("CrowdStrike client secret used to generate the access token."),
+	)
+	region = field.StringField(
+		connector.Region,
+		field.WithRequired(true),
+		field.WithDefaultValue("us-1"),
+		field.WithDescription("CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'."),
+	)
 	configurationFields = []field.SchemaField{clientId, clientSecret, region}
 )
 

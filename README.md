@@ -79,7 +79,7 @@ Flags:
       --log-format string                  The output format for logs: json, console ($BATON_LOG_FORMAT) (default "json")
       --log-level string                   The log level: debug, info, warn, error ($BATON_LOG_LEVEL) (default "info")
   -p, --provisioning                       This must be set in order for provisioning actions to be enabled ($BATON_PROVISIONING)
-      --region string                      required: CrowdStrike region to connect to. ($BATON_REGION)
+      --region string                      required: CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'. ($BATON_REGION) (default "us-1")
       --skip-full-sync                     This must be set to skip a full sync ($BATON_SKIP_FULL_SYNC)
       --ticketing                          This must be set to enable ticketing support ($BATON_TICKETING)
   -v, --version                            version for baton-crowdstrike
