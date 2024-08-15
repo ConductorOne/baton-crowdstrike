@@ -62,7 +62,11 @@ func main() {
 
 func getConnector(ctx context.Context, cfg *viper.Viper) (types.ConnectorServer, error) {
 	l := ctxzap.Extract(ctx)
-	crowdstrikeConnector, err := connector.New(ctx, cfg)
+	crowdstrikeConnector, err := connector.New(ctx,
+		cfg.GetString(connector.ClientId),
+		cfg.GetString(connector.ClientSecret),
+		cfg.GetString(connector.Region),
+	)
 	if err != nil {
 		l.Error("error creating connector", zap.Error(err))
 		return nil, err

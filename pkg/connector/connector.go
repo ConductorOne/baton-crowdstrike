@@ -10,7 +10,6 @@ import (
 	"github.com/crowdstrike/gofalcon/falcon"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -95,13 +94,8 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 }
 
 // New returns the CrowdStrike connector.
-func New(ctx context.Context, cfg *viper.Viper) (*CrowdStrike, error) {
-	var (
-		cloudRegion  falcon.CloudType
-		clientId     = cfg.GetString(ClientId)
-		clientSecret = cfg.GetString(ClientSecret)
-		region       = cfg.GetString(Region)
-	)
+func New(ctx context.Context, clientId, clientSecret string, region string) (*CrowdStrike, error) {
+	var cloudRegion falcon.CloudType
 	switch region {
 	case "us-1":
 		cloudRegion = falcon.CloudUs1
