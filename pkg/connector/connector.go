@@ -30,12 +30,6 @@ var (
 	}
 )
 
-const (
-	ClientId     = "crowdstrike-client-id"
-	ClientSecret = "crowdstrike-client-secret"
-	Region       = "region"
-)
-
 type CrowdStrike struct {
 	client *fClient.CrowdStrikeAPISpecification
 }

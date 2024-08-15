@@ -18,26 +18,29 @@ import (
 const (
 	version       = "dev"
 	connectorName = "baton-crowdstrike"
+	clientId      = "crowdstrike-client-id"
+	clientSecret  = "crowdstrike-client-secret"
+	region        = "region"
 )
 
 var (
-	clientId = field.StringField(
-		connector.ClientId,
+	clientIdField = field.StringField(
+		clientId,
 		field.WithRequired(true),
 		field.WithDescription("CrowdStrike client ID used to generate the access token."),
 	)
-	clientSecret = field.StringField(
-		connector.ClientSecret,
+	clientSecretField = field.StringField(
+		clientSecret,
 		field.WithRequired(true),
 		field.WithDescription("CrowdStrike client secret used to generate the access token."),
 	)
-	region = field.StringField(
-		connector.Region,
+	regionField = field.StringField(
+		region,
 		field.WithRequired(true),
 		field.WithDefaultValue("us-1"),
 		field.WithDescription("CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'."),
 	)
-	configurationFields = []field.SchemaField{clientId, clientSecret, region}
+	configurationFields = []field.SchemaField{clientIdField, clientSecretField, regionField}
 )
 
 func main() {
@@ -63,9 +66,9 @@ func main() {
 func getConnector(ctx context.Context, cfg *viper.Viper) (types.ConnectorServer, error) {
 	l := ctxzap.Extract(ctx)
 	crowdstrikeConnector, err := connector.New(ctx,
-		cfg.GetString(connector.ClientId),
-		cfg.GetString(connector.ClientSecret),
-		cfg.GetString(connector.Region),
+		cfg.GetString(clientId),
+		cfg.GetString(clientSecret),
+		cfg.GetString(region),
 	)
 	if err != nil {
 		l.Error("error creating connector", zap.Error(err))
