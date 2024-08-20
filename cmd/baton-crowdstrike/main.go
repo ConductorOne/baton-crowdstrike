@@ -6,28 +6,56 @@ import (
 	"os"
 
 	"github.com/conductorone/baton-crowdstrike/pkg/connector"
-	"github.com/conductorone/baton-sdk/pkg/cli"
+	configSchema "github.com/conductorone/baton-sdk/pkg/config"
 	"github.com/conductorone/baton-sdk/pkg/connectorbuilder"
+	"github.com/conductorone/baton-sdk/pkg/field"
 	"github.com/conductorone/baton-sdk/pkg/types"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
-var version = "dev"
+const (
+	version       = "dev"
+	connectorName = "baton-crowdstrike"
+	clientId      = "crowdstrike-client-id"
+	clientSecret  = "crowdstrike-client-secret"
+	region        = "region"
+)
+
+var (
+	clientIdField = field.StringField(
+		clientId,
+		field.WithRequired(true),
+		field.WithDescription("CrowdStrike client ID used to generate the access token."),
+	)
+	clientSecretField = field.StringField(
+		clientSecret,
+		field.WithRequired(true),
+		field.WithDescription("CrowdStrike client secret used to generate the access token."),
+	)
+	regionField = field.StringField(
+		region,
+		field.WithRequired(true),
+		field.WithDefaultValue("us-1"),
+		field.WithDescription("CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'."),
+	)
+	configurationFields = []field.SchemaField{clientIdField, clientSecretField, regionField}
+)
 
 func main() {
 	ctx := context.Background()
-
-	cfg := &config{}
-	cmd, err := cli.NewCmd(ctx, "baton-crowdstrike", cfg, validateConfig, getConnector)
+	_, cmd, err := configSchema.DefineConfiguration(ctx,
+		connectorName,
+		getConnector,
+		field.NewConfiguration(configurationFields),
+	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
 	cmd.Version = version
-	cmdFlags(cmd)
-
 	err = cmd.Execute()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -35,10 +63,13 @@ func main() {
 	}
 }
 
-func getConnector(ctx context.Context, cfg *config) (types.ConnectorServer, error) {
+func getConnector(ctx context.Context, cfg *viper.Viper) (types.ConnectorServer, error) {
 	l := ctxzap.Extract(ctx)
-
-	crowdstrikeConnector, err := connector.New(ctx, cfg.ClientId, cfg.ClientSecret, cfg.Region)
+	crowdstrikeConnector, err := connector.New(ctx,
+		cfg.GetString(clientId),
+		cfg.GetString(clientSecret),
+		cfg.GetString(region),
+	)
 	if err != nil {
 		l.Error("error creating connector", zap.Error(err))
 		return nil, err
