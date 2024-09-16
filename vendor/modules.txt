@@ -150,7 +150,7 @@ github.com/benbjohnson/clock
 # github.com/blang/semver/v4 v4.0.0
 ## explicit; go 1.14
 github.com/blang/semver/v4
-# github.com/conductorone/baton-sdk v0.2.21
+# github.com/conductorone/baton-sdk v0.2.31
 ## explicit; go 1.21
 github.com/conductorone/baton-sdk/internal/connector
 github.com/conductorone/baton-sdk/pb/c1/c1z/v1
@@ -194,6 +194,7 @@ github.com/conductorone/baton-sdk/pkg/types/ticket
 github.com/conductorone/baton-sdk/pkg/ugrpc
 github.com/conductorone/baton-sdk/pkg/uhttp
 github.com/conductorone/baton-sdk/pkg/us3
+github.com/conductorone/baton-sdk/pkg/ustrings
 github.com/conductorone/baton-sdk/pkg/utls
 # github.com/crowdstrike/gofalcon v0.6.1-0.20240426204036-ac8ce2b4f2d7
 ## explicit; go 1.17
