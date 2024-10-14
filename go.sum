@@ -56,8 +56,8 @@ github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2y
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
-github.com/conductorone/baton-sdk v0.2.21 h1:UvbZFPBYGQLl5vPB+jCK0DcBsOppT2tYt+P6GOMp5LQ=
-github.com/conductorone/baton-sdk v0.2.21/go.mod h1:hmd/Oz3DPIKD+9QmkusZaA18ZoiinnTDdrxh2skcdUc=
+github.com/conductorone/baton-sdk v0.2.41 h1:JvEDbiLozo6GaikyUycKTPKkpqhIDFlMD/122oDlrDg=
+github.com/conductorone/baton-sdk v0.2.41/go.mod h1:hmd/Oz3DPIKD+9QmkusZaA18ZoiinnTDdrxh2skcdUc=
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/crowdstrike/gofalcon v0.6.1-0.20240426204036-ac8ce2b4f2d7 h1:NLcXFICTUakAvJFSH8z+Ht6SfJ52FbOasYdP8p7BcsQ=
 github.com/crowdstrike/gofalcon v0.6.1-0.20240426204036-ac8ce2b4f2d7/go.mod h1:7KSolP3XCntqZiu7GfGd8uedAQ82dqBNpP0gqBksWB8=
