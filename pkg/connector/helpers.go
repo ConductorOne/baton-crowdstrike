@@ -12,12 +12,6 @@ import (
 
 var ResourcesPageSize int64 = 50
 
-func annotationsForUserResourceType() annotations.Annotations {
-	annos := annotations.Annotations{}
-	annos.Update(&v2.SkipEntitlementsAndGrants{})
-	return annos
-}
-
 func validateEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 
@@ -28,7 +22,7 @@ func handleNextPage(bag *pagination.Bag, page int64) (string, error) {
 	nextPage := fmt.Sprintf("%d", page)
 	pageToken, err := bag.NextToken(nextPage)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to generate next page token: %w", err)
 	}
 
 	return pageToken, nil
@@ -38,7 +32,7 @@ func parsePageToken(i string, resourceID *v2.ResourceId) (*pagination.Bag, int64
 	b := &pagination.Bag{}
 	err := b.Unmarshal(i)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to unmarshal page token: %w", err)
 	}
 
 	if b.Current() == nil {
@@ -50,7 +44,7 @@ func parsePageToken(i string, resourceID *v2.ResourceId) (*pagination.Bag, int64
 
 	page, err := convertPageToken(b.PageToken())
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to convert page token to integer: %w", err)
 	}
 
 	return b, page, nil
@@ -64,7 +58,7 @@ func convertPageToken(token string) (int64, error) {
 
 	page, err := strconv.ParseInt(token, 10, 64)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to parse page token as integer: %w", err)
 	}
 
 	return page, nil

@@ -10,11 +10,13 @@ import (
 	ent "github.com/conductorone/baton-sdk/pkg/types/entitlement"
 	"github.com/conductorone/baton-sdk/pkg/types/grant"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
 	"github.com/crowdstrike/gofalcon/falcon/models"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
 )
 
 const (
@@ -34,7 +36,7 @@ func (r *roleResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 func roleResource(role *models.DomainRole) (*v2.Resource, error) {
 	id, displayName, description := *role.ID, *role.DisplayName, *role.Description
 
-	profile := map[string]interface{}{
+	profile := map[string]any{
 		"role_id":     id,
 		"role_name":   displayName,
 		"description": description,
@@ -65,7 +67,7 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		},
 	)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to list roles: %w", err)
+		return nil, "", nil, wrapCrowdStrikeError(err, "role list: failed to query role ids")
 	}
 
 	// get details for roles under fetched ids
@@ -76,7 +78,7 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		},
 	)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to get role details: %w", err)
+		return nil, "", nil, wrapCrowdStrikeError(err, "role list: failed to retrieve role details")
 	}
 
 	var rv []*v2.Resource
@@ -84,7 +86,7 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		ur, err := roleResource(role)
 
 		if err != nil {
-			return nil, "", nil, err
+			return nil, "", nil, fmt.Errorf("failed to create role resource: %w", err)
 		}
 
 		rv = append(rv, ur)
@@ -135,7 +137,7 @@ func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIDs []stri
 			},
 		)
 		if err != nil {
-			return nil, nil, fmt.Errorf("crowdstrike-connector: failed to get user roles: %w", err)
+			return nil, nil, wrapCrowdStrikeError(err, "find users with role: failed to get user roles")
 		}
 
 		rateLimitInfo = append(
@@ -173,7 +175,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		},
 	)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to list users: %w", err)
+		return nil, "", nil, wrapCrowdStrikeError(err, "role grants: failed to query user ids")
 	}
 
 	// add rate limit info from listing user ids
@@ -231,7 +233,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		},
 	)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to get user details: %w", err)
+		return nil, "", nil, wrapCrowdStrikeError(err, "role grants: failed to retrieve user details")
 	}
 
 	// add rate limit info from listing user details
@@ -248,7 +250,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	for _, user := range users.Payload.Resources {
 		uID, err := rs.NewResourceID(resourceTypeUser, user.UUID)
 		if err != nil {
-			return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to create user resource id: %w", err)
+			return nil, "", nil, fmt.Errorf("failed to create user resource id: %w", err)
 		}
 
 		rv = append(
@@ -272,12 +274,12 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 
 	if principal.Id.ResourceType != resourceTypeUser.Id {
 		l.Warn(
-			"crowdstrike-connector: only users can be granted role membership",
+			"crowdstrike-connector grant: only users can be granted role membership",
 			zap.String("principal_id", principal.Id.Resource),
 			zap.String("principal_type", principal.Id.ResourceType),
 		)
 
-		return nil, fmt.Errorf("crowdstrike-connector: only users can be granted role membership")
+		return nil, uhttp.WrapErrors(codes.InvalidArgument, "only users can be granted role membership")
 	}
 
 	roleId := entitlement.Resource.Id.Resource
@@ -293,7 +295,13 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: failed to grant role membership: %w", err)
+		// Check if grant already exists (409 Conflict)
+		if isConflictError(err) {
+			annos := annotations.Annotations{}
+			annos.Update(&v2.GrantAlreadyExists{})
+			return annos, nil
+		}
+		return nil, wrapCrowdStrikeError(err, "grant: failed to assign role membership")
 	}
 
 	// annotations for rate limits
@@ -315,12 +323,12 @@ func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotat
 
 	if principal.Id.ResourceType != resourceTypeUser.Id {
 		l.Warn(
-			"crowdstrike-connector: only users can have role membership revoked",
+			"crowdstrike-connector revoke: only users can have role membership revoked",
 			zap.String("principal_id", principal.Id.Resource),
 			zap.String("principal_type", principal.Id.ResourceType),
 		)
 
-		return nil, fmt.Errorf("crowdstrike-connector: only users can have role membership revoked")
+		return nil, uhttp.WrapErrors(codes.InvalidArgument, "only users can have role membership revoked")
 	}
 
 	roleId := entitlement.Resource.Id.Resource
@@ -334,7 +342,13 @@ func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotat
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: failed to revoke role membership: %w", err)
+		// Check if grant was already revoked (409 Conflict)
+		if isConflictError(err) {
+			annos := annotations.Annotations{}
+			annos.Update(&v2.GrantAlreadyRevoked{})
+			return annos, nil
+		}
+		return nil, wrapCrowdStrikeError(err, "revoke: failed to remove role membership")
 	}
 
 	// annotations for rate limits
