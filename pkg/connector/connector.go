@@ -7,41 +7,25 @@ import (
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
 	"github.com/conductorone/baton-sdk/pkg/connectorbuilder"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 	"github.com/crowdstrike/gofalcon/falcon"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
+	"google.golang.org/grpc/codes"
 )
 
-var (
-	resourceTypeUser = &v2.ResourceType{
-		Id:          "user",
-		DisplayName: "User",
-		Traits: []v2.ResourceType_Trait{
-			v2.ResourceType_TRAIT_USER,
-		},
-		Annotations: annotationsForUserResourceType(),
-	}
-	resourceTypeRole = &v2.ResourceType{
-		Id:          "role",
-		DisplayName: "Role",
-		Traits: []v2.ResourceType_Trait{
-			v2.ResourceType_TRAIT_ROLE,
-		},
-	}
-)
-
-type CrowdStrike struct {
+type Connector struct {
 	client *fClient.CrowdStrikeAPISpecification
 }
 
-func (o *CrowdStrike) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
+func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
 	return []connectorbuilder.ResourceSyncer{
 		userBuilder(o.client),
 		roleBuilder(o.client),
 	}
 }
 
-func (o *CrowdStrike) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
+func (o *Connector) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
 	return &v2.ConnectorMetadata{
 		DisplayName: "CrowdStrike",
 		Description: "Connector syncing CrowdStrike users and their roles to Baton.",
@@ -49,7 +33,7 @@ func (o *CrowdStrike) Metadata(ctx context.Context) (*v2.ConnectorMetadata, erro
 }
 
 // Validates that the user has access to all relevant endpoints.
-func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, error) {
+func (o *Connector) Validate(ctx context.Context) (annotations.Annotations, error) {
 	var limit int64 = 1
 
 	// get user ids
@@ -60,7 +44,7 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to query user ids: %w", err)
+		return nil, wrapCrowdStrikeError(err, "validate: unable to query user ids")
 	}
 
 	// get role ids
@@ -70,7 +54,7 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to query role ids: %w", err)
+		return nil, wrapCrowdStrikeError(err, "validate: unable to query role ids")
 	}
 
 	// get role details
@@ -81,14 +65,14 @@ func (o *CrowdStrike) Validate(ctx context.Context) (annotations.Annotations, er
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("crowdstrike-connector: current user is not able to retrieve role details: %w", err)
+		return nil, wrapCrowdStrikeError(err, "validate: unable to retrieve role details")
 	}
 
 	return nil, nil
 }
 
 // New returns the CrowdStrike connector.
-func New(ctx context.Context, clientId, clientSecret string, region string) (*CrowdStrike, error) {
+func New(ctx context.Context, clientId, clientSecret string, region string) (*Connector, error) {
 	var cloudRegion falcon.CloudType
 	switch region {
 	case "us-1":
@@ -100,7 +84,7 @@ func New(ctx context.Context, clientId, clientSecret string, region string) (*Cr
 	case "us-gov-1":
 		cloudRegion = falcon.CloudUsGov1
 	default:
-		return nil, fmt.Errorf("crowdstrike-connector: invalid region: %s", region)
+		return nil, uhttp.WrapErrors(codes.InvalidArgument, fmt.Sprintf("invalid region: %s", region))
 	}
 
 	client, err := falcon.NewClient(&falcon.ApiConfig{
@@ -110,10 +94,10 @@ func New(ctx context.Context, clientId, clientSecret string, region string) (*Cr
 		Context:      ctx,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to initialize SDK client: %w", err)
 	}
 
-	return &CrowdStrike{
+	return &Connector{
 		client: client,
 	}, nil
 }

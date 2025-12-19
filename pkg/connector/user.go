@@ -2,7 +2,6 @@ package connector
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
@@ -27,7 +26,7 @@ func (u *userResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 func userResource(user *models.DomainUser) (*v2.Resource, error) {
 	// user `uid` is represented as a username which can also be an email address
 	// unique identifier for the user is under `uuid`
-	profile := map[string]interface{}{
+	profile := map[string]any{
 		"cid":        user.Cid,
 		"login":      user.UID,
 		"user_id":    user.UUID,
@@ -88,7 +87,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		},
 	)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to list users: %w", err)
+		return nil, "", nil, wrapCrowdStrikeError(err, "user list: failed to query user ids")
 	}
 
 	var rateLimitInfo []RateLimitInfo
@@ -124,7 +123,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		},
 	)
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("crowdstrike-connector: failed to get user details: %w", err)
+		return nil, "", nil, wrapCrowdStrikeError(err, "user list: failed to retrieve user details")
 	}
 
 	var rv []*v2.Resource
