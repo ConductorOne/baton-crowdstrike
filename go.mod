@@ -3,7 +3,7 @@ module github.com/conductorone/baton-crowdstrike
 go 1.25.2
 
 require (
-	github.com/conductorone/baton-sdk v0.5.9
+	github.com/conductorone/baton-sdk v0.6.18
 	github.com/crowdstrike/gofalcon v0.6.1-0.20240426204036-ac8ce2b4f2d7
 	github.com/ennyjfrick/ruleguard-logfatal v0.0.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -47,7 +47,7 @@ require (
 	github.com/deckarep/golang-set/v2 v2.7.0 // indirect
 	github.com/doug-martin/goqu/v9 v9.19.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/ebitengine/purego v0.8.4 // indirect
+	github.com/ebitengine/purego v0.9.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
@@ -91,7 +91,7 @@ require (
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
-	github.com/shirou/gopsutil/v4 v4.25.8 // indirect
+	github.com/shirou/gopsutil/v4 v4.25.11 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
@@ -101,8 +101,8 @@ require (
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/tklauser/go-sysconf v0.3.15 // indirect
-	github.com/tklauser/numcpus v0.10.0 // indirect
+	github.com/tklauser/go-sysconf v0.3.16 // indirect
+	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.mongodb.org/mongo-driver v1.15.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
