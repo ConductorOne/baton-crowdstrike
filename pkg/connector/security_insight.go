@@ -34,11 +34,12 @@ func securityInsightResource(identity IdentityRiskData) (*v2.Resource, error) {
 	var resourceID string
 	var email string
 
-	if identity.SecondaryDisplayName != "" {
+	switch {
+	case identity.SecondaryDisplayName != "":
 		resourceID = identity.SecondaryDisplayName
-	} else if len(identity.EmailAddresses) > 0 {
+	case len(identity.EmailAddresses) > 0:
 		resourceID = identity.EmailAddresses[0]
-	} else {
+	default:
 		resourceID = identity.PrimaryDisplayName
 	}
 

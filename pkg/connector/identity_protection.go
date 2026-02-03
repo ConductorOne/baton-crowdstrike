@@ -178,7 +178,7 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	}
 
 	// Create the HTTP request
-	req, err := http.NewRequestWithContext(ctx, "POST", c.endpoint, bytes.NewReader(bodyBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, "", false, RateLimitInfo{}, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
@@ -228,10 +228,7 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	for _, entity := range graphQLResp.Data.Entities.Nodes {
 		riskFactors := make([]RiskFactor, 0, len(entity.RiskFactors))
 		for _, rf := range entity.RiskFactors {
-			riskFactors = append(riskFactors, RiskFactor{
-				Type:     rf.Type,
-				Severity: rf.Severity,
-			})
+			riskFactors = append(riskFactors, RiskFactor(rf))
 		}
 
 		results = append(results, IdentityRiskData{
@@ -270,10 +267,10 @@ func extractRateLimitInfo(resp *http.Response) RateLimitInfo {
 	var limit, remaining int64
 
 	if limitStr := resp.Header.Get("X-RateLimit-Limit"); limitStr != "" {
-		fmt.Sscanf(limitStr, "%d", &limit)
+		_, _ = fmt.Sscanf(limitStr, "%d", &limit)
 	}
 	if remainingStr := resp.Header.Get("X-RateLimit-Remaining"); remainingStr != "" {
-		fmt.Sscanf(remainingStr, "%d", &remaining)
+		_, _ = fmt.Sscanf(remainingStr, "%d", &remaining)
 	}
 
 	return NewRateLimitInfo(limit, remaining)
