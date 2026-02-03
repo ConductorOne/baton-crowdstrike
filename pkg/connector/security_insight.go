@@ -64,6 +64,20 @@ func securityInsightResource(identity IdentityRiskData) (*v2.Resource, error) {
 		rs.WithRiskScore(riskScoreStr),
 	}
 
+	// Add risk factors if present
+	if len(identity.RiskFactors) > 0 {
+		factors := make([]string, 0, len(identity.RiskFactors))
+		for _, rf := range identity.RiskFactors {
+			// Format as "Type (Severity)" for clarity
+			factor := rf.Type
+			if rf.Severity != "" {
+				factor = fmt.Sprintf("%s (%s)", rf.Type, rf.Severity)
+			}
+			factors = append(factors, factor)
+		}
+		traitOpts = append(traitOpts, rs.WithRiskScoreFactors(factors...))
+	}
+
 	// Add target - prefer AppUserTarget since we have both email and external ID
 	if email != "" {
 		traitOpts = append(traitOpts, rs.WithInsightAppUserTarget(email, resourceID))
