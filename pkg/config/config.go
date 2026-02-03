@@ -24,6 +24,12 @@ var (
 		field.WithDescription("CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'."),
 		field.WithDefaultValue("us-1"),
 	)
+	EnableSecurityInsightsField = field.BoolField(
+		"enable-security-insights",
+		field.WithDisplayName("Enable Security Insights"),
+		field.WithDescription("Enable syncing of identity risk scores from CrowdStrike Identity Protection. Requires Identity Protection Entities: Read API scope."),
+		field.WithDefaultValue(false),
+	)
 
 	// ConfigurationFields defines the external configuration required for the
 	// connector to run.
@@ -31,6 +37,7 @@ var (
 		ClientIdField,
 		ClientSecretField,
 		RegionField,
+		EnableSecurityInsightsField,
 	}
 )
 
