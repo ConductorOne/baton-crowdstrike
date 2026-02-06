@@ -121,13 +121,9 @@ func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId
 	// Convert identities to resources
 	resources := make([]*v2.Resource, 0, len(identities))
 	for _, identity := range identities {
-		// Skip identities without a risk score (value of 0 means no assessment yet)
-		// We still include them but they will have a risk score of "0"
-
 		resource, err := securityInsightResource(identity)
 		if err != nil {
-			// Log the error but continue processing other identities
-			continue
+			return nil, "", nil, fmt.Errorf("failed to create security insight resource for %s: %w", identity.PrimaryDisplayName, err)
 		}
 		resources = append(resources, resource)
 	}
