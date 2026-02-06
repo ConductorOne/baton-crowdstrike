@@ -21,4 +21,12 @@ var (
 			v2.ResourceType_TRAIT_ROLE,
 		},
 	}
+	resourceTypeSecurityInsight = &v2.ResourceType{
+		Id:          "security_insight",
+		DisplayName: "Identity Risk Score",
+		Traits: []v2.ResourceType_Trait{
+			v2.ResourceType_TRAIT_SECURITY_INSIGHT,
+		},
+		Annotations: annotations.New(&v2.SkipEntitlementsAndGrants{}),
+	}
 )

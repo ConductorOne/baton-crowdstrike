@@ -8,9 +8,16 @@ Check out [Baton](https://github.com/conductorone/baton) to learn more about the
 
 # Prerequisites
 
-Connector requires **client id and secret** to exchange for access token that is later used throughout the communication with API. To obtain these credentials, you have to create API client in CrowdStrike. You must be designated as Falcon administrator role to create API client in CrowdStrike (more info on obtaining access and creating clients [here](https://www.crowdstrike.com/blog/tech-center/get-access-falcon-apis/)). Administrator will have to provide you with credentials that have access at least to **User management** scope. 
+Connector requires **client id and secret** to exchange for access token that is later used throughout the communication with API. To obtain these credentials, you have to create API client in CrowdStrike. You must be designated as Falcon administrator role to create API client in CrowdStrike (more info on obtaining access and creating clients [here](https://www.crowdstrike.com/blog/tech-center/get-access-falcon-apis/)).
 
-After you have obtained client id and secret, you can use them with connector. You can do this by setting `BATON_CLIENT_ID` and `BATON_CLIENT_SECRET` environment variables or by passing them as flags to `baton-crowdstrike` command.
+## Required API Scopes
+
+| Scope | Required | Description |
+|-------|----------|-------------|
+| **User Management: Read** | Yes | Required to sync users and roles |
+| **Identity Protection Entities: Read** | No | Required to sync identity risk scores (security insights) |
+
+After you have obtained client id and secret, you can use them with connector. You can do this by setting `BATON_CROWDSTRIKE_CLIENT_ID` and `BATON_CROWDSTRIKE_CLIENT_SECRET` environment variables or by passing them as flags to `baton-crowdstrike` command.
 
 # Getting Started
 
@@ -48,6 +55,7 @@ baton resources
 
 - Users
 - Roles
+- Security Insights (identity risk scores)
 
 # Contributing, Support and Issues
 
@@ -86,3 +94,12 @@ Flags:
 
 Use "baton-crowdstrike [command] --help" for more information about a command.
 ```
+
+## Security Insights
+
+The connector syncs identity risk scores from CrowdStrike Identity Protection. This includes:
+
+- **Risk Score**: A numerical score (0-1) indicating the identity's risk level
+- **Risk Factors**: The factors contributing to the risk score (e.g., "WEAK_PASSWORD (HIGH)", "MFA_NOT_ENABLED (MEDIUM)")
+
+To sync security insights, your CrowdStrike API client must have the **Identity Protection Entities: Read** scope enabled. The security_insight resource type is disabled by default and can be enabled through ConductorOne.

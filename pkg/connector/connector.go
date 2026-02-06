@@ -15,20 +15,24 @@ import (
 )
 
 type Connector struct {
-	client *fClient.CrowdStrikeAPISpecification
+	client       *fClient.CrowdStrikeAPISpecification
+	clientId     string
+	clientSecret string
+	host         string
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
 	return []connectorbuilder.ResourceSyncer{
 		userBuilder(o.client),
 		roleBuilder(o.client),
+		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
 	}
 }
 
 func (o *Connector) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
 	return &v2.ConnectorMetadata{
 		DisplayName: "CrowdStrike",
-		Description: "Connector syncing CrowdStrike users and their roles to Baton.",
+		Description: "Connector syncing CrowdStrike users, roles, and identity risk scores to Baton.",
 	}, nil
 }
 
@@ -98,6 +102,9 @@ func New(ctx context.Context, clientId, clientSecret string, region string) (*Co
 	}
 
 	return &Connector{
-		client: client,
+		client:       client,
+		clientId:     clientId,
+		clientSecret: clientSecret,
+		host:         cloudRegion.Host(),
 	}, nil
 }
