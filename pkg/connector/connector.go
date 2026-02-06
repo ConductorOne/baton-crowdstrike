@@ -15,35 +15,24 @@ import (
 )
 
 type Connector struct {
-	client                 *fClient.CrowdStrikeAPISpecification
-	enableSecurityInsights bool
-	clientId               string
-	clientSecret           string
-	host                   string
+	client       *fClient.CrowdStrikeAPISpecification
+	clientId     string
+	clientSecret string
+	host         string
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
-	syncers := []connectorbuilder.ResourceSyncer{
+	return []connectorbuilder.ResourceSyncer{
 		userBuilder(o.client),
 		roleBuilder(o.client),
+		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
 	}
-
-	if o.enableSecurityInsights {
-		syncers = append(syncers, securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host))
-	}
-
-	return syncers
 }
 
 func (o *Connector) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
-	description := "Connector syncing CrowdStrike users and their roles to Baton."
-	if o.enableSecurityInsights {
-		description = "Connector syncing CrowdStrike users, roles, and identity risk scores to Baton."
-	}
-
 	return &v2.ConnectorMetadata{
 		DisplayName: "CrowdStrike",
-		Description: description,
+		Description: "Connector syncing CrowdStrike users, roles, and identity risk scores to Baton.",
 	}, nil
 }
 
@@ -83,19 +72,11 @@ func (o *Connector) Validate(ctx context.Context) (annotations.Annotations, erro
 		return nil, wrapCrowdStrikeError(err, "validate: unable to retrieve role details")
 	}
 
-	// validate Identity Protection API access if security insights are enabled
-	if o.enableSecurityInsights {
-		ipClient := NewIdentityProtectionClient(ctx, o.clientId, o.clientSecret, o.host)
-		if err := ipClient.ValidateAccess(ctx); err != nil {
-			return nil, wrapCrowdStrikeError(err, "validate: unable to access Identity Protection API - ensure the API client has 'Identity Protection Entities: Read' scope")
-		}
-	}
-
 	return nil, nil
 }
 
 // New returns the CrowdStrike connector.
-func New(ctx context.Context, clientId, clientSecret string, region string, enableSecurityInsights bool) (*Connector, error) {
+func New(ctx context.Context, clientId, clientSecret string, region string) (*Connector, error) {
 	var cloudRegion falcon.CloudType
 	switch region {
 	case "us-1":
@@ -121,10 +102,9 @@ func New(ctx context.Context, clientId, clientSecret string, region string, enab
 	}
 
 	return &Connector{
-		client:                 client,
-		enableSecurityInsights: enableSecurityInsights,
-		clientId:               clientId,
-		clientSecret:           clientSecret,
-		host:                   cloudRegion.Host(),
+		client:       client,
+		clientId:     clientId,
+		clientSecret: clientSecret,
+		host:         cloudRegion.Host(),
 	}, nil
 }

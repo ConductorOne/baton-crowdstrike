@@ -15,7 +15,7 @@ Connector requires **client id and secret** to exchange for access token that is
 | Scope | Required | Description |
 |-------|----------|-------------|
 | **User Management: Read** | Yes | Required to sync users and roles |
-| **Identity Protection Entities: Read** | No | Required only if `--enable-security-insights` is enabled |
+| **Identity Protection Entities: Read** | No | Required to sync identity risk scores (security insights) |
 
 After you have obtained client id and secret, you can use them with connector. You can do this by setting `BATON_CROWDSTRIKE_CLIENT_ID` and `BATON_CROWDSTRIKE_CLIENT_SECRET` environment variables or by passing them as flags to `baton-crowdstrike` command.
 
@@ -55,7 +55,7 @@ baton resources
 
 - Users
 - Roles
-- Security Insights (identity risk scores) - requires `--enable-security-insights` flag
+- Security Insights (identity risk scores)
 
 # Contributing, Support and Issues
 
@@ -82,7 +82,6 @@ Flags:
       --client-secret string               The client secret used to authenticate with ConductorOne ($BATON_CLIENT_SECRET)
       --crowdstrike-client-id string       required: CrowdStrike client ID used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_ID)
       --crowdstrike-client-secret string   required: CrowdStrike client secret used to generate the access token. ($BATON_CROWDSTRIKE_CLIENT_SECRET)
-      --enable-security-insights           Enable syncing of identity risk scores from CrowdStrike Identity Protection ($BATON_ENABLE_SECURITY_INSIGHTS)
   -f, --file string                        The path to the c1z file to sync with ($BATON_FILE) (default "sync.c1z")
   -h, --help                               help for baton-crowdstrike
       --log-format string                  The output format for logs: json, console ($BATON_LOG_FORMAT) (default "json")
@@ -98,9 +97,9 @@ Use "baton-crowdstrike [command] --help" for more information about a command.
 
 ## Security Insights
 
-When `--enable-security-insights` is enabled, the connector will sync identity risk scores from CrowdStrike Identity Protection. This includes:
+The connector syncs identity risk scores from CrowdStrike Identity Protection. This includes:
 
 - **Risk Score**: A numerical score (0-1) indicating the identity's risk level
 - **Risk Factors**: The factors contributing to the risk score (e.g., "WEAK_PASSWORD (HIGH)", "MFA_NOT_ENABLED (MEDIUM)")
 
-To use this feature, your CrowdStrike API client must have the **Identity Protection Entities: Read** scope enabled.
+To sync security insights, your CrowdStrike API client must have the **Identity Protection Entities: Read** scope enabled. The security_insight resource type is disabled by default and can be enabled through ConductorOne.
