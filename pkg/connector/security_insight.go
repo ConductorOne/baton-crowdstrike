@@ -56,7 +56,7 @@ func securityInsightResource(identity IdentityRiskData) (*v2.Resource, error) {
 		displayName = fmt.Sprintf("Risk Score: %s", resourceID)
 	}
 
-	// Convert risk score to string (format as percentage)
+	// Convert risk score to string (e.g. 0.65)
 	riskScoreStr := strconv.FormatFloat(identity.RiskScore, 'f', 2, 64)
 
 	// Build trait options
