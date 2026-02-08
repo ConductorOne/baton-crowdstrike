@@ -24,6 +24,10 @@ var (
 		field.WithDescription("CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'."),
 		field.WithDefaultValue("us-1"),
 	)
+	BaseURLField = field.StringField(
+		"base-url",
+		field.WithDescription("Override the CrowdStrike API URL (for testing)"),
+	)
 
 	// ConfigurationFields defines the external configuration required for the
 	// connector to run.
@@ -31,6 +35,7 @@ var (
 		ClientIdField,
 		ClientSecretField,
 		RegionField,
+		BaseURLField,
 	}
 )
 

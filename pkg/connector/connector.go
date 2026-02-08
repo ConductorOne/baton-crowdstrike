@@ -72,7 +72,7 @@ func (o *Connector) Validate(ctx context.Context) (annotations.Annotations, erro
 }
 
 // New returns the CrowdStrike connector.
-func New(ctx context.Context, clientId, clientSecret string, region string) (*Connector, error) {
+func New(ctx context.Context, clientId, clientSecret string, region string, baseURL string) (*Connector, error) {
 	var cloudRegion falcon.CloudType
 	switch region {
 	case "us-1":
@@ -91,6 +91,7 @@ func New(ctx context.Context, clientId, clientSecret string, region string) (*Co
 		ClientId:     clientId,
 		ClientSecret: clientSecret,
 		Cloud:        cloudRegion,
+		HostOverride: baseURL,
 		Context:      ctx,
 	})
 	if err != nil {

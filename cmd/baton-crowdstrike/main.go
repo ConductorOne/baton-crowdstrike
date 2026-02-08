@@ -49,6 +49,7 @@ func getConnector(ctx context.Context, cfg *config.Crowdstrike) (types.Connector
 		cfg.CrowdstrikeClientId,
 		cfg.CrowdstrikeClientSecret,
 		cfg.Region,
+		cfg.BaseUrl,
 	)
 	if err != nil {
 		l.Error("error creating connector", zap.Error(err))
