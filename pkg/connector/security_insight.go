@@ -93,7 +93,7 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 		traitOpts...,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create security insight resource: %w", err)
+		return nil, fmt.Errorf("baton-crowdstrike: failed to create security insight resource: %w", err)
 	}
 
 	return resource, nil
@@ -129,7 +129,7 @@ func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId
 		for _, account := range identity.Accounts {
 			resource, err := securityInsightResource(identity, account)
 			if err != nil {
-				return nil, "", nil, fmt.Errorf("failed to create security insight resource for %s (account %s): %w",
+				return nil, "", nil, fmt.Errorf("baton-crowdstrike: failed to create security insight resource for %s (account %s): %w",
 					identity.PrimaryDisplayName, account.TypeName, err)
 			}
 			// securityInsightResource returns nil when it can't build an AppUser target

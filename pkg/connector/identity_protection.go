@@ -244,13 +244,13 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	// Create the request body
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, "", false, RateLimitInfo{}, fmt.Errorf("failed to marshal GraphQL request: %w", err)
+		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to marshal GraphQL request: %w", err)
 	}
 
 	// Create the HTTP request
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(bodyBytes))
 	if err != nil {
-		return nil, "", false, RateLimitInfo{}, fmt.Errorf("failed to create HTTP request: %w", err)
+		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to create HTTP request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -259,7 +259,7 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	// Make the HTTP request using the authenticated client
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, "", false, RateLimitInfo{}, fmt.Errorf("failed to execute identity protection request: %w", err)
+		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to execute identity protection request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -269,23 +269,23 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	// Check for error status codes
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, "", false, rateLimitInfo, fmt.Errorf("identity protection API returned status %d: %s", resp.StatusCode, string(bodyBytes))
+		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: identity protection API returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	// Parse the response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, "", false, rateLimitInfo, fmt.Errorf("failed to read response body: %w", err)
+		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: failed to read response body: %w", err)
 	}
 
 	var graphQLResp graphQLResponse
 	if err := json.Unmarshal(respBody, &graphQLResp); err != nil {
-		return nil, "", false, rateLimitInfo, fmt.Errorf("failed to parse GraphQL response: %w", err)
+		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: failed to parse GraphQL response: %w", err)
 	}
 
 	// Check for GraphQL errors
 	if len(graphQLResp.Errors) > 0 {
-		return nil, "", false, rateLimitInfo, fmt.Errorf("GraphQL error: %s", graphQLResp.Errors[0].Message)
+		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: GraphQL error: %s", graphQLResp.Errors[0].Message)
 	}
 
 	// Check if we have data
@@ -331,7 +331,7 @@ func (c *IdentityProtectionClient) ValidateAccess(ctx context.Context) error {
 	// Try to fetch a single entity to validate access
 	_, _, _, _, err := c.GetIdentityRiskScores(ctx, 1, "")
 	if err != nil {
-		return fmt.Errorf("identity protection API access validation failed: %w", err)
+		return fmt.Errorf("baton-crowdstrike: identity protection API access validation failed: %w", err)
 	}
 	return nil
 }
