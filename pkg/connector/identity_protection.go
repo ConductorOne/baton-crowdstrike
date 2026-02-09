@@ -7,19 +7,66 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"golang.org/x/oauth2/clientcredentials"
 )
 
+// AccountData represents an external account descriptor associated with an identity entity.
+type AccountData struct {
+	TypeName string `json:"__typename"`
+
+	// Active Directory fields
+	ObjectSid      string `json:"objectSid,omitempty"`
+	SamAccountName string `json:"samAccountName,omitempty"`
+	Domain         string `json:"domain,omitempty"`
+	ObjectGuid     string `json:"objectGuid,omitempty"`
+
+	// Azure AD / AWS IC SSO / Generic SSO fields
+	DataSourceParticipantIdentifier string `json:"dataSourceParticipantIdentifier,omitempty"`
+}
+
+// ExternalID returns the best external identifier for this account based on its type.
+//
+// Mapping by account type:
+//   - ActiveDirectoryAccountDescriptor → objectGuid (formatted as hyphen-free hex)
+//   - AzureSsoUserAccountDescriptor    → dataSourceParticipantIdentifier (Azure AD object ID)
+//   - AwsIcSsoUserAccountDescriptorImpl → dataSourceParticipantIdentifier (AWS IC user ID)
+//   - SsoUserAccountDescriptorImpl      → dataSourceParticipantIdentifier (generic SSO ID)
+//
+// Non-user account types (groups, roles, endpoints, cloud services) return "".
+func (a AccountData) ExternalID() string {
+	switch a.TypeName {
+	case "ActiveDirectoryAccountDescriptor":
+		if a.ObjectGuid != "" {
+			return formatADGuid(a.ObjectGuid)
+		}
+		if a.ObjectSid != "" {
+			return a.ObjectSid
+		}
+		return ""
+
+	case "AzureSsoUserAccountDescriptor",
+		"AwsIcSsoUserAccountDescriptorImpl",
+		"SsoUserAccountDescriptorImpl":
+		return a.DataSourceParticipantIdentifier
+
+	default:
+		// Non-user types (groups, roles, endpoints, cloud services) — no external ID
+		return ""
+	}
+}
+
 // IdentityRiskData represents the risk data for a single identity from CrowdStrike.
 type IdentityRiskData struct {
-	PrimaryDisplayName   string       `json:"primaryDisplayName"`
-	SecondaryDisplayName string       `json:"secondaryDisplayName"`
-	EmailAddresses       []string     `json:"emailAddresses"`
-	RiskScore            float64      `json:"riskScore"`
-	RiskScoreSeverity    string       `json:"riskScoreSeverity"`
-	RiskFactors          []RiskFactor `json:"riskFactors"`
+	PrimaryDisplayName   string        `json:"primaryDisplayName"`
+	SecondaryDisplayName string        `json:"secondaryDisplayName"`
+	EmailAddresses       []string      `json:"emailAddresses"`
+	RiskScore            float64       `json:"riskScore"`
+	RiskScoreSeverity    string        `json:"riskScoreSeverity"`
+	RiskFactors          []RiskFactor  `json:"riskFactors"`
+	Accounts             []AccountData `json:"accounts"`
 }
 
 // RiskFactor represents a single factor contributing to an identity's risk score.
@@ -55,12 +102,26 @@ type pageInfo struct {
 }
 
 type identityEntity struct {
-	PrimaryDisplayName   string       `json:"primaryDisplayName"`
-	SecondaryDisplayName string       `json:"secondaryDisplayName"`
-	EmailAddresses       []string     `json:"emailAddresses"`
-	RiskScore            float64      `json:"riskScore"`
-	RiskScoreSeverity    string       `json:"riskScoreSeverity"`
-	RiskFactors          []riskFactor `json:"riskFactors"`
+	PrimaryDisplayName   string              `json:"primaryDisplayName"`
+	SecondaryDisplayName string              `json:"secondaryDisplayName"`
+	EmailAddresses       []string            `json:"emailAddresses"`
+	RiskScore            float64             `json:"riskScore"`
+	RiskScoreSeverity    string              `json:"riskScoreSeverity"`
+	RiskFactors          []riskFactor        `json:"riskFactors"`
+	Accounts             []accountDescriptor `json:"accounts"`
+}
+
+type accountDescriptor struct {
+	TypeName string `json:"__typename"`
+
+	// Active Directory fields
+	ObjectSid      string `json:"objectSid,omitempty"`
+	SamAccountName string `json:"samAccountName,omitempty"`
+	Domain         string `json:"domain,omitempty"`
+	ObjectGuid     string `json:"objectGuid,omitempty"`
+
+	// Azure AD / AWS IC SSO / Generic SSO fields
+	DataSourceParticipantIdentifier string `json:"dataSourceParticipantIdentifier,omitempty"`
 }
 
 type riskFactor struct {
@@ -87,6 +148,24 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
       riskFactors {
         type
         severity
+      }
+      accounts {
+        __typename
+        ... on ActiveDirectoryAccountDescriptor {
+          objectSid
+          samAccountName
+          domain
+          objectGuid
+        }
+        ... on AzureSsoUserAccountDescriptor {
+          dataSourceParticipantIdentifier
+        }
+        ... on AwsIcSsoUserAccountDescriptorImpl {
+          dataSourceParticipantIdentifier
+        }
+        ... on SsoUserAccountDescriptorImpl {
+          dataSourceParticipantIdentifier
+        }
       }
       ... on UserEntity {
         emailAddresses
@@ -231,6 +310,18 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 			riskFactors = append(riskFactors, RiskFactor(rf))
 		}
 
+		accounts := make([]AccountData, 0, len(entity.Accounts))
+		for _, acc := range entity.Accounts {
+			accounts = append(accounts, AccountData{
+				TypeName:                        acc.TypeName,
+				ObjectSid:                       acc.ObjectSid,
+				SamAccountName:                  acc.SamAccountName,
+				Domain:                          acc.Domain,
+				ObjectGuid:                      acc.ObjectGuid,
+				DataSourceParticipantIdentifier: acc.DataSourceParticipantIdentifier,
+			})
+		}
+
 		results = append(results, IdentityRiskData{
 			PrimaryDisplayName:   entity.PrimaryDisplayName,
 			SecondaryDisplayName: entity.SecondaryDisplayName,
@@ -238,6 +329,7 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 			RiskScore:            entity.RiskScore,
 			RiskScoreSeverity:    entity.RiskScoreSeverity,
 			RiskFactors:          riskFactors,
+			Accounts:             accounts,
 		})
 	}
 
@@ -274,4 +366,55 @@ func extractRateLimitInfo(resp *http.Response) RateLimitInfo {
 	}
 
 	return NewRateLimitInfo(limit, remaining)
+}
+
+// formatADGuid converts an Active Directory objectGuid from the standard UUID/RFC format
+// returned by CrowdStrike (big-endian) to the mixed-endian hex format that Active Directory
+// and baton-active-directory use.
+//
+// Microsoft GUIDs use mixed-endian encoding:
+//   - Data1 (4 bytes): little-endian  → bytes reversed
+//   - Data2 (2 bytes): little-endian  → bytes reversed
+//   - Data3 (2 bytes): little-endian  → bytes reversed
+//   - Data4 (8 bytes): big-endian     → unchanged
+//
+// Example:
+//
+//	CrowdStrike: "682cf9db-abba-432f-b682-5a7fea80a00a"
+//	AD format:   "dbf92c68baab2f43b6825a7fea80a00a"
+func formatADGuid(guid string) string {
+	guid = strings.TrimPrefix(guid, "{")
+	guid = strings.TrimSuffix(guid, "}")
+	guid = strings.ReplaceAll(guid, "-", "")
+	guid = strings.ToLower(guid)
+
+	// Need exactly 32 hex chars (16 bytes) to do the endian conversion
+	if len(guid) != 32 {
+		return guid
+	}
+
+	// Reverse byte pairs for Data1 (bytes 0-3), Data2 (bytes 4-5), Data3 (bytes 6-7).
+	// Each byte is 2 hex chars.
+	// Data1: positions 0-7 (4 bytes = 8 hex chars) → reverse byte order
+	// Data2: positions 8-11 (2 bytes = 4 hex chars) → reverse byte order
+	// Data3: positions 12-15 (2 bytes = 4 hex chars) → reverse byte order
+	// Data4: positions 16-31 (8 bytes = 16 hex chars) → unchanged
+	data1 := guid[0:8]
+	data2 := guid[8:12]
+	data3 := guid[12:16]
+	data4 := guid[16:32]
+
+	return reverseByteHex(data1) + reverseByteHex(data2) + reverseByteHex(data3) + data4
+}
+
+// reverseByteHex reverses the byte order of a hex string.
+// e.g. "682cf9db" → "dbf92c68" (swaps pairs: 68,2c,f9,db → db,f9,2c,68).
+func reverseByteHex(hex string) string {
+	n := len(hex)
+	result := make([]byte, n)
+	for i := 0; i < n; i += 2 {
+		result[n-i-2] = hex[i]
+		result[n-i-1] = hex[i+1]
+	}
+	return string(result)
 }
