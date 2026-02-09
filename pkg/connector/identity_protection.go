@@ -21,7 +21,7 @@ type AccountData struct {
 	ObjectSid      string `json:"objectSid,omitempty"`
 	SamAccountName string `json:"samAccountName,omitempty"`
 	Domain         string `json:"domain,omitempty"`
-	ObjectGuid     string `json:"objectGuid,omitempty"`
+	ObjectGUID     string `json:"objectGuid,omitempty"`
 
 	// Azure AD / AWS IC SSO / Generic SSO fields
 	DataSourceParticipantIdentifier string `json:"dataSourceParticipantIdentifier,omitempty"`
@@ -39,8 +39,8 @@ type AccountData struct {
 func (a AccountData) ExternalID() string {
 	switch a.TypeName {
 	case "ActiveDirectoryAccountDescriptor":
-		if a.ObjectGuid != "" {
-			return formatADGuid(a.ObjectGuid)
+		if a.ObjectGUID != "" {
+			return formatADGuid(a.ObjectGUID)
 		}
 		if a.ObjectSid != "" {
 			return a.ObjectSid
@@ -111,18 +111,9 @@ type identityEntity struct {
 	Accounts             []accountDescriptor `json:"accounts"`
 }
 
-type accountDescriptor struct {
-	TypeName string `json:"__typename"`
-
-	// Active Directory fields
-	ObjectSid      string `json:"objectSid,omitempty"`
-	SamAccountName string `json:"samAccountName,omitempty"`
-	Domain         string `json:"domain,omitempty"`
-	ObjectGuid     string `json:"objectGuid,omitempty"`
-
-	// Azure AD / AWS IC SSO / Generic SSO fields
-	DataSourceParticipantIdentifier string `json:"dataSourceParticipantIdentifier,omitempty"`
-}
+// accountDescriptor is the internal JSON deserialization type that mirrors AccountData.
+// It is intentionally identical so we can use a direct type conversion.
+type accountDescriptor = AccountData
 
 type riskFactor struct {
 	Type     string `json:"type"`
@@ -310,17 +301,8 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 			riskFactors = append(riskFactors, RiskFactor(rf))
 		}
 
-		accounts := make([]AccountData, 0, len(entity.Accounts))
-		for _, acc := range entity.Accounts {
-			accounts = append(accounts, AccountData{
-				TypeName:                        acc.TypeName,
-				ObjectSid:                       acc.ObjectSid,
-				SamAccountName:                  acc.SamAccountName,
-				Domain:                          acc.Domain,
-				ObjectGuid:                      acc.ObjectGuid,
-				DataSourceParticipantIdentifier: acc.DataSourceParticipantIdentifier,
-			})
-		}
+		accounts := make([]AccountData, len(entity.Accounts))
+		copy(accounts, entity.Accounts)
 
 		results = append(results, IdentityRiskData{
 			PrimaryDisplayName:   entity.PrimaryDisplayName,
