@@ -27,33 +27,37 @@ func (s *securityInsightResourceType) ResourceType(_ context.Context) *v2.Resour
 	return s.resourceType
 }
 
-// securityInsightResource creates a new security insight resource for an identity risk score.
-func securityInsightResource(identity IdentityRiskData) (*v2.Resource, error) {
-	// Determine the unique identifier for this security insight
-	// Use secondaryDisplayName (often the UPN/email) as the primary identifier
-	var resourceID string
-	var email string
+// securityInsightResource creates a new security insight resource for a single account
+// on an identity entity. Each account produces its own insight with the account's
+// external ID set as an AppUser target. Returns nil (without error) if the account
+// does not have an external ID.
+func securityInsightResource(identity IdentityRiskData, account AccountData) (*v2.Resource, error) {
+	externalID := account.ExternalID()
 
-	switch {
-	case identity.SecondaryDisplayName != "":
-		resourceID = identity.SecondaryDisplayName
-	case len(identity.EmailAddresses) > 0:
-		resourceID = identity.EmailAddresses[0]
-	default:
-		resourceID = identity.PrimaryDisplayName
+	// We only create insights for accounts that have an external ID
+	if externalID == "" {
+		return nil, nil
 	}
 
-	// Get the primary email for targeting
+	// Get the email if available — not required, but helpful for resolution
+	var email string
 	if len(identity.EmailAddresses) > 0 {
 		email = identity.EmailAddresses[0]
 	} else if validateEmail(identity.SecondaryDisplayName) {
 		email = identity.SecondaryDisplayName
 	}
 
+	// Use the external ID as the resource ID for uniqueness
+	resourceID := externalID
+
 	// Build the display name for the resource
 	displayName := fmt.Sprintf("Risk Score: %s", identity.PrimaryDisplayName)
 	if identity.PrimaryDisplayName == "" {
 		displayName = fmt.Sprintf("Risk Score: %s", resourceID)
+	}
+	// Append account type for clarity when an entity has multiple accounts
+	if account.TypeName != "" {
+		displayName = fmt.Sprintf("%s (%s)", displayName, account.TypeName)
 	}
 
 	// Convert risk score to string (e.g. 0.65)
@@ -78,13 +82,8 @@ func securityInsightResource(identity IdentityRiskData) (*v2.Resource, error) {
 		traitOpts = append(traitOpts, rs.WithRiskScoreFactors(factors...))
 	}
 
-	// Add target - prefer AppUserTarget since we have both email and external ID
-	if email != "" {
-		traitOpts = append(traitOpts, rs.WithInsightAppUserTarget(email, resourceID))
-	} else {
-		// Fall back to external resource target if no email available
-		traitOpts = append(traitOpts, rs.WithInsightExternalResourceTarget(resourceID, "crowdstrike"))
-	}
+	// Always use AppUser target with email + external ID
+	traitOpts = append(traitOpts, rs.WithInsightAppUserTarget(email, externalID))
 
 	// Create the security insight resource
 	resource, err := rs.NewSecurityInsightResource(
@@ -94,7 +93,7 @@ func securityInsightResource(identity IdentityRiskData) (*v2.Resource, error) {
 		traitOpts...,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create security insight resource: %w", err)
+		return nil, fmt.Errorf("baton-crowdstrike: failed to create security insight resource: %w", err)
 	}
 
 	return resource, nil
@@ -118,14 +117,27 @@ func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId
 		return nil, "", annos, nil
 	}
 
-	// Convert identities to resources
-	resources := make([]*v2.Resource, 0, len(identities))
+	// Convert identities to resources — one insight per account on each entity.
+	// Only accounts with an external ID produce insights.
+	var resources []*v2.Resource
 	for _, identity := range identities {
-		resource, err := securityInsightResource(identity)
-		if err != nil {
-			return nil, "", nil, fmt.Errorf("failed to create security insight resource for %s: %w", identity.PrimaryDisplayName, err)
+		if len(identity.Accounts) == 0 {
+			// No accounts — skip this entity entirely
+			continue
 		}
-		resources = append(resources, resource)
+
+		for _, account := range identity.Accounts {
+			resource, err := securityInsightResource(identity, account)
+			if err != nil {
+				return nil, "", nil, fmt.Errorf("baton-crowdstrike: failed to create security insight resource for %s (account %s): %w",
+					identity.PrimaryDisplayName, account.TypeName, err)
+			}
+			// securityInsightResource returns nil when it can't build an AppUser target
+			if resource == nil {
+				continue
+			}
+			resources = append(resources, resource)
+		}
 	}
 
 	// Determine the next page token
