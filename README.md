@@ -1,6 +1,6 @@
 ![Baton Logo](./docs/images/baton-logo.png)
 
-# `baton-crowdstrike` [![Go Reference](https://pkg.go.dev/badge/github.com/conductorone/baton-crowdstrike.svg)](https://pkg.go.dev/github.com/conductorone/baton-crowdstrike) ![main ci](https://github.com/conductorone/baton-crowdstrike/actions/workflows/main.yaml/badge.svg)
+# `baton-crowdstrike` [![Go Reference](https://pkg.go.dev/badge/github.com/conductorone/baton-crowdstrike.svg)](https://pkg.go.dev/github.com/conductorone/baton-crowdstrike) ![verify](https://github.com/conductorone/baton-crowdstrike/actions/workflows/verify.yaml/badge.svg)
 
 `baton-crowdstrike` is a connector for CrowdStrike built using the [Baton SDK](https://github.com/conductorone/baton-sdk). It works with the CrowdStrike Falcon API to sync data about users and their roles.
 
