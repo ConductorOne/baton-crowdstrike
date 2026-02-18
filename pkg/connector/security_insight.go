@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"math"
 	"strconv"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
@@ -60,8 +61,8 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 		displayName = fmt.Sprintf("%s (%s)", displayName, account.TypeName)
 	}
 
-	// Convert risk score to string (e.g. 0.65)
-	riskScoreStr := strconv.FormatFloat(identity.RiskScore, 'f', 2, 64)
+	// Convert risk score from 0-1 to a percentage (e.g. 0.65 → "65")
+	riskScoreStr := strconv.Itoa(int(math.Round(identity.RiskScore * 100)))
 
 	// Build trait options
 	traitOpts := []rs.SecurityInsightTraitOption{
