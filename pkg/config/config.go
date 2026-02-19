@@ -28,6 +28,7 @@ var (
 		"base-url",
 		field.WithDescription("Override the CrowdStrike API URL (for testing)"),
 		field.WithHidden(true),
+		field.WithExportTarget(field.ExportTargetCLIOnly),
 	)
 
 	// ConfigurationFields defines the external configuration required for the
