@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
@@ -61,26 +62,21 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 		displayName = fmt.Sprintf("%s (%s)", displayName, account.TypeName)
 	}
 
-	// Convert risk score from 0-1 to a percentage (e.g. 0.65 → "65")
-	riskScoreStr := strconv.Itoa(int(math.Round(identity.RiskScore * 100)))
+	// Normalize 0-1 score to 0-100 percentage; preserve the original as the source score
+	normalizedScore := uint32(math.Round(identity.RiskScore * 100))
+	sourceScore := strconv.FormatFloat(identity.RiskScore, 'f', -1, 64)
 
-	// Build trait options
 	traitOpts := []rs.SecurityInsightTraitOption{
-		rs.WithRiskScore(riskScoreStr),
+		rs.WithNormalizedRiskScore(normalizedScore, sourceScore),
 	}
 
-	// Add risk factors if present
+	// Add structured risk factors if present
 	if len(identity.RiskFactors) > 0 {
-		factors := make([]string, 0, len(identity.RiskFactors))
+		factors := make([]*v2.RiskFactor, 0, len(identity.RiskFactors))
 		for _, rf := range identity.RiskFactors {
-			// Format as "Type (Severity)" for clarity
-			factor := rf.Type
-			if rf.Severity != "" {
-				factor = fmt.Sprintf("%s (%s)", rf.Type, rf.Severity)
-			}
-			factors = append(factors, factor)
+			factors = append(factors, rs.NewRiskFactor(rf.Type, mapRiskFactorSeverity(rf.Severity)))
 		}
-		traitOpts = append(traitOpts, rs.WithRiskScoreFactors(factors...))
+		traitOpts = append(traitOpts, rs.WithRiskFactors(factors...))
 	}
 
 	// Always use AppUser target with email + external ID
@@ -158,6 +154,21 @@ func (s *securityInsightResourceType) Entitlements(ctx context.Context, resource
 func (s *securityInsightResourceType) Grants(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Grant, string, annotations.Annotations, error) {
 	// Security insights do not have grants
 	return nil, "", nil, nil
+}
+
+func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
+	switch strings.ToUpper(severity) {
+	case "LOW":
+		return v2.RiskFactor_SEVERITY_LOW
+	case "MEDIUM":
+		return v2.RiskFactor_SEVERITY_MEDIUM
+	case "HIGH":
+		return v2.RiskFactor_SEVERITY_HIGH
+	case "CRITICAL":
+		return v2.RiskFactor_SEVERITY_CRITICAL
+	default:
+		return v2.RiskFactor_SEVERITY_UNSPECIFIED
+	}
 }
 
 func securityInsightBuilder(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, clientID, clientSecret, host string) *securityInsightResourceType {
