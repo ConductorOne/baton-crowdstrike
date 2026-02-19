@@ -62,8 +62,13 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 		displayName = fmt.Sprintf("%s (%s)", displayName, account.TypeName)
 	}
 
-	// Normalize 0-1 score to 0-100 percentage; preserve the original as the source score
-	normalizedScore := uint32(math.Round(identity.RiskScore * 100))
+	// Normalize 0-1 score to 0-100 percentage; preserve the original as the source score.
+	// Clamp to [0,1] to guard against unexpected values from the API.
+	clamped := math.Max(0, math.Min(1, identity.RiskScore))
+	if math.IsNaN(identity.RiskScore) || math.IsInf(identity.RiskScore, 0) {
+		clamped = 0
+	}
+	normalizedScore := uint32(math.Round(clamped * 100))
 	sourceScore := strconv.FormatFloat(identity.RiskScore, 'f', -1, 64)
 
 	traitOpts := []rs.SecurityInsightTraitOption{
