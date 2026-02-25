@@ -161,16 +161,16 @@ func (s *securityInsightResourceType) Grants(ctx context.Context, resource *v2.R
 	return nil, "", nil, nil
 }
 
+// mapRiskFactorSeverity maps CrowdStrike's ScoreSeverity enum (NORMAL, MEDIUM, HIGH)
+// to the SDK's RiskFactor_Severity enum.
 func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
 	switch strings.ToUpper(severity) {
-	case "LOW":
+	case "NORMAL":
 		return v2.RiskFactor_SEVERITY_LOW
 	case "MEDIUM":
 		return v2.RiskFactor_SEVERITY_MEDIUM
 	case "HIGH":
 		return v2.RiskFactor_SEVERITY_HIGH
-	case "CRITICAL":
-		return v2.RiskFactor_SEVERITY_CRITICAL
 	default:
 		return v2.RiskFactor_SEVERITY_UNSPECIFIED
 	}
