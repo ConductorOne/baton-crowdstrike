@@ -92,10 +92,11 @@ func New(ctx context.Context, clientId, clientSecret string, region string) (*Co
 	}
 
 	client, err := falcon.NewClient(&falcon.ApiConfig{
-		ClientId:     clientId,
-		ClientSecret: clientSecret,
-		Cloud:        cloudRegion,
-		Context:      ctx,
+		ClientId:          clientId,
+		ClientSecret:      clientSecret,
+		Cloud:             cloudRegion,
+		Context:           ctx,
+		UserAgentOverride: "conductorone-crowdstrike",
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize SDK client: %w", err)

@@ -202,7 +202,7 @@ type identityProtectionTransport struct {
 }
 
 func (t *identityProtectionTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", "baton-crowdstrike")
+	req.Header.Set("User-Agent", "conductorone-crowdstrike")
 	if t.base == nil {
 		return http.DefaultTransport.RoundTrip(req)
 	}
