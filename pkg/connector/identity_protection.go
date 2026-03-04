@@ -173,7 +173,7 @@ type IdentityProtectionClient struct {
 }
 
 // NewIdentityProtectionClient creates a new Identity Protection client with OAuth2 authentication.
-func NewIdentityProtectionClient(ctx context.Context, clientID, clientSecret, host string) *IdentityProtectionClient {
+func NewIdentityProtectionClient(ctx context.Context, clientID, clientSecret, host, version string) *IdentityProtectionClient {
 	// Create OAuth2 client credentials config
 	config := clientcredentials.Config{
 		ClientID:     clientID,
@@ -187,7 +187,8 @@ func NewIdentityProtectionClient(ctx context.Context, clientID, clientSecret, ho
 
 	// Wrap the transport to add user-agent header
 	httpClient.Transport = &identityProtectionTransport{
-		base: httpClient.Transport,
+		base:      httpClient.Transport,
+		userAgent: fmt.Sprintf("conductorone-crowdstrike/%s", version),
 	}
 
 	return &IdentityProtectionClient{
@@ -198,11 +199,12 @@ func NewIdentityProtectionClient(ctx context.Context, clientID, clientSecret, ho
 
 // identityProtectionTransport adds custom headers to requests.
 type identityProtectionTransport struct {
-	base http.RoundTripper
+	base      http.RoundTripper
+	userAgent string
 }
 
 func (t *identityProtectionTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", "conductorone-crowdstrike")
+	req.Header.Set("User-Agent", t.userAgent)
 	if t.base == nil {
 		return http.DefaultTransport.RoundTrip(req)
 	}
