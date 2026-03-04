@@ -176,10 +176,10 @@ func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
 	}
 }
 
-func securityInsightBuilder(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, clientID, clientSecret, host string) *securityInsightResourceType {
+func securityInsightBuilder(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, clientID, clientSecret, host, version string) *securityInsightResourceType {
 	return &securityInsightResourceType{
 		resourceType: resourceTypeSecurityInsight,
 		client:       client,
-		ipClient:     NewIdentityProtectionClient(ctx, clientID, clientSecret, host),
+		ipClient:     NewIdentityProtectionClient(ctx, clientID, clientSecret, host, version),
 	}
 }

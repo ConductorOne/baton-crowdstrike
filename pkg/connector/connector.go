@@ -19,13 +19,14 @@ type Connector struct {
 	clientId     string
 	clientSecret string
 	host         string
+	version      string
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
 	return []connectorbuilder.ResourceSyncer{
 		userBuilder(o.client),
 		roleBuilder(o.client),
-		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
+		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host, o.version),
 	}
 }
 
@@ -76,7 +77,7 @@ func (o *Connector) Validate(ctx context.Context) (annotations.Annotations, erro
 }
 
 // New returns the CrowdStrike connector.
-func New(ctx context.Context, clientId, clientSecret string, region string) (*Connector, error) {
+func New(ctx context.Context, clientId, clientSecret string, region string, version string) (*Connector, error) {
 	var cloudRegion falcon.CloudType
 	switch region {
 	case "us-1":
@@ -92,10 +93,11 @@ func New(ctx context.Context, clientId, clientSecret string, region string) (*Co
 	}
 
 	client, err := falcon.NewClient(&falcon.ApiConfig{
-		ClientId:     clientId,
-		ClientSecret: clientSecret,
-		Cloud:        cloudRegion,
-		Context:      ctx,
+		ClientId:          clientId,
+		ClientSecret:      clientSecret,
+		Cloud:             cloudRegion,
+		Context:           ctx,
+		UserAgentOverride: fmt.Sprintf("conductorone-crowdstrike/%s", version),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize SDK client: %w", err)
@@ -106,5 +108,6 @@ func New(ctx context.Context, clientId, clientSecret string, region string) (*Co
 		clientId:     clientId,
 		clientSecret: clientSecret,
 		host:         cloudRegion.Host(),
+		version:      version,
 	}, nil
 }
