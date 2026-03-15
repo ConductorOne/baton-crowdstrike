@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
@@ -25,6 +26,12 @@ const (
 type roleResourceType struct {
 	resourceType *v2.ResourceType
 	client       *fClient.CrowdStrikeAPISpecification
+
+	// userRolesCache maps userID -> []roleID. Populated lazily on first
+	// FindUsersWithRole call so that all 8 role queries share one cache
+	// instead of each making per-user API calls independently.
+	userRolesCache map[string][]string
+	userRolesMu    sync.Mutex
 }
 
 func (r *roleResourceType) ResourceType(_ context.Context) *v2.ResourceType {
@@ -124,38 +131,67 @@ func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 	return rv, nil, nil
 }
 
-func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIDs []string, roleId string) ([]string, []RateLimitInfo, error) {
-	rateLimitInfo := make([]RateLimitInfo, len(userIDs))
+// ensureUserRolesCached fetches roles for the given user IDs and caches them.
+// Already-cached users are skipped. This is called per-page of users, and the
+// cache persists across all role queries within the same sync.
+func (r *roleResourceType) ensureUserRolesCached(ctx context.Context, userIDs []string) ([]RateLimitInfo, error) {
+	r.userRolesMu.Lock()
+	defer r.userRolesMu.Unlock()
 
-	var users []string
-	for _, userId := range userIDs {
+	if r.userRolesCache == nil {
+		r.userRolesCache = make(map[string][]string)
+	}
+
+	var rateLimitInfo []RateLimitInfo
+	for _, userID := range userIDs {
+		if _, ok := r.userRolesCache[userID]; ok {
+			continue // already cached from a previous role's Grants() call
+		}
+
 		userRoles, err := r.client.UserManagement.CombinedUserRolesV1(
 			&user_management.CombinedUserRolesV1Params{
-				UserUUID: userId,
+				UserUUID: userID,
 				Context:  ctx,
 			},
 		)
 		if err != nil {
-			return nil, nil, wrapCrowdStrikeError(err, "find users with role: failed to get user roles")
+			return nil, wrapCrowdStrikeError(err, "find users with role: failed to get user roles")
 		}
 
-		rateLimitInfo = append(
-			rateLimitInfo,
-			NewRateLimitInfo(
-				userRoles.XRateLimitLimit,
-				userRoles.XRateLimitRemaining,
-			),
-		)
+		rateLimitInfo = append(rateLimitInfo, NewRateLimitInfo(
+			userRoles.XRateLimitLimit,
+			userRoles.XRateLimitRemaining,
+		))
 
-		// check if user has role
+		var roleIDs []string
 		for _, role := range userRoles.Payload.Resources {
-			if *role.RoleID == roleId {
-				users = append(users, userId)
+			roleIDs = append(roleIDs, *role.RoleID)
+		}
+		r.userRolesCache[userID] = roleIDs
+	}
+
+	return rateLimitInfo, nil
+}
+
+func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIDs []string, roleId string) ([]string, []RateLimitInfo, error) {
+	rlInfo, err := r.ensureUserRolesCached(ctx, userIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var users []string
+	r.userRolesMu.Lock()
+	defer r.userRolesMu.Unlock()
+	for _, userID := range userIDs {
+		for _, cachedRole := range r.userRolesCache[userID] {
+			if cachedRole == roleId {
+				users = append(users, userID)
+				break
 			}
 		}
 	}
 
-	return users, rateLimitInfo, nil
+	return users, rlInfo, nil
 }
 
 func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
