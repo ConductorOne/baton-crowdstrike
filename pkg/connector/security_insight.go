@@ -8,8 +8,6 @@ import (
 	"strings"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
-	"github.com/conductorone/baton-sdk/pkg/annotations"
-	"github.com/conductorone/baton-sdk/pkg/pagination"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 )
@@ -101,14 +99,14 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 	return resource, nil
 }
 
-func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagination.Token) ([]*v2.Resource, string, annotations.Annotations, error) {
+func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
 	// Parse the page token to get the cursor
-	cursor := pt.Token
+	cursor := opts.PageToken.Token
 
 	// Fetch identity risk scores from CrowdStrike
 	identities, nextCursor, hasNextPage, rateLimitInfo, err := s.ipClient.GetIdentityRiskScores(ctx, securityInsightPageSize, cursor)
 	if err != nil {
-		return nil, "", nil, wrapCrowdStrikeError(err, "security insight list: failed to fetch identity risk scores")
+		return nil, nil, wrapCrowdStrikeError(err, "security insight list: failed to fetch identity risk scores")
 	}
 
 	// Build rate limit annotations
@@ -116,7 +114,7 @@ func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId
 
 	// If no identities found, return empty result
 	if len(identities) == 0 {
-		return nil, "", annos, nil
+		return nil, &rs.SyncOpResults{Annotations: annos}, nil
 	}
 
 	// Convert identities to resources — one insight per account on each entity.
@@ -131,7 +129,7 @@ func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId
 		for _, account := range identity.Accounts {
 			resource, err := securityInsightResource(identity, account)
 			if err != nil {
-				return nil, "", nil, fmt.Errorf("baton-crowdstrike: failed to create security insight resource for %s (account %s): %w",
+				return nil, nil, fmt.Errorf("baton-crowdstrike: failed to create security insight resource for %s (account %s): %w",
 					identity.PrimaryDisplayName, account.TypeName, err)
 			}
 			// securityInsightResource returns nil when it can't build an AppUser target
@@ -148,17 +146,17 @@ func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId
 		nextPageToken = nextCursor
 	}
 
-	return resources, nextPageToken, annos, nil
+	return resources, &rs.SyncOpResults{NextPageToken: nextPageToken, Annotations: annos}, nil
 }
 
-func (s *securityInsightResourceType) Entitlements(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Entitlement, string, annotations.Annotations, error) {
+func (s *securityInsightResourceType) Entitlements(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Entitlement, *rs.SyncOpResults, error) {
 	// Security insights do not have entitlements
-	return nil, "", nil, nil
+	return nil, nil, nil
 }
 
-func (s *securityInsightResourceType) Grants(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Grant, string, annotations.Annotations, error) {
+func (s *securityInsightResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
 	// Security insights do not have grants
-	return nil, "", nil, nil
+	return nil, nil, nil
 }
 
 // mapRiskFactorSeverity maps CrowdStrike's ScoreSeverity enum (NORMAL, MEDIUM, HIGH)

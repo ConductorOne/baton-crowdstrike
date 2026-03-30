@@ -18,10 +18,11 @@ var (
 		field.WithDescription("The CrowdStrike client secret used to generate the access token."),
 		field.WithRequired(true),
 	)
-	RegionField = field.StringField(
+	RegionField = field.SelectField(
 		"region",
+		[]string{"us-1", "us-2", "eu-1", "us-gov-1"},
 		field.WithDisplayName("Region"),
-		field.WithDescription("CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'."),
+		field.WithDescription("CrowdStrike region to connect to."),
 		field.WithDefaultValue("us-1"),
 	)
 	BaseURLField = field.StringField(
@@ -42,7 +43,7 @@ var (
 )
 
 //go:generate go run ./gen
-var ConfigurationSchema = field.NewConfiguration(
+var Config = field.NewConfiguration(
 	ConfigurationFields,
 	field.WithConnectorDisplayName("CrowdStrike"),
 	field.WithHelpUrl("/docs/baton/crowdstrike"),

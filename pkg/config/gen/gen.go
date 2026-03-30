@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	config.Generate("crowdstrike", cfg.ConfigurationSchema)
+	config.Generate("crowdstrike", cfg.Config)
 }
