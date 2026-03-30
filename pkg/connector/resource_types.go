@@ -5,6 +5,14 @@ import (
 	"github.com/conductorone/baton-sdk/pkg/annotations"
 )
 
+func capabilityPermissions(perms ...string) *v2.CapabilityPermissions {
+	cp := &v2.CapabilityPermissions{}
+	for _, p := range perms {
+		cp.Permissions = append(cp.Permissions, &v2.CapabilityPermission{Permission: p})
+	}
+	return cp
+}
+
 var (
 	resourceTypeUser = &v2.ResourceType{
 		Id:          "user",
@@ -12,7 +20,13 @@ var (
 		Traits: []v2.ResourceType_Trait{
 			v2.ResourceType_TRAIT_USER,
 		},
-		Annotations: annotations.New(&v2.SkipEntitlementsAndGrants{}),
+		Annotations: annotations.New(
+			&v2.SkipEntitlementsAndGrants{},
+			capabilityPermissions(
+				"User Management: Read",
+				"User Management: Write",
+			),
+		),
 	}
 	resourceTypeRole = &v2.ResourceType{
 		Id:          "role",
@@ -20,6 +34,12 @@ var (
 		Traits: []v2.ResourceType_Trait{
 			v2.ResourceType_TRAIT_ROLE,
 		},
+		Annotations: annotations.New(
+			capabilityPermissions(
+				"User Management: Read",
+				"User Management: Write",
+			),
+		),
 	}
 	resourceTypeSecurityInsight = &v2.ResourceType{
 		Id:          "security_insight",
@@ -27,6 +47,12 @@ var (
 		Traits: []v2.ResourceType_Trait{
 			v2.ResourceType_TRAIT_SECURITY_INSIGHT,
 		},
-		Annotations: annotations.New(&v2.SkipEntitlementsAndGrants{}),
+		Annotations: annotations.New(
+			&v2.SkipEntitlementsAndGrants{},
+			capabilityPermissions(
+				"Identity Protection Entities: Read",
+				"Identity Protection GraphQL: Write",
+			),
+		),
 	}
 )

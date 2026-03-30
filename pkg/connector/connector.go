@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	cfg "github.com/conductorone/baton-crowdstrike/pkg/config"
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
+	"github.com/conductorone/baton-sdk/pkg/cli"
 	"github.com/conductorone/baton-sdk/pkg/connectorbuilder"
 	"github.com/conductorone/baton-sdk/pkg/uhttp"
 	"github.com/crowdstrike/gofalcon/falcon"
@@ -21,8 +23,8 @@ type Connector struct {
 	host         string
 }
 
-func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncer {
-	return []connectorbuilder.ResourceSyncer{
+func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
+	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
 		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
@@ -76,9 +78,9 @@ func (o *Connector) Validate(ctx context.Context) (annotations.Annotations, erro
 }
 
 // New returns the CrowdStrike connector.
-func New(ctx context.Context, clientId, clientSecret string, region string, baseURL string) (*Connector, error) {
+func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (connectorbuilder.ConnectorBuilderV2, []connectorbuilder.Opt, error) {
 	var cloudRegion falcon.CloudType
-	switch region {
+	switch cc.Region {
 	case "us-1":
 		cloudRegion = falcon.CloudUs1
 	case "us-2":
@@ -88,24 +90,24 @@ func New(ctx context.Context, clientId, clientSecret string, region string, base
 	case "us-gov-1":
 		cloudRegion = falcon.CloudUsGov1
 	default:
-		return nil, uhttp.WrapErrors(codes.InvalidArgument, fmt.Sprintf("invalid region: %s", region))
+		return nil, nil, uhttp.WrapErrors(codes.InvalidArgument, fmt.Sprintf("invalid region: %s", cc.Region))
 	}
 
 	client, err := falcon.NewClient(&falcon.ApiConfig{
-		ClientId:     clientId,
-		ClientSecret: clientSecret,
+		ClientId:     cc.CrowdstrikeClientId,
+		ClientSecret: cc.CrowdstrikeClientSecret,
 		Cloud:        cloudRegion,
-		HostOverride: baseURL,
+		HostOverride: cc.BaseUrl,
 		Context:      ctx,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize SDK client: %w", err)
+		return nil, nil, fmt.Errorf("failed to initialize SDK client: %w", err)
 	}
 
 	return &Connector{
 		client:       client,
-		clientId:     clientId,
-		clientSecret: clientSecret,
+		clientId:     cc.CrowdstrikeClientId,
+		clientSecret: cc.CrowdstrikeClientSecret,
 		host:         cloudRegion.Host(),
-	}, nil
+	}, nil, nil
 }

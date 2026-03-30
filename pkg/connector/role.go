@@ -6,7 +6,6 @@ import (
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
-	"github.com/conductorone/baton-sdk/pkg/pagination"
 	ent "github.com/conductorone/baton-sdk/pkg/types/entitlement"
 	"github.com/conductorone/baton-sdk/pkg/types/grant"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
@@ -60,14 +59,14 @@ func roleResource(role *models.DomainRole) (*v2.Resource, error) {
 	return resource, nil
 }
 
-func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagination.Token) ([]*v2.Resource, string, annotations.Annotations, error) {
+func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
 	roleIDs, err := r.client.UserManagement.QueriesRolesV1(
 		&user_management.QueriesRolesV1Params{
 			Context: ctx,
 		},
 	)
 	if err != nil {
-		return nil, "", nil, wrapCrowdStrikeError(err, "role list: failed to query role ids")
+		return nil, nil, wrapCrowdStrikeError(err, "role list: failed to query role ids")
 	}
 
 	// get details for roles under fetched ids
@@ -78,7 +77,7 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		},
 	)
 	if err != nil {
-		return nil, "", nil, wrapCrowdStrikeError(err, "role list: failed to retrieve role details")
+		return nil, nil, wrapCrowdStrikeError(err, "role list: failed to retrieve role details")
 	}
 
 	var rv []*v2.Resource
@@ -86,7 +85,7 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		ur, err := roleResource(role)
 
 		if err != nil {
-			return nil, "", nil, fmt.Errorf("failed to create role resource: %w", err)
+			return nil, nil, fmt.Errorf("failed to create role resource: %w", err)
 		}
 
 		rv = append(rv, ur)
@@ -104,10 +103,10 @@ func (r *roleResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		),
 	)
 
-	return rv, "", annos, nil
+	return rv, &rs.SyncOpResults{Annotations: annos}, nil
 }
 
-func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Entitlement, string, annotations.Annotations, error) {
+func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Entitlement, *rs.SyncOpResults, error) {
 	var rv []*v2.Entitlement
 
 	assignmentOptions := []ent.EntitlementOption{
@@ -122,7 +121,7 @@ func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 		assignmentOptions...,
 	))
 
-	return rv, "", nil, nil
+	return rv, nil, nil
 }
 
 func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIDs []string, roleId string) ([]string, []RateLimitInfo, error) {
@@ -159,11 +158,11 @@ func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIDs []stri
 	return users, rateLimitInfo, nil
 }
 
-func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt *pagination.Token) ([]*v2.Grant, string, annotations.Annotations, error) {
+func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
 	rateLimitInfo := make([]RateLimitInfo, 0)
-	bag, offset, err := parsePageToken(pt.Token, &v2.ResourceId{ResourceType: resourceTypeUser.Id})
+	bag, offset, err := parsePageToken(opts.PageToken.Token, &v2.ResourceId{ResourceType: resourceTypeUser.Id})
 	if err != nil {
-		return nil, "", nil, err
+		return nil, nil, err
 	}
 
 	// 1. get all user ids
@@ -175,7 +174,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		},
 	)
 	if err != nil {
-		return nil, "", nil, wrapCrowdStrikeError(err, "role grants: failed to query user ids")
+		return nil, nil, wrapCrowdStrikeError(err, "role grants: failed to query user ids")
 	}
 
 	// add rate limit info from listing user ids
@@ -191,17 +190,17 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	if len(userIDs.Payload.Resources) == 0 {
 		annos := WithRateLimitAnnotations(rateLimitInfo...)
 
-		return nil, "", annos, nil
+		return nil, &rs.SyncOpResults{Annotations: annos}, nil
 	}
 
 	nextPage, err := handleNextPage(bag, offset+ResourcesPageSize)
 	if err != nil {
-		return nil, "", nil, err
+		return nil, nil, err
 	}
 
 	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
 	if err != nil {
-		return nil, "", nil, err
+		return nil, nil, err
 	}
 
 	if isLastPage {
@@ -211,7 +210,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// 2. find users that have this role
 	targetUserIDs, rlInfo, err := r.FindUsersWithRole(ctx, userIDs.Payload.Resources, resource.Id.Resource)
 	if err != nil {
-		return nil, "", nil, err
+		return nil, nil, err
 	}
 
 	// add rate limit info from listing user roles
@@ -220,7 +219,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	if len(targetUserIDs) == 0 {
 		annos := WithRateLimitAnnotations(rateLimitInfo...)
 
-		return nil, nextPage, annos, nil
+		return nil, &rs.SyncOpResults{NextPageToken: nextPage, Annotations: annos}, nil
 	}
 
 	// 3. get details for users under fetched ids
@@ -233,7 +232,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 		},
 	)
 	if err != nil {
-		return nil, "", nil, wrapCrowdStrikeError(err, "role grants: failed to retrieve user details")
+		return nil, nil, wrapCrowdStrikeError(err, "role grants: failed to retrieve user details")
 	}
 
 	// add rate limit info from listing user details
@@ -250,7 +249,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	for _, user := range users.Payload.Resources {
 		uID, err := rs.NewResourceID(resourceTypeUser, user.UUID)
 		if err != nil {
-			return nil, "", nil, fmt.Errorf("failed to create user resource id: %w", err)
+			return nil, nil, fmt.Errorf("failed to create user resource id: %w", err)
 		}
 
 		rv = append(
@@ -266,7 +265,7 @@ func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, pt
 	// annotations for rate limits
 	annos := WithRateLimitAnnotations(rateLimitInfo...)
 
-	return rv, nextPage, annos, nil
+	return rv, &rs.SyncOpResults{NextPageToken: nextPage, Annotations: annos}, nil
 }
 
 func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, entitlement *v2.Entitlement) (annotations.Annotations, error) {

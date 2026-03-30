@@ -5,8 +5,6 @@ import (
 	"time"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
-	"github.com/conductorone/baton-sdk/pkg/annotations"
-	"github.com/conductorone/baton-sdk/pkg/pagination"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
@@ -73,10 +71,10 @@ func userResource(user *models.DomainUser) (*v2.Resource, error) {
 	return resource, nil
 }
 
-func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagination.Token) ([]*v2.Resource, string, annotations.Annotations, error) {
-	bag, offset, err := parsePageToken(pt.Token, &v2.ResourceId{ResourceType: resourceTypeUser.Id})
+func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
+	bag, offset, err := parsePageToken(opts.PageToken.Token, &v2.ResourceId{ResourceType: resourceTypeUser.Id})
 	if err != nil {
-		return nil, "", nil, err
+		return nil, nil, err
 	}
 
 	userIDs, err := u.client.UserManagement.QueryUserV1(
@@ -87,7 +85,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		},
 	)
 	if err != nil {
-		return nil, "", nil, wrapCrowdStrikeError(err, "user list: failed to query user ids")
+		return nil, nil, wrapCrowdStrikeError(err, "user list: failed to query user ids")
 	}
 
 	var rateLimitInfo []RateLimitInfo
@@ -105,12 +103,12 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	if len(userIDs.Payload.Resources) == 0 {
 		annos := WithRateLimitAnnotations(rateLimitInfo...)
 
-		return nil, "", annos, nil
+		return nil, &rs.SyncOpResults{Annotations: annos}, nil
 	}
 
 	nextPage, err := handleNextPage(bag, offset+ResourcesPageSize)
 	if err != nil {
-		return nil, "", nil, err
+		return nil, nil, err
 	}
 
 	// get details for users under fetched ids
@@ -123,7 +121,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		},
 	)
 	if err != nil {
-		return nil, "", nil, wrapCrowdStrikeError(err, "user list: failed to retrieve user details")
+		return nil, nil, wrapCrowdStrikeError(err, "user list: failed to retrieve user details")
 	}
 
 	var rv []*v2.Resource
@@ -131,7 +129,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 		ur, err := userResource(user)
 
 		if err != nil {
-			return nil, "", nil, err
+			return nil, nil, err
 		}
 
 		rv = append(rv, ur)
@@ -139,7 +137,7 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 
 	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
 	if err != nil {
-		return nil, "", nil, err
+		return nil, nil, err
 	}
 
 	// annotations for rate limits - user details
@@ -154,18 +152,18 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, pt *pagin
 	annos := WithRateLimitAnnotations(rateLimitInfo...)
 
 	if isLastPage {
-		return rv, "", annos, nil
+		return rv, &rs.SyncOpResults{Annotations: annos}, nil
 	}
 
-	return rv, nextPage, annos, nil
+	return rv, &rs.SyncOpResults{NextPageToken: nextPage, Annotations: annos}, nil
 }
 
-func (u *userResourceType) Entitlements(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Entitlement, string, annotations.Annotations, error) {
-	return nil, "", nil, nil
+func (u *userResourceType) Entitlements(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Entitlement, *rs.SyncOpResults, error) {
+	return nil, nil, nil
 }
 
-func (u *userResourceType) Grants(ctx context.Context, resource *v2.Resource, token *pagination.Token) ([]*v2.Grant, string, annotations.Annotations, error) {
-	return nil, "", nil, nil
+func (u *userResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
+	return nil, nil, nil
 }
 
 func userBuilder(client *fClient.CrowdStrikeAPISpecification) *userResourceType {
