@@ -118,9 +118,17 @@
     {
       "name": "region",
       "displayName": "Region",
-      "description": "CrowdStrike region to connect to. Options include 'us-1', 'us-2', 'eu-1', and 'us-gov-1'.",
+      "description": "CrowdStrike region to connect to.",
       "stringField": {
-        "defaultValue": "us-1"
+        "defaultValue": "us-1",
+        "rules": {
+          "in": [
+            "us-1",
+            "us-2",
+            "eu-1",
+            "us-gov-1"
+          ]
+        }
       }
     }
   ],

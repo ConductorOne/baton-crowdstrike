@@ -7,13 +7,35 @@
         "displayName": "Role",
         "traits": [
           "TRAIT_ROLE"
+        ],
+        "annotations": [
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
+              {
+                "permission": "User Management: Read"
+              },
+              {
+                "permission": "User Management: Write"
+              }
+            ]
+          }
         ]
       },
       "capabilities": [
         "CAPABILITY_SYNC",
         "CAPABILITY_PROVISION"
       ],
-      "permissions": {}
+      "permissions": {
+        "permissions": [
+          {
+            "permission": "User Management: Read"
+          },
+          {
+            "permission": "User Management: Write"
+          }
+        ]
+      }
     },
     {
       "resourceType": {
@@ -25,13 +47,33 @@
         "annotations": [
           {
             "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
+              {
+                "permission": "Identity Protection Entities: Read"
+              },
+              {
+                "permission": "Identity Protection GraphQL: Write"
+              }
+            ]
           }
         ]
       },
       "capabilities": [
         "CAPABILITY_SYNC"
       ],
-      "permissions": {}
+      "permissions": {
+        "permissions": [
+          {
+            "permission": "Identity Protection Entities: Read"
+          },
+          {
+            "permission": "Identity Protection GraphQL: Write"
+          }
+        ]
+      }
     },
     {
       "resourceType": {
@@ -43,13 +85,33 @@
         "annotations": [
           {
             "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
+              {
+                "permission": "User Management: Read"
+              },
+              {
+                "permission": "User Management: Write"
+              }
+            ]
           }
         ]
       },
       "capabilities": [
         "CAPABILITY_SYNC"
       ],
-      "permissions": {}
+      "permissions": {
+        "permissions": [
+          {
+            "permission": "User Management: Read"
+          },
+          {
+            "permission": "User Management: Write"
+          }
+        ]
+      }
     }
   ],
   "connectorCapabilities": [
