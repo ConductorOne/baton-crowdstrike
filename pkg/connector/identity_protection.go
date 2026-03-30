@@ -256,7 +256,7 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.httpClient.Do(req) //nolint:gosec // endpoint is constructed from operator-provided config, not user input
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to execute identity protection request: %w", err)
 	}
