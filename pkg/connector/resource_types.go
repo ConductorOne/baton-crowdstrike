@@ -49,6 +49,7 @@ var (
 		},
 		Annotations: annotations.New(
 			&v2.SkipEntitlementsAndGrants{},
+			&v2.OptInRequired{},
 			capabilityPermissions(
 				"Identity Protection Entities: Read",
 				"Identity Protection GraphQL: Write",
