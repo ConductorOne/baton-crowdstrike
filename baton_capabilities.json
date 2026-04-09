@@ -1,126 +1,126 @@
 {
-  "@type":  "type.googleapis.com/c1.connector.v2.ConnectorCapabilities",
-  "resourceTypeCapabilities":  [
+  "@type": "type.googleapis.com/c1.connector.v2.ConnectorCapabilities",
+  "resourceTypeCapabilities": [
     {
-      "resourceType":  {
-        "id":  "role",
-        "displayName":  "Role",
-        "traits":  [
+      "resourceType": {
+        "id": "role",
+        "displayName": "Role",
+        "traits": [
           "TRAIT_ROLE"
         ],
-        "annotations":  [
+        "annotations": [
           {
-            "@type":  "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
-            "permissions":  [
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
               {
-                "permission":  "User Management: Read"
+                "permission": "User Management: Read"
               },
               {
-                "permission":  "User Management: Write"
+                "permission": "User Management: Write"
               }
             ]
           }
         ]
       },
-      "capabilities":  [
+      "capabilities": [
         "CAPABILITY_SYNC",
         "CAPABILITY_PROVISION"
       ],
-      "permissions":  {
-        "permissions":  [
+      "permissions": {
+        "permissions": [
           {
-            "permission":  "User Management: Read"
+            "permission": "User Management: Read"
           },
           {
-            "permission":  "User Management: Write"
+            "permission": "User Management: Write"
           }
         ]
       }
     },
     {
-      "resourceType":  {
-        "id":  "security_insight",
-        "displayName":  "Identity Risk Score",
-        "traits":  [
+      "resourceType": {
+        "id": "security_insight",
+        "displayName": "Identity Risk Score",
+        "traits": [
           "TRAIT_SECURITY_INSIGHT"
         ],
-        "annotations":  [
+        "annotations": [
           {
-            "@type":  "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
           },
           {
-            "@type":  "type.googleapis.com/c1.connector.v2.OptInRequired"
+            "@type": "type.googleapis.com/c1.connector.v2.OptInRequired"
           },
           {
-            "@type":  "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
-            "permissions":  [
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
               {
-                "permission":  "Identity Protection Entities: Read"
+                "permission": "Identity Protection Entities: Read"
               },
               {
-                "permission":  "Identity Protection GraphQL: Write"
+                "permission": "Identity Protection GraphQL: Write"
               }
             ]
           }
         ]
       },
-      "capabilities":  [
+      "capabilities": [
         "CAPABILITY_SYNC"
       ],
-      "permissions":  {
-        "permissions":  [
+      "permissions": {
+        "permissions": [
           {
-            "permission":  "Identity Protection Entities: Read"
+            "permission": "Identity Protection Entities: Read"
           },
           {
-            "permission":  "Identity Protection GraphQL: Write"
+            "permission": "Identity Protection GraphQL: Write"
           }
         ]
       },
-      "optInRequired":  true
+      "optInRequired": true
     },
     {
-      "resourceType":  {
-        "id":  "user",
-        "displayName":  "User",
-        "traits":  [
+      "resourceType": {
+        "id": "user",
+        "displayName": "User",
+        "traits": [
           "TRAIT_USER"
         ],
-        "annotations":  [
+        "annotations": [
           {
-            "@type":  "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
           },
           {
-            "@type":  "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
-            "permissions":  [
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
               {
-                "permission":  "User Management: Read"
+                "permission": "User Management: Read"
               },
               {
-                "permission":  "User Management: Write"
+                "permission": "User Management: Write"
               }
             ]
           }
         ]
       },
-      "capabilities":  [
+      "capabilities": [
         "CAPABILITY_SYNC"
       ],
-      "permissions":  {
-        "permissions":  [
+      "permissions": {
+        "permissions": [
           {
-            "permission":  "User Management: Read"
+            "permission": "User Management: Read"
           },
           {
-            "permission":  "User Management: Write"
+            "permission": "User Management: Write"
           }
         ]
       }
     }
   ],
-  "connectorCapabilities":  [
+  "connectorCapabilities": [
     "CAPABILITY_PROVISION",
     "CAPABILITY_SYNC"
   ],
-  "credentialDetails":  {}
+  "credentialDetails": {}
 }
