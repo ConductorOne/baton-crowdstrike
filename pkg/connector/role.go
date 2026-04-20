@@ -7,7 +7,6 @@ import (
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
 	ent "github.com/conductorone/baton-sdk/pkg/types/entitlement"
-	"github.com/conductorone/baton-sdk/pkg/types/grant"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
 	"github.com/conductorone/baton-sdk/pkg/uhttp"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
@@ -124,148 +123,8 @@ func (r *roleResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 	return rv, nil, nil
 }
 
-func (r *roleResourceType) FindUsersWithRole(ctx context.Context, userIDs []string, roleId string) ([]string, []RateLimitInfo, error) {
-	rateLimitInfo := make([]RateLimitInfo, len(userIDs))
-
-	var users []string
-	for _, userId := range userIDs {
-		userRoles, err := r.client.UserManagement.CombinedUserRolesV1(
-			&user_management.CombinedUserRolesV1Params{
-				UserUUID: userId,
-				Context:  ctx,
-			},
-		)
-		if err != nil {
-			return nil, nil, wrapCrowdStrikeError(err, "find users with role: failed to get user roles")
-		}
-
-		rateLimitInfo = append(
-			rateLimitInfo,
-			NewRateLimitInfo(
-				userRoles.XRateLimitLimit,
-				userRoles.XRateLimitRemaining,
-			),
-		)
-
-		// check if user has role
-		for _, role := range userRoles.Payload.Resources {
-			if *role.RoleID == roleId {
-				users = append(users, userId)
-			}
-		}
-	}
-
-	return users, rateLimitInfo, nil
-}
-
-func (r *roleResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
-	rateLimitInfo := make([]RateLimitInfo, 0)
-	bag, offset, err := parsePageToken(opts.PageToken.Token, &v2.ResourceId{ResourceType: resourceTypeUser.Id})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// 1. get all user ids
-	userIDs, err := r.client.UserManagement.QueryUserV1(
-		&user_management.QueryUserV1Params{
-			Limit:   &ResourcesPageSize,
-			Offset:  &offset,
-			Context: ctx,
-		},
-	)
-	if err != nil {
-		return nil, nil, wrapCrowdStrikeError(err, "role grants: failed to query user ids")
-	}
-
-	// add rate limit info from listing user ids
-	rateLimitInfo = append(
-		rateLimitInfo,
-		NewRateLimitInfo(
-			userIDs.XRateLimitLimit,
-			userIDs.XRateLimitRemaining,
-		),
-	)
-
-	// continue syncing if no users are found
-	if len(userIDs.Payload.Resources) == 0 {
-		annos := WithRateLimitAnnotations(rateLimitInfo...)
-
-		return nil, &rs.SyncOpResults{Annotations: annos}, nil
-	}
-
-	nextPage, err := handleNextPage(bag, offset+ResourcesPageSize)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if isLastPage {
-		nextPage = ""
-	}
-
-	// 2. find users that have this role
-	targetUserIDs, rlInfo, err := r.FindUsersWithRole(ctx, userIDs.Payload.Resources, resource.Id.Resource)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// add rate limit info from listing user roles
-	rateLimitInfo = append(rateLimitInfo, rlInfo...)
-
-	if len(targetUserIDs) == 0 {
-		annos := WithRateLimitAnnotations(rateLimitInfo...)
-
-		return nil, &rs.SyncOpResults{NextPageToken: nextPage, Annotations: annos}, nil
-	}
-
-	// 3. get details for users under fetched ids
-	users, err := r.client.UserManagement.RetrieveUsersGETV1(
-		&user_management.RetrieveUsersGETV1Params{
-			Body: &models.MsaspecIdsRequest{
-				Ids: targetUserIDs,
-			},
-			Context: ctx,
-		},
-	)
-	if err != nil {
-		return nil, nil, wrapCrowdStrikeError(err, "role grants: failed to retrieve user details")
-	}
-
-	// add rate limit info from listing user details
-	rateLimitInfo = append(
-		rateLimitInfo,
-		NewRateLimitInfo(
-			users.XRateLimitLimit,
-			users.XRateLimitRemaining,
-		),
-	)
-
-	// 4. create grants for users
-	var rv []*v2.Grant
-	for _, user := range users.Payload.Resources {
-		uID, err := rs.NewResourceID(resourceTypeUser, user.UUID)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to create user resource id: %w", err)
-		}
-
-		rv = append(
-			rv,
-			grant.NewGrant(
-				resource,
-				roleMembership,
-				uID,
-			),
-		)
-	}
-
-	// annotations for rate limits
-	annos := WithRateLimitAnnotations(rateLimitInfo...)
-
-	return rv, &rs.SyncOpResults{NextPageToken: nextPage, Annotations: annos}, nil
+func (r *roleResourceType) Grants(_ context.Context, _ *v2.Resource, _ rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
+	return nil, nil, nil
 }
 
 func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, entitlement *v2.Entitlement) (annotations.Annotations, error) {
