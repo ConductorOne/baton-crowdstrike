@@ -21,7 +21,7 @@ var (
 			v2.ResourceType_TRAIT_USER,
 		},
 		Annotations: annotations.New(
-			&v2.SkipEntitlementsAndGrants{},
+			&v2.SkipEntitlements{},
 			capabilityPermissions(
 				"User Management: Read",
 				"User Management: Write",
@@ -35,6 +35,7 @@ var (
 			v2.ResourceType_TRAIT_ROLE,
 		},
 		Annotations: annotations.New(
+			&v2.SkipGrants{},
 			capabilityPermissions(
 				"User Management: Read",
 				"User Management: Write",

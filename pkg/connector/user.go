@@ -2,14 +2,18 @@ package connector
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
+	"github.com/conductorone/baton-sdk/pkg/types/grant"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
 	"github.com/crowdstrike/gofalcon/falcon/models"
 )
+
+var userGrantsPageSize int64 = 500 // Default is 100, max is 500.
 
 type userResourceType struct {
 	resourceType *v2.ResourceType
@@ -135,6 +139,11 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.S
 		rv = append(rv, ur)
 	}
 
+	if userIDs.Payload.Meta.Pagination == nil {
+		annos := WithRateLimitAnnotations(rateLimitInfo...)
+		return rv, &rs.SyncOpResults{Annotations: annos}, nil
+	}
+
 	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
 	if err != nil {
 		return nil, nil, err
@@ -163,7 +172,57 @@ func (u *userResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 }
 
 func (u *userResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
-	return nil, nil, nil
+	userID := resource.Id.Resource
+
+	bag, offset, err := parsePageToken(opts.PageToken.Token, resource.Id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := u.client.UserManagement.CombinedUserRolesV1(
+		&user_management.CombinedUserRolesV1Params{
+			UserUUID: userID,
+			Limit:    &userGrantsPageSize,
+			Offset:   &offset,
+			Context:  ctx,
+		},
+	)
+	if err != nil {
+		return nil, nil, wrapCrowdStrikeError(err, "user grants: failed to query user roles")
+	}
+
+	var rv []*v2.Grant
+	for _, roleGrant := range resp.Payload.Resources {
+		roleResID, err := rs.NewResourceID(resourceTypeRole, *roleGrant.RoleID)
+		if err != nil {
+			return nil, nil, fmt.Errorf("user grants: failed to create role resource id: %w", err)
+		}
+
+		roleRes := v2.Resource_builder{Id: roleResID}.Build()
+		rv = append(rv, grant.NewGrant(roleRes, roleMembership, resource))
+	}
+
+	annos := WithRateLimitAnnotations(NewRateLimitInfo(resp.XRateLimitLimit, resp.XRateLimitRemaining))
+
+	if resp.Payload.Meta.Pagination == nil {
+		return rv, &rs.SyncOpResults{Annotations: annos}, nil
+	}
+
+	isLastPage, err := resp.Payload.Meta.Pagination.LastPage()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if isLastPage {
+		return rv, &rs.SyncOpResults{Annotations: annos}, nil
+	}
+
+	nextPage, err := handleNextPage(bag, offset+userGrantsPageSize)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return rv, &rs.SyncOpResults{NextPageToken: nextPage, Annotations: annos}, nil
 }
 
 func userBuilder(client *fClient.CrowdStrikeAPISpecification) *userResourceType {
