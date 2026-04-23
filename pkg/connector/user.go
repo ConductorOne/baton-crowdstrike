@@ -139,6 +139,11 @@ func (u *userResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.S
 		rv = append(rv, ur)
 	}
 
+	if userIDs.Payload.Meta.Pagination == nil {
+		annos := WithRateLimitAnnotations(rateLimitInfo...)
+		return rv, &rs.SyncOpResults{Annotations: annos}, nil
+	}
+
 	isLastPage, err := userIDs.Payload.Meta.Pagination.LastPage()
 	if err != nil {
 		return nil, nil, err
@@ -198,6 +203,10 @@ func (u *userResourceType) Grants(ctx context.Context, resource *v2.Resource, op
 	}
 
 	annos := WithRateLimitAnnotations(NewRateLimitInfo(resp.XRateLimitLimit, resp.XRateLimitRemaining))
+
+	if resp.Payload.Meta.Pagination == nil {
+		return rv, &rs.SyncOpResults{Annotations: annos}, nil
+	}
 
 	isLastPage, err := resp.Payload.Meta.Pagination.LastPage()
 	if err != nil {
