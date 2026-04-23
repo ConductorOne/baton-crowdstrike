@@ -13,6 +13,8 @@ import (
 	"github.com/crowdstrike/gofalcon/falcon/models"
 )
 
+var userGrantsPageSize int64 = 500 // Default is 100, max is 500.
+
 type userResourceType struct {
 	resourceType *v2.ResourceType
 	client       *fClient.CrowdStrikeAPISpecification
@@ -167,9 +169,16 @@ func (u *userResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 func (u *userResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
 	userID := resource.Id.Resource
 
+	bag, offset, err := parsePageToken(opts.PageToken.Token, resource.Id)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	resp, err := u.client.UserManagement.CombinedUserRolesV1(
 		&user_management.CombinedUserRolesV1Params{
 			UserUUID: userID,
+			Limit:    &userGrantsPageSize,
+			Offset:   &offset,
 			Context:  ctx,
 		},
 	)
@@ -189,7 +198,22 @@ func (u *userResourceType) Grants(ctx context.Context, resource *v2.Resource, op
 	}
 
 	annos := WithRateLimitAnnotations(NewRateLimitInfo(resp.XRateLimitLimit, resp.XRateLimitRemaining))
-	return rv, &rs.SyncOpResults{Annotations: annos}, nil
+
+	isLastPage, err := resp.Payload.Meta.Pagination.LastPage()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if isLastPage {
+		return rv, &rs.SyncOpResults{Annotations: annos}, nil
+	}
+
+	nextPage, err := handleNextPage(bag, offset+userGrantsPageSize)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return rv, &rs.SyncOpResults{NextPageToken: nextPage, Annotations: annos}, nil
 }
 
 func userBuilder(client *fClient.CrowdStrikeAPISpecification) *userResourceType {
