@@ -131,7 +131,7 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 	l := ctxzap.Extract(ctx)
 
 	if principal.Id.ResourceType != resourceTypeUser.Id {
-		l.Warn(
+		l.Debug(
 			"crowdstrike-connector grant: only users can be granted role membership",
 			zap.String("principal_id", principal.Id.Resource),
 			zap.String("principal_type", principal.Id.ResourceType),
@@ -180,7 +180,7 @@ func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotat
 	principal := grant.Principal
 
 	if principal.Id.ResourceType != resourceTypeUser.Id {
-		l.Warn(
+		l.Debug(
 			"crowdstrike-connector revoke: only users can have role membership revoked",
 			zap.String("principal_id", principal.Id.Resource),
 			zap.String("principal_type", principal.Id.ResourceType),
