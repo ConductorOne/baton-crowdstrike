@@ -36,6 +36,10 @@ jobs:
           baton-entitlement: ${{ vars.CI_ROLE_ENTITLEMENT }}
           baton-principal: ${{ vars.CI_ROLE_PRINCIPAL }}
           baton-principal-type: user
+          # CrowdStrike's user-role API is eventually consistent: a read
+          # immediately after a grant/revoke can still return stale data. Wait
+          # after each write so the verification re-sync sees the new state.
+          sleep: 20
       - name: Account provisioning (create + delete user)
         uses: ConductorOne/github-workflows/actions/account-provisioning@v4
         with:
@@ -44,3 +48,4 @@ jobs:
           account-profile: ${{ vars.CI_ACCOUNT_PROFILE }}
           account-type: user
           search-method: email
+          sleep: 20
