@@ -138,10 +138,17 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		return nil, nil, fmt.Errorf("failed to initialize SDK client: %w", err)
 	}
 
+	// Mirror gofalcon's HostOverride so the Identity Protection client can be
+	// pointed at a test server too; falls back to the region host in production.
+	host := cloudRegion.Host()
+	if cc.BaseUrl != "" {
+		host = cc.BaseUrl
+	}
+
 	return &Connector{
 		client:       client,
 		clientId:     cc.CrowdstrikeClientId,
 		clientSecret: cc.CrowdstrikeClientSecret,
-		host:         cloudRegion.Host(),
+		host:         host,
 	}, nil, nil
 }

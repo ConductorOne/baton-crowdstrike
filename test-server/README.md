@@ -26,8 +26,8 @@ go build -o baton-crowdstrike ./cmd/baton-crowdstrike
 export SSL_CERT_FILE="$PWD/test-server-cert.pem"
 CFG="--crowdstrike-client-id test --crowdstrike-client-secret test --base-url 127.0.0.1:8443"
 
-# Sync (user + role only — see the note on insights below)
-./baton-crowdstrike $CFG --sync-resource-types user,role --file sync.c1z
+# Full sync (user + role + security_insight all work offline)
+./baton-crowdstrike $CFG --file sync.c1z
 
 # Create an account (idempotent: re-running returns AlreadyExists, not an error)
 ./baton-crowdstrike $CFG -p \
@@ -58,9 +58,9 @@ CFG="--crowdstrike-client-id test --crowdstrike-client-secret test --base-url 12
 
 ## Flags
 
-| Flag | Default | Description |
-| :--- | :--- | :--- |
-| `--addr` | `127.0.0.1:8443` | Address to listen on. |
+| Flag         | Default                | Description                                 |
+| :----------- | :--------------------- | :------------------------------------------ |
+| `--addr`     | `127.0.0.1:8443`       | Address to listen on.                       |
 | `--cert-out` | `test-server-cert.pem` | Where to write the self-signed certificate. |
 
 ## Seed data
@@ -86,7 +86,11 @@ to keep a single source of truth.
 
 ## Note on the `security_insight` resource type
 
-The mock only covers the user-management API used by the account provisioning
-features. The `security_insight` (Identity Protection) resource type talks to a
-separate GraphQL endpoint and is out of scope here, so sync it with
-`--sync-resource-types user,role` to keep runs offline.
+The `security_insight` (Identity Protection) resource type talks to a separate
+GraphQL endpoint (`/identity-protection/combined/graphql/v1`). The mock now
+covers it too, returning one identity risk node per seeded user, so a **full
+sync runs fully offline** — no `--sync-resource-types` filter required.
+
+For the connector to reach the mock's GraphQL endpoint, `--base-url` is honored
+by the Identity Protection client (it mirrors gofalcon's `HostOverride`); in
+production `--base-url` is unset and the client uses the region host.

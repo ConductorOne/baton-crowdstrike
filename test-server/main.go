@@ -1,6 +1,7 @@
 // Command test-server is an in-process mock of the CrowdStrike Falcon
-// user-management API. It lets the baton-crowdstrike connector run its full
-// sync and provisioning lifecycle (create / update / delete users, grant /
+// user-management API plus the Identity Protection GraphQL endpoint. It lets the
+// baton-crowdstrike connector run its full sync (users, roles, security
+// insights) and provisioning lifecycle (create / update / delete users, grant /
 // revoke roles) without a real Falcon tenant.
 //
 // The gofalcon SDK hardcodes HTTPS for both the OAuth token request and all API
@@ -425,6 +426,48 @@ func (s *store) handleUserRoles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handleIdentityProtectionGraphQL mocks the Identity Protection GraphQL endpoint
+// (/identity-protection/combined/graphql/v1) used by the security_insight sync.
+// It returns one identity risk node per seeded user, each with an Active Directory
+// account whose objectGuid yields a stable external ID.
+func (s *store) handleIdentityProtectionGraphQL(w http.ResponseWriter, _ *http.Request) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	nodes := make([]map[string]any, 0, len(s.users))
+	for _, u := range s.users {
+		nodes = append(nodes, map[string]any{
+			"primaryDisplayName":   strings.TrimSpace(u.FirstName + " " + u.LastName),
+			"secondaryDisplayName": u.UID,
+			"emailAddresses":       []string{u.UID},
+			"riskScore":            0.42,
+			"riskScoreSeverity":    "MEDIUM",
+			"riskFactors": []map[string]any{
+				{"type": "STALE_ACCOUNT_PASSWORD", "severity": "MEDIUM"},
+			},
+			"accounts": []map[string]any{
+				{
+					"__typename":     "ActiveDirectoryAccountDescriptor",
+					"objectSid":      "S-1-5-21-" + u.UUID,
+					"samAccountName": u.UID,
+					"domain":         "example.com",
+					"objectGuid":     u.UUID,
+				},
+			},
+		})
+	}
+
+	// Single page; the connector stops paging when hasNextPage is false.
+	writeJSON(w, http.StatusOK, map[string]any{
+		"data": map[string]any{
+			"entities": map[string]any{
+				"pageInfo": map[string]any{"hasNextPage": false, "endCursor": ""},
+				"nodes":    nodes,
+			},
+		},
+	})
+}
+
 func toDomainUser(u *user) domainUser {
 	return domainUser{
 		Cid: u.CID, UID: u.UID, UUID: u.UUID,
@@ -497,6 +540,7 @@ func run() error {
 	mux.HandleFunc("/user-management/entities/roles/v1", s.handleEntitiesRoles)
 	mux.HandleFunc("/user-management/combined/user-roles/v1", s.handleCombinedUserRoles)
 	mux.HandleFunc("/user-roles/entities/user-roles/v1", s.handleUserRoles)
+	mux.HandleFunc("/identity-protection/combined/graphql/v1", s.handleIdentityProtectionGraphQL)
 
 	cert, certPEM, err := selfSignedCert()
 	if err != nil {

@@ -12,8 +12,7 @@ jobs:
       BATON_LOG_LEVEL: debug
       BATON_CROWDSTRIKE_CLIENT_ID: ${{ vars.CROWDSTRIKE_CLIENT_ID }}
       BATON_CROWDSTRIKE_CLIENT_SECRET: ${{ secrets.CROWDSTRIKE_CLIENT_SECRET }}
-      BATON_BASE_URL: ${{ vars.BASE_URL }}
-      SSL_CERT_FILE: ${{ github.workspace }}/test-server-cert.pem
+      BATON_REGION: ${{ vars.REGION }}
       BATON_SYNC_RESOURCE_TYPES: user,role
     steps:
       - name: Checkout code
@@ -24,17 +23,6 @@ jobs:
           go-version-file: go.mod
       - name: Build baton-crowdstrike
         run: go build -o baton-crowdstrike ./cmd/baton-crowdstrike
-      - name: Build test server
-        run: go build -o test-server-bin ./test-server
-      - name: Start test server
-        run: ./test-server-bin &
-      - name: Wait for test server
-        run: |
-          for i in $(seq 1 10); do
-            curl -skf "https://${BATON_BASE_URL}/user-management/queries/roles/v1" > /dev/null 2>&1 && exit 0
-            sleep 1
-          done
-          echo "Test server failed to start"; exit 1
       - name: Download Baton
         uses: ConductorOne/github-workflows/actions/get-baton@v2
       - name: Run sync
@@ -45,17 +33,14 @@ jobs:
         uses: ConductorOne/github-workflows/actions/sync-test@v4
         with:
           connector: ./baton-crowdstrike
-          baton-entitlement: role:falcon_read_only:member
-          baton-principal: 11111111-1111-1111-1111-111111111111
+          baton-entitlement: ${{ vars.CI_ROLE_ENTITLEMENT }}
+          baton-principal: ${{ vars.CI_ROLE_PRINCIPAL }}
           baton-principal-type: user
       - name: Account provisioning (create + delete user)
         uses: ConductorOne/github-workflows/actions/account-provisioning@v4
         with:
           connector: ./baton-crowdstrike
-          account-email: ci-newhire@example.com
-          account-profile: '{"email":"ci-newhire@example.com","first_name":"CI","last_name":"Newhire"}'
+          account-email: ${{ vars.CI_ACCOUNT_EMAIL }}
+          account-profile: ${{ vars.CI_ACCOUNT_PROFILE }}
           account-type: user
           search-method: email
-      - name: Stop test server
-        if: always()
-        run: pkill -f test-server-bin || true

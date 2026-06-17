@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	config "github.com/conductorone/baton-sdk/pb/c1/config/v1"
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
-	"github.com/conductorone/baton-sdk/pkg/actions"
 	"github.com/conductorone/baton-sdk/pkg/annotations"
 	"github.com/conductorone/baton-sdk/pkg/connectorbuilder"
 	"github.com/conductorone/baton-sdk/pkg/types/grant"
@@ -17,7 +15,6 @@ import (
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
 	"github.com/crowdstrike/gofalcon/falcon/models"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var userGrantsPageSize int64 = 500
@@ -36,7 +33,6 @@ const (
 var (
 	_ connectorbuilder.AccountManagerV2       = (*userResourceType)(nil)
 	_ connectorbuilder.ResourceDeleterLimited = (*userResourceType)(nil)
-	_ connectorbuilder.ResourceActionProvider = (*userResourceType)(nil)
 )
 
 type userResourceType struct {
@@ -297,7 +293,7 @@ func getUserByUUID(ctx context.Context, client *fClient.CrowdStrikeAPISpecificat
 // name so a partial update never clears the other field.
 func updateUserProfile(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, userID, firstName, lastName string) (annotations.Annotations, []string, error) {
 	if firstName == "" && lastName == "" {
-		return nil, nil, uhttp.WrapErrors(codes.InvalidArgument, "update profile: at least one of first_name or last_name is required")
+		return nil, nil, uhttp.WrapErrors(codes.InvalidArgument, "baton-crowdstrike: update profile: at least one of first_name or last_name is required")
 	}
 
 	updatedFields := make([]string, 0, 2)
@@ -308,15 +304,19 @@ func updateUserProfile(ctx context.Context, client *fClient.CrowdStrikeAPISpecif
 		updatedFields = append(updatedFields, profileFieldLastName)
 	}
 
-	current, err := getUserByUUID(ctx, client, userID)
-	if err != nil {
-		return nil, nil, wrapCrowdStrikeError(err, fmt.Sprintf("update profile: failed to fetch user %s", userID))
-	}
-	if firstName == "" {
-		firstName = current.FirstName
-	}
-	if lastName == "" {
-		lastName = current.LastName
+	// Only fetch the current user when a name is omitted: CrowdStrike replaces
+	// both fields on update, so we backfill the missing one to avoid clearing it.
+	if firstName == "" || lastName == "" {
+		current, err := getUserByUUID(ctx, client, userID)
+		if err != nil {
+			return nil, nil, wrapCrowdStrikeError(err, fmt.Sprintf("baton-crowdstrike: update profile: failed to fetch user %s", userID))
+		}
+		if firstName == "" {
+			firstName = current.FirstName
+		}
+		if lastName == "" {
+			lastName = current.LastName
+		}
 	}
 
 	resp, err := client.UserManagement.UpdateUserV1(
@@ -330,7 +330,7 @@ func updateUserProfile(ctx context.Context, client *fClient.CrowdStrikeAPISpecif
 		},
 	)
 	if err != nil {
-		return nil, nil, wrapCrowdStrikeError(err, fmt.Sprintf("update profile: failed to update user %s", userID))
+		return nil, nil, wrapCrowdStrikeError(err, fmt.Sprintf("baton-crowdstrike: update profile: failed to update user %s", userID))
 	}
 
 	annos := WithRateLimitAnnotations(NewRateLimitInfo(resp.XRateLimitLimit, resp.XRateLimitRemaining))
@@ -358,14 +358,14 @@ func (u *userResourceType) CreateAccount(
 ) (connectorbuilder.CreateAccountResponse, []*v2.PlaintextData, annotations.Annotations, error) {
 	profile := accountInfo.GetProfile().AsMap()
 
-	email := accountInfo.GetLogin()
-	if email == "" {
-		if e, ok := profile["email"].(string); ok {
-			email = e
+	email, _ := profile["email"].(string)
+	if !validateEmail(email) {
+		if login := accountInfo.GetLogin(); validateEmail(login) {
+			email = login
 		}
 	}
-	if email == "" {
-		return nil, nil, nil, uhttp.WrapErrors(codes.InvalidArgument, "create account: email is required")
+	if !validateEmail(email) {
+		return nil, nil, nil, uhttp.WrapErrors(codes.InvalidArgument, "create account: a valid email address is required for the CrowdStrike uid")
 	}
 
 	firstName, _ := profile[profileFieldFirstName].(string)
@@ -429,68 +429,6 @@ func (u *userResourceType) Delete(ctx context.Context, resourceId *v2.ResourceId
 	annos := WithRateLimitAnnotations(NewRateLimitInfo(resp.XRateLimitLimit, resp.XRateLimitRemaining))
 
 	return annos, nil
-}
-
-var updateUserActionSchema = &v2.BatonActionSchema{
-	Name:        actionUpdateProfile,
-	DisplayName: "Update User Profile",
-	Description: "Updates a CrowdStrike user's first and/or last name.",
-	Arguments: []*config.Field{
-		{
-			Name:        argUserID,
-			DisplayName: "User",
-			Description: "The user to update.",
-			IsRequired:  true,
-			Field: &config.Field_ResourceIdField{
-				ResourceIdField: &config.ResourceIdField{
-					Rules: &config.ResourceIDRules{
-						AllowedResourceTypeIds: []string{resourceTypeUser.Id},
-					},
-				},
-			},
-		},
-		{Name: profileFieldFirstName, DisplayName: "First Name", Description: "New first name for the user.", Field: &config.Field_StringField{}},
-		{Name: profileFieldLastName, DisplayName: "Last Name", Description: "New last name for the user.", Field: &config.Field_StringField{}},
-	},
-	ReturnTypes: []*config.Field{
-		{Name: returnFieldSuccess, DisplayName: "Success", Field: &config.Field_BoolField{}},
-	},
-	ActionType:     []v2.ActionType{v2.ActionType_ACTION_TYPE_ACCOUNT_UPDATE_PROFILE},
-	ResourceTypeId: resourceTypeUser.Id,
-}
-
-// ResourceActions registers the CrowdStrike user profile update action.
-func (u *userResourceType) ResourceActions(ctx context.Context, registry actions.ActionRegistry) error {
-	if err := registry.Register(ctx, updateUserActionSchema, u.updateUserHandler); err != nil {
-		return fmt.Errorf("baton-crowdstrike: register update_profile action: %w", err)
-	}
-
-	return nil
-}
-
-// updateUserHandler updates first and/or last name, backfilling the omitted
-// name so a partial update never clears the other field.
-func (u *userResourceType) updateUserHandler(ctx context.Context, args *structpb.Struct) (*structpb.Struct, annotations.Annotations, error) {
-	userResourceID, ok := actions.GetResourceIDArg(args, argUserID)
-	if !ok || userResourceID.GetResource() == "" {
-		return nil, nil, uhttp.WrapErrors(codes.InvalidArgument, "update_profile: user_id is required")
-	}
-	userID := userResourceID.GetResource()
-
-	firstName, _ := actions.GetStringArg(args, profileFieldFirstName)
-	lastName, _ := actions.GetStringArg(args, profileFieldLastName)
-
-	annos, _, err := updateUserProfile(ctx, u.client, userID, firstName, lastName)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	result, err := structpb.NewStruct(map[string]any{returnFieldSuccess: true})
-	if err != nil {
-		return nil, annos, fmt.Errorf("baton-crowdstrike: update_profile: failed to build result: %w", err)
-	}
-
-	return result, annos, nil
 }
 
 func userBuilder(client *fClient.CrowdStrikeAPISpecification) *userResourceType {
