@@ -115,7 +115,7 @@ baton-crowdstrike \
 # Global action
 baton-crowdstrike \
   --invoke-action update_user \
-  --invoke-action-args '{"user_id":"<user-uuid>","user_profile":"{\"first_name\":\"Caroline\"}"}'
+  --invoke-action-args '{"user_id":{"resource_type_id":"user","resource_id":"<user-uuid>"},"user_profile":"{\"first_name\":\"Caroline\"}"}'
 ```
 
 > **Note:** CrowdStrike's REST API has no disable/deactivate flag on the user object. When C1 deprovisions a user it revokes all of the user's role grants (soft deprovisioning); hard deletion of the account is permanent and only happens when an explicit delete is requested.
