@@ -28,6 +28,19 @@ Reference for the real CrowdStrike Falcon endpoints the `baton-crowdstrike` conn
 | EU-1     | `https://api.eu-1.crowdstrike.com`       |
 | US-GOV-1 | `https://api.laggar.gcw.crowdstrike.com` |
 
+## Running against the local mock
+
+This same collection works against the in-process mock in [`../../test-server/`](../../test-server/README.md). Start it with `go run ./test-server`, then override these environment variables and turn **SSL certificate verification** off in Postman (Settings > General), since the mock uses a self-signed certificate:
+
+| Variable       | Mock value                             |
+| :------------- | :------------------------------------- |
+| `baseUrl`      | `https://127.0.0.1:8443`               |
+| `clientId`     | `test`                                 |
+| `clientSecret` | `test`                                 |
+| `userUuid`     | `11111111-1111-1111-1111-111111111111` |
+| `cid`          | `abcdef1234567890abcdef1234567890`     |
+| `roleId`       | `falcon_read_only`                     |
+
 ## Authentication
 
 `POST /oauth2/token` with `grant_type=client_credentials` (form-encoded `client_id` + `client_secret`). Returns **HTTP 201** with `access_token` (bearer, ~30 min). Send it as `Authorization: Bearer <token>` on every other request.
@@ -66,9 +79,8 @@ If you run a full sync without the Identity Protection scopes, the `security_ins
 | `deleteUserV1`        | DELETE | `/user-management/entities/users/v1`      | UM: Write | Delete account (404 = already gone → success)              |
 | `queriesRolesV1`      | GET    | `/user-management/queries/roles/v1`       | UM: Read  | List role IDs                                              |
 | `entitiesRolesV1`     | GET    | `/user-management/entities/roles/v1`      | UM: Read  | Role details                                               |
-| `combinedUserRolesV1` | GET    | `/user-management/combined/user-roles/v1` | UM: Read  | Build grants (roles per user)                              |
-| `GrantUserRoleIds`    | POST   | `/user-roles/entities/user-roles/v1`      | UM: Write | Grant role to user                                         |
-| `RevokeUserRoleIds`   | DELETE | `/user-roles/entities/user-roles/v1`      | UM: Write | Revoke role from user                                      |
+| `combinedUserRolesV1` | GET    | `/user-management/combined/user-roles/v1`      | UM: Read  | Build grants (roles per user)                              |
+| `UserRolesActionV1`   | POST   | `/user-management/entities/user-role-actions/v1` | UM: Write | Grant/revoke role to user (`action` = `grant`/`revoke`, idempotent) |
 
 Full API reference: https://developer.crowdstrike.com/api-reference/collections/user-management/
 

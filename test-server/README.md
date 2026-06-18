@@ -70,15 +70,23 @@ CFG="--crowdstrike-client-id test --crowdstrike-client-secret test --base-url 12
 
 ## Using with Postman
 
-A Postman collection and environment live in [`API/`](API/):
+There is a single Postman collection for the connector in
+[`../docs/API/`](../docs/API/); it is shared with the real Falcon API. To point
+it at this mock instead of a real tenant, override these environment variables:
 
-- `API/baton-crowdstrike.postman_collection.json`
-- `API/baton-crowdstrike.postman_environment.json`
+| Variable       | Mock value                             |
+| :------------- | :------------------------------------- |
+| `baseUrl`      | `https://127.0.0.1:8443`               |
+| `clientId`     | `test`                                 |
+| `clientSecret` | `test`                                 |
+| `userUuid`     | `11111111-1111-1111-1111-111111111111` |
+| `cid`          | `abcdef1234567890abcdef1234567890`     |
+| `roleId`       | `falcon_read_only`                     |
 
-Import both, select the **baton-crowdstrike Test Server** environment, and run
-**Auth > Get OAuth Token** first — it stores the bearer token in `{{accessToken}}`
-for every other request. Because the server uses a self-signed certificate, turn
-**SSL certificate verification** off in Postman (Settings > General).
+Run **Auth > Get OAuth Token** first — it stores the bearer token in
+`{{accessToken}}` for every other request. Because the server uses a self-signed
+certificate, turn **SSL certificate verification** off in Postman
+(Settings > General).
 
 Per-endpoint upstream API doc links live in
 [`../docs/docs-info.md`](../docs/docs-info.md) ("API Endpoints Used"), not here,

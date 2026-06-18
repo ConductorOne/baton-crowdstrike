@@ -388,42 +388,57 @@ func (s *store) handleCombinedUserRoles(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func (s *store) handleUserRoles(w http.ResponseWriter, r *http.Request) {
-	uuid := r.URL.Query().Get("user_uuid")
+// handleUserRoleActions mocks POST /user-management/entities/user-role-actions/v1,
+// the modern endpoint that grants and revokes roles via an "action" field. It is
+// idempotent (granting a held role or revoking an absent one is a no-op success)
+// and, like the real API, rejects requests without a customer ID.
+func (s *store) handleUserRoleActions(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
+	var req struct {
+		Action  string   `json:"action"`
+		Cid     string   `json:"cid"`
+		UUID    string   `json:"uuid"`
+		RoleIDs []string `json:"role_ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid body")
+		return
+	}
+	if req.Cid == "" {
+		writeError(w, http.StatusBadRequest, "invalid/empty customer ID specified")
+		return
+	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	u, ok := s.users[uuid]
+	u, ok := s.users[req.UUID]
 	if !ok {
 		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 
-	switch r.Method {
-	case http.MethodPost:
-		var req struct {
-			RoleIDs []string `json:"roleIds"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			writeError(w, http.StatusBadRequest, "invalid body")
-			return
-		}
+	switch req.Action {
+	case "grant":
 		for _, rid := range req.RoleIDs {
 			if !contains(u.Roles, rid) {
 				u.Roles = append(u.Roles, rid)
 			}
 		}
-		writeJSON(w, http.StatusOK, idsResponse{Resources: req.RoleIDs})
-	case http.MethodDelete:
-		ids := r.URL.Query()["ids"]
-		for _, rid := range ids {
+	case "revoke":
+		for _, rid := range req.RoleIDs {
 			u.Roles = remove(u.Roles, rid)
 		}
-		writeJSON(w, http.StatusOK, idsResponse{Resources: ids})
 	default:
-		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		writeError(w, http.StatusBadRequest, "invalid action")
+		return
 	}
+
+	writeJSON(w, http.StatusOK, idsResponse{Resources: req.RoleIDs})
 }
 
 // handleIdentityProtectionGraphQL mocks the Identity Protection GraphQL endpoint
@@ -539,7 +554,7 @@ func run() error {
 	mux.HandleFunc("/user-management/queries/roles/v1", s.handleQueryRoles)
 	mux.HandleFunc("/user-management/entities/roles/v1", s.handleEntitiesRoles)
 	mux.HandleFunc("/user-management/combined/user-roles/v1", s.handleCombinedUserRoles)
-	mux.HandleFunc("/user-roles/entities/user-roles/v1", s.handleUserRoles)
+	mux.HandleFunc("/user-management/entities/user-role-actions/v1", s.handleUserRoleActions)
 	mux.HandleFunc("/identity-protection/combined/graphql/v1", s.handleIdentityProtectionGraphQL)
 
 	cert, certPEM, err := selfSignedCert()

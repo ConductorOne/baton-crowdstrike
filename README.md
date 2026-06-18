@@ -135,7 +135,7 @@ export SSL_CERT_FILE="$PWD/test-server-cert.pem"
   --base-url 127.0.0.1:8443 --sync-resource-types user,role
 ```
 
-See [`test-server/README.md`](./test-server/README.md) for seed data, all lifecycle commands, and the Postman collection in [`test-server/API/`](./test-server/API).
+See [`test-server/README.md`](./test-server/README.md) for seed data and all lifecycle commands, and [`docs/API/`](./docs/API) for the Postman collection (it works against both the real Falcon API and the local mock — see the test-server README for the mock override values).
 
 # Documentation
 

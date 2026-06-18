@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "baton-crowdstrike (CrowdStrike Falcon API)",
-    "description": "Collection for the real CrowdStrike Falcon user-management API exercised by the baton-crowdstrike connector.\n\nBase URL (regional — set {{baseUrl}} for your tenant's cloud):\n- US-1:  https://api.crowdstrike.com\n- US-2:  https://api.us-2.crowdstrike.com\n- EU-1:  https://api.eu-1.crowdstrike.com\n- US-GOV-1: https://api.laggar.gcw.crowdstrike.com\n\nCredentials:\n1. In the Falcon console go to Support and resources > API clients and keys > Create API client.\n2. Grant these scopes:\n   - User Management: Read  (sync users, roles, grants)\n   - User Management: Write  (provisioning: create/delete users, grant/revoke roles, update profile)\n   - Identity Protection Entities: Read + Identity Protection GraphQL: Write  (only if you also sync security_insight; CrowdStrike requires Write even to read risk scores)\n3. Copy the client_id and client_secret into the environment variables {{clientId}} / {{clientSecret}}. Do NOT commit real secrets.\n\nAuth: run \"Get OAuth Token\" first; it stores the bearer token in {{accessToken}} (CrowdStrike returns HTTP 201 with a token valid ~30 min).\n\nResolve a {{userUuid}} with \"Query User ID by email\" + \"Retrieve User Details\", and a {{roleId}} with \"Query Role IDs\".",
+    "description": "Collection for the real CrowdStrike Falcon user-management API exercised by the baton-crowdstrike connector.\n\nBase URL (regional — set {{baseUrl}} for your tenant's cloud):\n- US-1:  https://api.crowdstrike.com\n- US-2:  https://api.us-2.crowdstrike.com\n- EU-1:  https://api.eu-1.crowdstrike.com\n- US-GOV-1: https://api.laggar.gcw.crowdstrike.com\n\nCredentials:\n1. In the Falcon console go to Support and resources > API clients and keys > Create API client.\n2. Grant these scopes:\n   - User Management: Read  (sync users, roles, grants)\n   - User Management: Write  (provisioning: create/delete users, grant/revoke roles, update profile)\n   - Identity Protection Entities: Read + Identity Protection GraphQL: Write  (only if you also sync security_insight; CrowdStrike requires Write even to read risk scores)\n3. Copy the client_id and client_secret into the environment variables {{clientId}} / {{clientSecret}}. Do NOT commit real secrets.\n\nAuth: run \"Get OAuth Token\" first; it stores the bearer token in {{accessToken}} (CrowdStrike returns HTTP 201 with a token valid ~30 min).\n\nResolve a {{userUuid}} with \"Query User ID by email\" + \"Retrieve User Details\" (which also returns the {{cid}} needed for grant/revoke), and a {{roleId}} with \"Query Role IDs\".",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -211,32 +211,32 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": {
-              "raw": "{{baseUrl}}/user-roles/entities/user-roles/v1?user_uuid={{userUuid}}",
+              "raw": "{{baseUrl}}/user-management/entities/user-role-actions/v1",
               "host": ["{{baseUrl}}"],
-              "path": ["user-roles", "entities", "user-roles", "v1"],
-              "query": [{ "key": "user_uuid", "value": "{{userUuid}}" }]
+              "path": ["user-management", "entities", "user-role-actions", "v1"]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"roleIds\": [\"{{roleId}}\"]\n}"
+              "raw": "{\n  \"action\": \"grant\",\n  \"cid\": \"{{cid}}\",\n  \"uuid\": \"{{userUuid}}\",\n  \"role_ids\": [\"{{roleId}}\"]\n}"
             },
-            "description": "GrantUserRoleIds — assign role(s) to a user. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/#grantuserroleids"
+            "description": "UserRolesActionV1 — assign role(s) to a user via action=grant. Requires the user's cid (find it on the user record from Retrieve User Details). Idempotent: granting a held role returns 200. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/"
           }
         },
         {
           "name": "Revoke Role from User",
           "request": {
-            "method": "DELETE",
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": {
-              "raw": "{{baseUrl}}/user-roles/entities/user-roles/v1?user_uuid={{userUuid}}&ids={{roleId}}",
+              "raw": "{{baseUrl}}/user-management/entities/user-role-actions/v1",
               "host": ["{{baseUrl}}"],
-              "path": ["user-roles", "entities", "user-roles", "v1"],
-              "query": [
-                { "key": "user_uuid", "value": "{{userUuid}}" },
-                { "key": "ids", "value": "{{roleId}}" }
-              ]
+              "path": ["user-management", "entities", "user-role-actions", "v1"]
             },
-            "description": "RevokeUserRoleIds — remove role(s) from a user. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/#revokeuserroleids"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"revoke\",\n  \"cid\": \"{{cid}}\",\n  \"uuid\": \"{{userUuid}}\",\n  \"role_ids\": [\"{{roleId}}\"]\n}"
+            },
+            "description": "UserRolesActionV1 — remove role(s) from a user via action=revoke. Requires the user's cid. Idempotent: revoking a role the user does not hold returns 200. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/"
           }
         }
       ]
@@ -248,6 +248,7 @@
     { "key": "clientId", "value": "<your-client-id>", "type": "string" },
     { "key": "clientSecret", "value": "<your-client-secret>", "type": "string" },
     { "key": "userUuid", "value": "<user-uuid>", "type": "string" },
+    { "key": "cid", "value": "<customer-id>", "type": "string" },
     { "key": "roleId", "value": "falcon_console_guest", "type": "string" }
   ]
 }

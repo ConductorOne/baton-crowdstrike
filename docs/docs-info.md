@@ -21,7 +21,7 @@
 2. **Can the connector provision any resources? If so, which ones?**
    The connector can provision:
    - Users via `CreateAccount` (`POST /user-management/entities/users/v1`) and `Delete` (`DELETE /user-management/entities/users/v1?user_uuid={uuid}`)
-   - Role membership via Grant (`POST /user-roles/entities/user-roles/v1`) and Revoke (`DELETE /user-roles/entities/user-roles/v1?ids={role_id}`)
+   - Role membership via Grant and Revoke (`POST /user-management/entities/user-role-actions/v1` with `action: grant` / `action: revoke`)
    - A user's first/last name via the `update_user` (global) and `update_profile` (resource-scoped) connector actions (`PATCH /user-management/entities/users/v1?user_uuid={uuid}`)
 
    > **Note:** Roles and Identity Risk Scores are synced read-only — they are not provisionable. CrowdStrike's REST API has no disable/deactivate flag, so `Delete` is a hard delete and deleting an already-deleted user is treated as success.
@@ -84,7 +84,7 @@
 - **Traits**: Role trait with profile (role_id, role_name, description).
 - **Entitlements**: One `member` assignment entitlement per role, grantable to users.
 - **Grants**: Emitted from the user builder (`SkipGrants` on the role itself) to avoid an O(N×M) scan.
-- **Provisioning**: Grant assigns a role to a user; Revoke removes it. Both are idempotent (409 Conflict → `GrantAlreadyExists` / `GrantAlreadyRevoked`).
+- **Provisioning**: Grant assigns a role to a user; Revoke removes it. Both call `POST /user-management/entities/user-role-actions/v1` (the user's CID is resolved from the user record and sent in the request body alongside the UUID and role IDs). The endpoint is idempotent at the API level — re-granting a held role or revoking an absent one returns `200`, so no `409 Conflict` special-casing is needed.
 
 ### Identity Risk Scores
 
@@ -124,8 +124,7 @@ CrowdStrike's official API reference is gated behind the Falcon console (**Suppo
 - `GET /user-management/queries/roles/v1` — List all role IDs.
 - `GET /user-management/entities/roles/v1?ids={id}` — Retrieve role details.
 - `GET /user-management/combined/user-roles/v1?user_uuid={uuid}` — List the roles a user holds (user grants).
-- `POST /user-roles/entities/user-roles/v1` — Grant role membership to a user.
-- `DELETE /user-roles/entities/user-roles/v1?ids={role_id}` — Revoke role membership from a user.
+- `POST /user-management/entities/user-role-actions/v1` — Grant or revoke role membership for a user (request body: `action` = `grant`/`revoke`, `cid`, `uuid`, `role_ids`). Grant and revoke share this single endpoint, in the same `user-management` API family as the read above, which keeps writes and reads consistent.
 
 **Identity Protection** ([Identity Protection](https://www.falconpy.io/Service-Collections/Identity-Protection.html), opt-in):
 
@@ -158,11 +157,11 @@ CrowdStrike's official API reference is gated behind the Falcon console (**Suppo
 
 **Postman Collection:**
 
-- `test-server/API/baton-crowdstrike.postman_collection.json`
-- `test-server/API/baton-crowdstrike.postman_environment.json`
+- `docs/API/baton-crowdstrike.postman_collection.json`
+- `docs/API/baton-crowdstrike.postman_environment.json`
 
 ---
 
 ## Test server
 
-A local mock of the Falcon user-management API ships in [`test-server/`](../test-server/README.md). It lets you exercise the full sync and provisioning lifecycle (create/update/delete users, grant/revoke roles) without a real Falcon tenant. See `test-server/README.md` for usage, seed data, and the Postman collection.
+A local mock of the Falcon user-management API ships in [`test-server/`](../test-server/README.md). It lets you exercise the full sync and provisioning lifecycle (create/update/delete users, grant/revoke roles) without a real Falcon tenant. See `test-server/README.md` for usage, seed data, and the Postman environment values to run the `docs/API/` collection against the mock.
