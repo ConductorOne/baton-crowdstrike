@@ -35,6 +35,40 @@ func (o *Connector) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error)
 	return &v2.ConnectorMetadata{
 		DisplayName: "CrowdStrike",
 		Description: "Connector syncing CrowdStrike users, roles, and identity risk scores to Baton.",
+		AccountCreationSchema: &v2.ConnectorAccountCreationSchema{
+			FieldMap: map[string]*v2.ConnectorAccountCreationSchema_Field{
+				"email": {
+					DisplayName: "Email",
+					Required:    true,
+					Description: "Email address for the new user. Used as both the login (uid) and the email.",
+					Field: &v2.ConnectorAccountCreationSchema_Field_StringField{
+						StringField: &v2.ConnectorAccountCreationSchema_StringField{},
+					},
+					Placeholder: "jane.doe@example.com",
+					Order:       1,
+				},
+				profileFieldFirstName: {
+					DisplayName: "First Name",
+					Required:    false,
+					Description: "Given name of the user.",
+					Field: &v2.ConnectorAccountCreationSchema_Field_StringField{
+						StringField: &v2.ConnectorAccountCreationSchema_StringField{},
+					},
+					Placeholder: "Jane",
+					Order:       2,
+				},
+				profileFieldLastName: {
+					DisplayName: "Last Name",
+					Required:    false,
+					Description: "Family name of the user.",
+					Field: &v2.ConnectorAccountCreationSchema_Field_StringField{
+						StringField: &v2.ConnectorAccountCreationSchema_StringField{},
+					},
+					Placeholder: "Doe",
+					Order:       3,
+				},
+			},
+		},
 	}, nil
 }
 
@@ -104,10 +138,17 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		return nil, nil, fmt.Errorf("failed to initialize SDK client: %w", err)
 	}
 
+	// Mirror gofalcon's HostOverride so the Identity Protection client can be
+	// pointed at a test server too; falls back to the region host in production.
+	host := cloudRegion.Host()
+	if cc.BaseUrl != "" {
+		host = cc.BaseUrl
+	}
+
 	return &Connector{
 		client:       client,
 		clientId:     cc.CrowdstrikeClientId,
 		clientSecret: cc.CrowdstrikeClientSecret,
-		host:         cloudRegion.Host(),
+		host:         host,
 	}, nil, nil
 }

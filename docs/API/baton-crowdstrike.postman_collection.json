@@ -1,0 +1,254 @@
+{
+  "info": {
+    "name": "baton-crowdstrike (CrowdStrike Falcon API)",
+    "description": "Collection for the real CrowdStrike Falcon user-management API exercised by the baton-crowdstrike connector.\n\nBase URL (regional — set {{baseUrl}} for your tenant's cloud):\n- US-1:  https://api.crowdstrike.com\n- US-2:  https://api.us-2.crowdstrike.com\n- EU-1:  https://api.eu-1.crowdstrike.com\n- US-GOV-1: https://api.laggar.gcw.crowdstrike.com\n\nCredentials:\n1. In the Falcon console go to Support and resources > API clients and keys > Create API client.\n2. Grant these scopes:\n   - User Management: Read  (sync users, roles, grants)\n   - User Management: Write  (provisioning: create/delete users, grant/revoke roles, update profile)\n   - Identity Protection Entities: Read + Identity Protection GraphQL: Write  (only if you also sync security_insight; CrowdStrike requires Write even to read risk scores)\n3. Copy the client_id and client_secret into the environment variables {{clientId}} / {{clientSecret}}. Do NOT commit real secrets.\n\nAuth: run \"Get OAuth Token\" first; it stores the bearer token in {{accessToken}} (CrowdStrike returns HTTP 201 with a token valid ~30 min).\n\nResolve a {{userUuid}} with \"Query User ID by email\" + \"Retrieve User Details\" (which also returns the {{cid}} needed for grant/revoke), and a {{roleId}} with \"Query Role IDs\".",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Get OAuth Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.access_token);",
+                  "pm.test('Token received (201)', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(json.access_token).to.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oauth2/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["oauth2", "token"]
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "client_id", "value": "{{clientId}}", "type": "text" },
+                { "key": "client_secret", "value": "{{clientSecret}}", "type": "text" }
+              ]
+            },
+            "description": "POST /oauth2/token (client_credentials). Returns 201 Created with access_token. https://developer.crowdstrike.com/api-reference/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Query User IDs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/user-management/queries/users/v1?limit=500&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "queries", "users", "v1"],
+              "query": [
+                { "key": "limit", "value": "500" },
+                { "key": "offset", "value": "0" }
+              ]
+            },
+            "description": "queryUserV1 — list user UUIDs (offset pagination). Scope: User Management: Read. https://developer.crowdstrike.com/api-reference/collections/user-management/#queryuserv1"
+          }
+        },
+        {
+          "name": "Query User ID by email (FQL filter)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/user-management/queries/users/v1?filter=uid:'someone@example.com'&limit=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "queries", "users", "v1"],
+              "query": [
+                { "key": "filter", "value": "uid:'someone@example.com'" },
+                { "key": "limit", "value": "1" }
+              ]
+            },
+            "description": "queryUserV1 with FQL filter on uid — used by findUserByEmail for duplicate resolution during account creation."
+          }
+        },
+        {
+          "name": "Retrieve User Details",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/user-management/entities/users/GET/v1",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "entities", "users", "GET", "v1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{userUuid}}\"]\n}"
+            },
+            "description": "RetrieveUsersGETV1 — full user details by UUID. Scope: User Management: Read. https://developer.crowdstrike.com/api-reference/collections/user-management/#retrieveusersgetv1"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/user-management/entities/users/v1",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "entities", "users", "v1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"newuser@yourdomain.com\",\n  \"first_name\": \"New\",\n  \"last_name\": \"User\"\n}"
+            },
+            "description": "createUserV1 — uid must be on an allowed domain for the tenant; password omitted triggers an activation email. 409 if the user already exists. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/#createuserv1"
+          }
+        },
+        {
+          "name": "Update User (first/last name)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/user-management/entities/users/v1?user_uuid={{userUuid}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "entities", "users", "v1"],
+              "query": [{ "key": "user_uuid", "value": "{{userUuid}}" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Name\"\n}"
+            },
+            "description": "updateUserV1 — partial update of first/last name. 404 if the UUID does not exist. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/#updateuserv1"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/user-management/entities/users/v1?user_uuid={{userUuid}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "entities", "users", "v1"],
+              "query": [{ "key": "user_uuid", "value": "{{userUuid}}" }]
+            },
+            "description": "deleteUserV1 — permanent delete. 404 if already deleted (connector treats this as success). Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/#deleteuserv1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Query Role IDs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/user-management/queries/roles/v1",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "queries", "roles", "v1"]
+            },
+            "description": "queriesRolesV1 — list all role IDs. Scope: User Management: Read. https://developer.crowdstrike.com/api-reference/collections/user-management/#queriesrolesv1"
+          }
+        },
+        {
+          "name": "Get Role Details by IDs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/user-management/entities/roles/v1?ids={{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "entities", "roles", "v1"],
+              "query": [{ "key": "ids", "value": "{{roleId}}" }]
+            },
+            "description": "entitiesRolesV1 — role details by ID. Scope: User Management: Read. https://developer.crowdstrike.com/api-reference/collections/user-management/#entitiesrolesv1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Roles",
+      "item": [
+        {
+          "name": "List User Roles (grants)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/user-management/combined/user-roles/v1?user_uuid={{userUuid}}&limit=500&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "combined", "user-roles", "v1"],
+              "query": [
+                { "key": "user_uuid", "value": "{{userUuid}}" },
+                { "key": "limit", "value": "500" },
+                { "key": "offset", "value": "0" }
+              ]
+            },
+            "description": "combinedUserRolesV1 — roles granted to a user (used to build grants). Scope: User Management: Read. https://developer.crowdstrike.com/api-reference/collections/user-management/#combineduserrolesv1"
+          }
+        },
+        {
+          "name": "Grant Role to User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/user-management/entities/user-role-actions/v1",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "entities", "user-role-actions", "v1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"grant\",\n  \"cid\": \"{{cid}}\",\n  \"uuid\": \"{{userUuid}}\",\n  \"role_ids\": [\"{{roleId}}\"]\n}"
+            },
+            "description": "UserRolesActionV1 — assign role(s) to a user via action=grant. Requires the user's cid (find it on the user record from Retrieve User Details). Idempotent: granting a held role returns 200. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/"
+          }
+        },
+        {
+          "name": "Revoke Role from User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/user-management/entities/user-role-actions/v1",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-management", "entities", "user-role-actions", "v1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"revoke\",\n  \"cid\": \"{{cid}}\",\n  \"uuid\": \"{{userUuid}}\",\n  \"role_ids\": [\"{{roleId}}\"]\n}"
+            },
+            "description": "UserRolesActionV1 — remove role(s) from a user via action=revoke. Requires the user's cid. Idempotent: revoking a role the user does not hold returns 200. Scope: User Management: Write. https://developer.crowdstrike.com/api-reference/collections/user-management/"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://api.us-2.crowdstrike.com", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "clientId", "value": "<your-client-id>", "type": "string" },
+    { "key": "clientSecret", "value": "<your-client-secret>", "type": "string" },
+    { "key": "userUuid", "value": "<user-uuid>", "type": "string" },
+    { "key": "cid", "value": "<customer-id>", "type": "string" },
+    { "key": "roleId", "value": "falcon_console_guest", "type": "string" }
+  ]
+}

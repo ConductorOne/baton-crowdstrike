@@ -10,7 +10,8 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-// wrapCrowdStrikeError wraps errors from the CrowdStrike gofalcon SDK with appropriate gRPC codes.
+// wrapCrowdStrikeError maps CrowdStrike gofalcon errors into Baton-friendly
+// gRPC codes, falling back to message inspection when the SDK hides status data.
 func wrapCrowdStrikeError(err error, operation string) error {
 	if err == nil {
 		return nil
@@ -72,13 +73,13 @@ func wrapCrowdStrikeError(err error, operation string) error {
 	return uhttp.WrapErrors(codes.Unknown, fmt.Sprintf("%s: unknown error", operation), err)
 }
 
-// extractCrowdStrikeError attempts to extract error code and message from CrowdStrike SDK errors.
+// extractCrowdStrikeError extracts the first structured CrowdStrike API error
+// when the gofalcon response exposes its errors payload.
 func extractCrowdStrikeError(err error) (int, string) {
 	if err == nil {
 		return 0, ""
 	}
 
-	// Check if error contains MsaAPIError fields (common in CrowdStrike API responses)
 	type csError interface {
 		GetErrors() []models.MsaAPIError
 	}
@@ -96,11 +97,11 @@ func extractCrowdStrikeError(err error) (int, string) {
 		}
 	}
 
-	// If we can't extract structured error, return 0 to indicate no specific error found
 	return 0, ""
 }
 
-// isConflictError checks if the error is a 409 Conflict error from CrowdStrike API.
+// isConflictError reports whether CrowdStrike returned a 409 Conflict, including
+// untyped 409 errors from gofalcon's generic response path.
 func isConflictError(err error) bool {
 	if err == nil {
 		return false
@@ -111,9 +112,24 @@ func isConflictError(err error) bool {
 		return true
 	}
 
-	// Fallback: check error message for 409 or conflict indicators
 	errMsg := strings.ToLower(err.Error())
 	return strings.Contains(errMsg, "409") || strings.Contains(errMsg, "conflict")
+}
+
+// isNotFoundError reports whether CrowdStrike returned 404 Not Found so delete
+// operations can treat already-deleted users as success.
+func isNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	code, _ := extractCrowdStrikeError(err)
+	if code == 404 {
+		return true
+	}
+
+	errMsg := strings.ToLower(err.Error())
+	return strings.Contains(errMsg, "404") || strings.Contains(errMsg, "not found")
 }
 
 // httpStatusToGRPCCode maps HTTP status codes to gRPC codes.

@@ -131,7 +131,7 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 	l := ctxzap.Extract(ctx)
 
 	if principal.Id.ResourceType != resourceTypeUser.Id {
-		l.Warn(
+		l.Debug(
 			"crowdstrike-connector grant: only users can be granted role membership",
 			zap.String("principal_id", principal.Id.Resource),
 			zap.String("principal_type", principal.Id.ResourceType),
@@ -140,33 +140,35 @@ func (r *roleResourceType) Grant(ctx context.Context, principal *v2.Resource, en
 		return nil, uhttp.WrapErrors(codes.InvalidArgument, "only users can be granted role membership")
 	}
 
-	roleId := entitlement.Resource.Id.Resource
+	userID := principal.Id.Resource
+	roleID := entitlement.Resource.Id.Resource
 
-	// grant role membership
-	grantResponse, err := r.client.UserManagement.GrantUserRoleIds(
-		&user_management.GrantUserRoleIdsParams{
-			UserUUID: principal.Id.Resource,
-			Body: &models.DomainRoleIDs{
-				RoleIds: []string{roleId},
+	cid, err := r.userCID(ctx, userID)
+	if err != nil {
+		return nil, wrapCrowdStrikeError(err, "crowdstrike-connector grant: failed to resolve customer id")
+	}
+
+	// The user-role-actions endpoint is idempotent: granting an already-held
+	// role returns 200, so no "already exists" special-casing is needed.
+	response, err := r.client.UserManagement.UserRolesActionV1(
+		&user_management.UserRolesActionV1Params{
+			Body: &models.DomainActionUserRolesRequest{
+				Action:  "grant",
+				Cid:     cid,
+				UUID:    userID,
+				RoleIds: []string{roleID},
 			},
 			Context: ctx,
 		},
 	)
 	if err != nil {
-		// Check if grant already exists (409 Conflict)
-		if isConflictError(err) {
-			annos := annotations.Annotations{}
-			annos.Update(&v2.GrantAlreadyExists{})
-			return annos, nil
-		}
-		return nil, wrapCrowdStrikeError(err, "grant: failed to assign role membership")
+		return nil, wrapCrowdStrikeError(err, "crowdstrike-connector grant: failed to assign role membership")
 	}
 
-	// annotations for rate limits
 	annos := WithRateLimitAnnotations(
 		NewRateLimitInfo(
-			grantResponse.XRateLimitLimit,
-			grantResponse.XRateLimitRemaining,
+			response.XRateLimitLimit,
+			response.XRateLimitRemaining,
 		),
 	)
 
@@ -180,7 +182,7 @@ func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotat
 	principal := grant.Principal
 
 	if principal.Id.ResourceType != resourceTypeUser.Id {
-		l.Warn(
+		l.Debug(
 			"crowdstrike-connector revoke: only users can have role membership revoked",
 			zap.String("principal_id", principal.Id.Resource),
 			zap.String("principal_type", principal.Id.ResourceType),
@@ -189,35 +191,55 @@ func (r *roleResourceType) Revoke(ctx context.Context, grant *v2.Grant) (annotat
 		return nil, uhttp.WrapErrors(codes.InvalidArgument, "only users can have role membership revoked")
 	}
 
-	roleId := entitlement.Resource.Id.Resource
+	userID := principal.Id.Resource
+	roleID := entitlement.Resource.Id.Resource
 
-	// revoke role membership
-	revokeResponse, err := r.client.UserManagement.RevokeUserRoleIds(
-		&user_management.RevokeUserRoleIdsParams{
-			UserUUID: principal.Id.Resource,
-			Ids:      []string{roleId},
-			Context:  ctx,
+	cid, err := r.userCID(ctx, userID)
+	if err != nil {
+		return nil, wrapCrowdStrikeError(err, "crowdstrike-connector revoke: failed to resolve customer id")
+	}
+
+	// The user-role-actions endpoint is idempotent: revoking a role the user
+	// does not hold returns 200, so no "already revoked" special-casing is needed.
+	response, err := r.client.UserManagement.UserRolesActionV1(
+		&user_management.UserRolesActionV1Params{
+			Body: &models.DomainActionUserRolesRequest{
+				Action:  "revoke",
+				Cid:     cid,
+				UUID:    userID,
+				RoleIds: []string{roleID},
+			},
+			Context: ctx,
 		},
 	)
 	if err != nil {
-		// Check if grant was already revoked (409 Conflict)
-		if isConflictError(err) {
-			annos := annotations.Annotations{}
-			annos.Update(&v2.GrantAlreadyRevoked{})
-			return annos, nil
-		}
-		return nil, wrapCrowdStrikeError(err, "revoke: failed to remove role membership")
+		return nil, wrapCrowdStrikeError(err, "crowdstrike-connector revoke: failed to remove role membership")
 	}
 
 	// annotations for rate limits
 	annos := WithRateLimitAnnotations(
 		NewRateLimitInfo(
-			revokeResponse.XRateLimitLimit,
-			revokeResponse.XRateLimitRemaining,
+			response.XRateLimitLimit,
+			response.XRateLimitRemaining,
 		),
 	)
 
 	return annos, nil
+}
+
+// userCID resolves the CrowdStrike customer ID (CID) for a user. The
+// user-role-actions endpoint requires the CID alongside the user UUID to
+// scope the grant/revoke, and CrowdStrike rejects the request without it.
+func (r *roleResourceType) userCID(ctx context.Context, userUUID string) (string, error) {
+	user, err := getUserByUUID(ctx, r.client, userUUID)
+	if err != nil {
+		return "", err
+	}
+	if user.Cid == "" {
+		return "", uhttp.WrapErrors(codes.FailedPrecondition, fmt.Sprintf("user %s has no customer id", userUUID))
+	}
+
+	return user.Cid, nil
 }
 
 func roleBuilder(client *fClient.CrowdStrikeAPISpecification) *roleResourceType {

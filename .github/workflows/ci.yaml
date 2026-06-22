@@ -7,24 +7,40 @@ on:
       - main
 jobs:
   test:
-    if: false  # Remove this line to enable integration tests
     runs-on: ubuntu-latest
+    env:
+      BATON_LOG_LEVEL: debug
+      BATON_CROWDSTRIKE_CLIENT_ID: ${{ vars.CROWDSTRIKE_CLIENT_ID }}
+      BATON_CROWDSTRIKE_CLIENT_SECRET: ${{ secrets.CROWDSTRIKE_CLIENT_SECRET }}
+      BATON_REGION: ${{ vars.REGION }}
+      BATON_SYNC_RESOURCE_TYPES: user,role
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: Checkout code
-        uses: actions/checkout@v6
-      # Build the connector binary, then run sync-test.
-      # Configure with valid entitlement/principal IDs.
-      # Add additional test jobs as needed.
       - name: Build baton-crowdstrike
-        run: go build ./cmd/baton-crowdstrike
-      - name: Test connector syncing
+        run: go build -o baton-crowdstrike ./cmd/baton-crowdstrike
+      - name: Download Baton
+        uses: ConductorOne/github-workflows/actions/get-baton@v2
+      - name: Run sync
+        run: ./baton-crowdstrike
+      - name: Verify sync produced data
+        run: baton stats
+      - name: Grant/Revoke role membership
         uses: ConductorOne/github-workflows/actions/sync-test@v4
         with:
           connector: ./baton-crowdstrike
-          baton-entitlement: '<entitlement-id>'
-          baton-principal: '<principal-id>'
-          baton-principal-type: 'user'
+          baton-entitlement: ${{ vars.CI_ROLE_ENTITLEMENT }}
+          baton-principal: ${{ vars.CI_ROLE_PRINCIPAL }}
+          baton-principal-type: user
+      - name: Account provisioning (create + delete user)
+        uses: ConductorOne/github-workflows/actions/account-provisioning@v4
+        with:
+          connector: ./baton-crowdstrike
+          account-email: ${{ vars.CI_ACCOUNT_EMAIL }}
+          account-profile: ${{ vars.CI_ACCOUNT_PROFILE }}
+          account-type: user
+          search-method: email
