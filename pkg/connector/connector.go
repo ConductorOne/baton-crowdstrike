@@ -24,10 +24,16 @@ type Connector struct {
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
+	// One shared MCP data source so the mcp_server and endpoint_user syncers operate on
+	// a single per-sync detection snapshot + identity index (consistent grants, no
+	// redundant Alerts / Identity-Protection calls).
+	mcpSrc := newMCPSource(ctx, o.clientId, o.clientSecret, o.host)
 	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
 		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
+		mcpServerBuilder(o.client, mcpSrc),
+		endpointUserBuilder(mcpSrc),
 	}
 }
 

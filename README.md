@@ -2,7 +2,7 @@
 
 # `baton-crowdstrike` [![Go Reference](https://pkg.go.dev/badge/github.com/conductorone/baton-crowdstrike.svg)](https://pkg.go.dev/github.com/conductorone/baton-crowdstrike) ![verify](https://github.com/conductorone/baton-crowdstrike/actions/workflows/verify.yaml/badge.svg)
 
-`baton-crowdstrike` is a connector for CrowdStrike built using the [Baton SDK](https://github.com/conductorone/baton-sdk). It works with the CrowdStrike Falcon API to sync users, roles, and identity risk scores, with provisioning support for account creation/deletion, role membership, and user profile updates.
+`baton-crowdstrike` is a connector for CrowdStrike built using the [Baton SDK](https://github.com/conductorone/baton-sdk). It works with the CrowdStrike Falcon API to sync users, roles, identity risk scores, and shadow MCP servers, with provisioning support for account creation/deletion, role membership, and user profile updates.
 
 Check out [Baton](https://github.com/conductorone/baton) to learn more about the project in general.
 
@@ -18,6 +18,7 @@ The connector requires a **client ID and secret** to exchange for an access toke
 | **User Management: Write**             | For provisioning  | Create/delete users, grant/revoke roles, update name |
 | **Identity Protection Entities: Read** | For risk scores   | Sync identity risk scores (opt-in `security_insight`)|
 | **Identity Protection GraphQL: Write** | For risk scores   | Required by CrowdStrike to fetch risk score data     |
+| **Alerts: Read**                       | For shadow MCP    | Read EDR detections to discover shadow MCP servers and their endpoint users (`mcp_server`, `endpoint_user`) |
 
 # Getting Started
 
@@ -67,11 +68,15 @@ baton resources
 - **Users** (`user`) — Falcon console users; `uuid` is the stable resource ID and `uid` is the login/email
 - **Roles** (`role`) — Falcon roles (e.g. `falcon_administrator`, `falcon_analyst`, `falcon_read_only`) with a `member` assignment entitlement
 - **Identity Risk Scores** (`security_insight`) — Falcon Identity Protection risk scores (opt-in, disabled by default)
+- **Shadow MCP Servers** (`mcp_server`) — unsanctioned [Model Context Protocol](https://modelcontextprotocol.io) servers observed running on endpoints via EDR detections, correlated to the identity that ran them (see below)
+- **Endpoint Users** (`endpoint_user`) — the endpoint OS users that ran a shadow MCP server, modeled as app accounts; each holds the `runner` grant on the servers it ran and is matched to a ConductorOne identity by email (or assigned manually)
 
 | Resource             | Sync | Provision                                          |
 | -------------------- | ---- | -------------------------------------------------- |
 | Users                | Yes  | Yes (create / delete, and update first/last name)  |
 | Roles                | Yes  | Yes (Grant / Revoke role membership)               |
+| Shadow MCP Servers   | Yes  | No                                                 |
+| Endpoint Users       | Yes  | No                                                 |
 | Identity Risk Scores | Yes  | No (synced read-only, opt-in)                      |
 
 # Provisioning
@@ -151,6 +156,26 @@ The connector can sync identity risk scores from CrowdStrike Identity Protection
 - **Risk Factors**: The factors contributing to the risk score (e.g. "WEAK_PASSWORD (HIGH)", "MFA_NOT_ENABLED (MEDIUM)")
 
 To sync security insights, your CrowdStrike API client must have the **Identity Protection Entities: Read** and **Identity Protection GraphQL: Write** scopes enabled. The `security_insight` resource type is disabled by default and can be enabled through ConductorOne.
+
+# Shadow MCP Servers
+
+The connector discovers unsanctioned ("shadow") [Model Context Protocol](https://modelcontextprotocol.io) servers running on managed endpoints and correlates each to the identity that ran it — surfacing ungoverned AI-agent tooling that never passed through a sanctioned gateway.
+
+An MCP server is an ordinary `npx` / `uvx` / `node` / `python` process whose command line carries a recognizable package (`@modelcontextprotocol/server-*`, `mcp-server-*`, `mcp_server_*`) — the **MCP signature**. The connector reads CrowdStrike EDR detections (via the Alerts API), matches that signature, deduplicates by (host, endpoint user, server), and emits one `mcp_server` resource per instance with:
+
+- an **App-trait profile**: `server_name`, `package`, `launcher`, `transport`, `host`, `aid`, `local_ip`, `endpoint_user`, `sample_command_line`, `detection_count`, `ioa_rule`, `falcon_link`, `sanctioned` (always `false`), plus `first_seen` when a detection timestamp is available and `identity_email` / `identity_external_id` / `identity_display_name` when the endpoint user resolves to an Identity Protection entity;
+- a **security-insight** issue (always `High`) bound to that identity (`AppUser` target), so the finding flows into the identity's risk in ConductorOne.
+
+### Account & grant chain
+
+Correlation is also modeled as a normal account/entitlement/grant chain, so a shadow MCP shows up against a real person in access reviews — not just as profile metadata:
+
+- each shadow-MCP instance produces an **`endpoint_user`** account resource (the OS user that ran it), matched to a ConductorOne identity by email when the endpoint user resolves to an Identity Protection entity, or **assignable manually** otherwise;
+- each `mcp_server` resource exposes a **`runner`** assignment entitlement, granted to the `endpoint_user` account that ran it.
+
+The result is a **c1 identity → `endpoint_user` account → `runner` grant → `mcp_server`** chain, alongside the identity-risk security insight above.
+
+To detect the servers natively, author a **Custom IOA** rule (Process Creation, Detect disposition) matching the command-line signature `(@modelcontextprotocol/server-|mcp-server-|mcp_server_)` so CrowdStrike raises a detection the connector can read. Endpoint users are resolved to identities via Identity Protection `samAccountName` (or email local-part). The `mcp_server` and `endpoint_user` resource types both require the **Alerts: Read** scope (plus the Identity Protection scopes above for correlation).
 
 # Contributing, Support and Issues
 
