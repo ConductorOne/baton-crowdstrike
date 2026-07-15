@@ -3,6 +3,86 @@
   "resourceTypeCapabilities": [
     {
       "resourceType": {
+        "id": "endpoint_user",
+        "displayName": "Endpoint User",
+        "traits": [
+          "TRAIT_USER"
+        ],
+        "annotations": [
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
+              {
+                "permission": "Alerts: Read"
+              },
+              {
+                "permission": "Identity Protection Entities: Read"
+              }
+            ]
+          }
+        ]
+      },
+      "capabilities": [
+        "CAPABILITY_SYNC"
+      ],
+      "permissions": {
+        "permissions": [
+          {
+            "permission": "Alerts: Read"
+          },
+          {
+            "permission": "Identity Protection Entities: Read"
+          }
+        ]
+      }
+    },
+    {
+      "resourceType": {
+        "id": "mcp_server",
+        "displayName": "Shadow MCP Server",
+        "traits": [
+          "TRAIT_APP",
+          "TRAIT_SECURITY_INSIGHT"
+        ],
+        "annotations": [
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
+              {
+                "permission": "Alerts: Read"
+              },
+              {
+                "permission": "Identity Protection Entities: Read"
+              },
+              {
+                "permission": "Identity Protection GraphQL: Write"
+              }
+            ]
+          }
+        ]
+      },
+      "capabilities": [
+        "CAPABILITY_SYNC"
+      ],
+      "permissions": {
+        "permissions": [
+          {
+            "permission": "Alerts: Read"
+          },
+          {
+            "permission": "Identity Protection Entities: Read"
+          },
+          {
+            "permission": "Identity Protection GraphQL: Write"
+          }
+        ]
+      }
+    },
+    {
+      "resourceType": {
         "id": "role",
         "displayName": "Role",
         "traits": [

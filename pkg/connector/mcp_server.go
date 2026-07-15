@@ -28,6 +28,9 @@ import (
 // by the endpoint user that ran the server.
 const mcpRunnerEntitlement = "runner"
 
+// launcherUnknown marks a detection whose command line doesn't name a known launcher.
+const launcherUnknown = "unknown"
+
 // mcpServerAlertLimit is how many recent alerts we pull to scan for shadow-MCP activity.
 const mcpServerAlertLimit = 1000
 
@@ -234,7 +237,7 @@ func buildInstances(dets []mcpDetection) map[string]*mcpServerInstance {
 		if !d.Timestamp.IsZero() && (inst.det.Timestamp.IsZero() || d.Timestamp.Before(inst.det.Timestamp)) {
 			inst.det.Timestamp = d.Timestamp
 		}
-		if inst.launcher == "unknown" && launcher != "unknown" {
+		if inst.launcher == launcherUnknown && launcher != launcherUnknown {
 			inst.launcher = launcher
 			inst.transport = transport
 		}
@@ -422,29 +425,32 @@ func resolveIdentity(index map[string]*resolvedIdentity, userName string) *resol
 	return nil
 }
 
-// parseMCPServer extracts the MCP server identity from a process command line.
-func parseMCPServer(cmdline string) (name, pkg, launcher, transport string, ok bool) {
+// parseMCPServer extracts the MCP server identity from a process command line,
+// returning (name, package, launcher, transport, matched).
+func parseMCPServer(cmdline string) (string, string, string, string, bool) {
 	match := mcpSignature.FindString(cmdline)
 	if match == "" {
 		return "", "", "", "", false
 	}
 	// A bare .js entrypoint (e.g. mcp-server-fetch.js) and its package name are the same
 	// logical server; drop the extension so they don't split into two resources.
-	match = strings.TrimSuffix(match, ".js")
-	pkg = match
+	pkg := strings.TrimSuffix(match, ".js")
+
 	// Derive a short logical name from the package suffix.
+	var name string
 	switch {
-	case strings.HasPrefix(match, "@modelcontextprotocol/server-"):
-		name = strings.TrimPrefix(match, "@modelcontextprotocol/server-")
-	case strings.HasPrefix(match, "mcp-server-"):
-		name = strings.TrimPrefix(match, "mcp-server-")
-	case strings.HasPrefix(match, "mcp_server_"):
-		name = strings.TrimPrefix(match, "mcp_server_")
+	case strings.HasPrefix(pkg, "@modelcontextprotocol/server-"):
+		name = strings.TrimPrefix(pkg, "@modelcontextprotocol/server-")
+	case strings.HasPrefix(pkg, "mcp-server-"):
+		name = strings.TrimPrefix(pkg, "mcp-server-")
+	case strings.HasPrefix(pkg, "mcp_server_"):
+		name = strings.TrimPrefix(pkg, "mcp_server_")
 	default:
-		name = match
+		name = pkg
 	}
 
 	lc := strings.ToLower(cmdline)
+	launcher := launcherUnknown
 	switch {
 	case strings.Contains(lc, "npx"):
 		launcher = "npx"
@@ -454,11 +460,9 @@ func parseMCPServer(cmdline string) (name, pkg, launcher, transport string, ok b
 		launcher = "python"
 	case strings.Contains(lc, "node"):
 		launcher = "node"
-	default:
-		launcher = "unknown"
 	}
 
-	transport = "stdio"
+	transport := "stdio"
 	if strings.Contains(lc, "--sse") || strings.Contains(lc, "transport sse") || strings.Contains(lc, "--port") {
 		transport = "sse/http"
 	}
@@ -523,6 +527,7 @@ func (c *mcpDetectionsClient) doJSON(ctx context.Context, method, url, body stri
 	if body != "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
+	//nolint:gosec // url is built from the connector's configured CrowdStrike region host, not user input
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
