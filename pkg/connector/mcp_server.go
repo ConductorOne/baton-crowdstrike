@@ -527,7 +527,6 @@ func (c *mcpDetectionsClient) doJSON(ctx context.Context, method, url, body stri
 	if body != "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	//nolint:gosec // url is built from the connector's configured CrowdStrike region host, not user input
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
