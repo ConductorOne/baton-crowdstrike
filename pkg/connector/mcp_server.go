@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -472,8 +473,10 @@ func parseMCPServer(cmdline string) (string, string, string, string, bool) {
 // ---- Alerts API client (shadow-MCP detections) ----
 
 // mcpAlertMaxPages bounds how many pages of epp alerts we scan on very large tenants.
-// Each page holds up to mcpServerAlertLimit alerts.
-const mcpAlertMaxPages = 20
+// Each page holds up to mcpServerAlertLimit alerts. Capped at 10 so the largest offset
+// stays below CrowdStrike's ~10,000-record deep-pagination limit on the alerts query
+// endpoint (a request at offset >= 10000 is rejected).
+const mcpAlertMaxPages = 10
 
 type mcpDetectionsClient struct {
 	httpClient *http.Client
@@ -513,30 +516,83 @@ type alertsEntitiesResp struct {
 	} `json:"resources"`
 }
 
-func (c *mcpDetectionsClient) doJSON(ctx context.Context, method, url, body string) ([]byte, error) {
-	var rdr io.Reader
-	if body != "" {
-		rdr = strings.NewReader(body)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, url, rdr)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "baton-crowdstrike")
-	if body != "" {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	b, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode != http.StatusOK {
+// mcpMaxRetries is how many times doJSON retries a rate-limited (429) or transient
+// server (5xx) response before giving up.
+const mcpMaxRetries = 4
+
+func (c *mcpDetectionsClient) doJSON(ctx context.Context, method, reqURL, body string) ([]byte, error) {
+	var lastErr error
+	for attempt := 0; attempt <= mcpMaxRetries; attempt++ {
+		var rdr io.Reader
+		if body != "" {
+			rdr = strings.NewReader(body)
+		}
+		req, err := http.NewRequestWithContext(ctx, method, reqURL, rdr)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("User-Agent", "baton-crowdstrike")
+		if body != "" {
+			req.Header.Set("Content-Type", "application/json")
+		}
+
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			// Transient transport error — retry with backoff.
+			lastErr = err
+			if attempt < mcpMaxRetries && waitBackoff(ctx, attempt, 0) {
+				continue
+			}
+			return nil, err
+		}
+		b, _ := io.ReadAll(resp.Body)
+		_ = resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			return b, nil
+		}
+		// Retry on rate limiting and transient server errors, honoring Retry-After.
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= http.StatusInternalServerError {
+			lastErr = fmt.Errorf("%s alerts returned %d: %s", method, resp.StatusCode, string(b))
+			if attempt < mcpMaxRetries && waitBackoff(ctx, attempt, retryAfterSeconds(resp.Header)) {
+				continue
+			}
+			return nil, lastErr
+		}
 		return nil, fmt.Errorf("%s alerts returned %d: %s", method, resp.StatusCode, string(b))
 	}
-	return b, nil
+	return nil, lastErr
+}
+
+// retryAfterSeconds reads a Retry-After header expressed in seconds; 0 if absent/invalid.
+func retryAfterSeconds(h http.Header) int {
+	if v := h.Get("Retry-After"); v != "" {
+		if n, err := strconv.Atoi(strings.TrimSpace(v)); err == nil && n >= 0 {
+			return n
+		}
+	}
+	return 0
+}
+
+// waitBackoff sleeps before a retry — the larger of Retry-After and an exponential
+// backoff (1s, 2s, 4s, ... capped at 30s). Returns false if the context is cancelled.
+func waitBackoff(ctx context.Context, attempt, retryAfter int) bool {
+	backoff := time.Duration(1<<attempt) * time.Second
+	if backoff > 30*time.Second {
+		backoff = 30 * time.Second
+	}
+	if ra := time.Duration(retryAfter) * time.Second; ra > backoff {
+		backoff = ra
+	}
+	t := time.NewTimer(backoff)
+	defer t.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-t.C:
+		return true
+	}
 }
 
 // fetchAll pulls endpoint-protection (epp) alerts, narrowed server-side by an FQL
