@@ -18,11 +18,12 @@ import (
 )
 
 type Connector struct {
-	client           *fClient.CrowdStrikeAPISpecification
-	httpClient       *uhttp.BaseHttpClient
-	host             string
-	ingestRiskScores bool
-	detectShadowMCP  bool
+	client             *fClient.CrowdStrikeAPISpecification
+	httpClient         *uhttp.BaseHttpClient
+	host               string
+	ingestRiskScores   bool
+	detectShadowMCP    bool
+	ingestPasswordRisk bool
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
@@ -33,7 +34,7 @@ func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.Reso
 	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
-		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestRiskScores),
+		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestRiskScores, o.ingestPasswordRisk),
 		mcpServerBuilder(o.client, mcpSrc),
 		endpointUserBuilder(mcpSrc),
 	}
@@ -171,10 +172,11 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 	}
 
 	return &Connector{
-		client:           client,
-		httpClient:       httpClient,
-		host:             host,
-		ingestRiskScores: cc.CrowdstrikeIngestRiskScores,
-		detectShadowMCP:  cc.CrowdstrikeDetectShadowMcp,
+		client:             client,
+		httpClient:         httpClient,
+		host:               host,
+		ingestRiskScores:   cc.CrowdstrikeIngestRiskScores,
+		detectShadowMCP:    cc.CrowdstrikeDetectShadowMcp,
+		ingestPasswordRisk: cc.CrowdstrikeIngestPasswordRisk,
 	}, nil, nil
 }

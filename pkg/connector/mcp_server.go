@@ -631,7 +631,8 @@ func newMCPSource(httpClient *uhttp.BaseHttpClient, host string, enabled bool) *
 	return &mcpSource{
 		enabled:   enabled,
 		detClient: newMCPDetectionsClient(httpClient, host),
-		ipClient:  NewIdentityProtectionClient(httpClient, host),
+		// Shadow-MCP identity resolution never needs password risk — keep it off.
+		ipClient: NewIdentityProtectionClient(httpClient, host, false),
 	}
 }
 

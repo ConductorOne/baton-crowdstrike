@@ -134,7 +134,19 @@ type graphQLError struct {
 	Message string `json:"message"`
 }
 
-const identityRiskQuery = `
+// passwordAttributesSelection is the account-descriptor sub-selection that fetches
+// password risk. It is injected into each account fragment of the query ONLY when
+// password-risk ingestion is opted in; otherwise the query does not request it and
+// no password attributes are returned.
+const passwordAttributesSelection = `
+          passwordAttributes {
+            exposed
+            strength
+          }`
+
+// identityRiskQueryTmpl is the entities query with a single injection point (%[1]s)
+// in each user account descriptor fragment for the optional password selection.
+const identityRiskQueryTmpl = `
 query GetIdentityRiskScores($first: Int, $after: Cursor) {
   entities(types: [USER], sortKey: PRIMARY_DISPLAY_NAME, first: $first, after: $after) {
     pageInfo {
@@ -156,32 +168,16 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
           objectSid
           samAccountName
           domain
-          objectGuid
-          passwordAttributes {
-            exposed
-            strength
-          }
+          objectGuid%[1]s
         }
         ... on AzureSsoUserAccountDescriptor {
-          dataSourceParticipantIdentifier
-          passwordAttributes {
-            exposed
-            strength
-          }
+          dataSourceParticipantIdentifier%[1]s
         }
         ... on AwsIcSsoUserAccountDescriptorImpl {
-          dataSourceParticipantIdentifier
-          passwordAttributes {
-            exposed
-            strength
-          }
+          dataSourceParticipantIdentifier%[1]s
         }
         ... on SsoUserAccountDescriptorImpl {
-          dataSourceParticipantIdentifier
-          passwordAttributes {
-            exposed
-            strength
-          }
+          dataSourceParticipantIdentifier%[1]s
         }
       }
       ... on UserEntity {
@@ -192,19 +188,34 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
 }
 `
 
+// buildIdentityRiskQuery returns the entities query, including the password risk
+// selection only when password-risk ingestion is opted in.
+func buildIdentityRiskQuery(includePasswordRisk bool) string {
+	sel := ""
+	if includePasswordRisk {
+		sel = passwordAttributesSelection
+	}
+	return fmt.Sprintf(identityRiskQueryTmpl, sel)
+}
+
 // IdentityProtectionClient provides methods to interact with CrowdStrike's Identity Protection API.
 type IdentityProtectionClient struct {
 	httpClient *uhttp.BaseHttpClient
 	host       string
+	// includePasswordRisk gates the optional password-attributes selection in the
+	// entities query (opt-in; off by default).
+	includePasswordRisk bool
 }
 
 // NewIdentityProtectionClient creates a new Identity Protection client that talks to CrowdStrike's
 // GraphQL API over the given shared uhttp base client (OAuth2 client-credentials, transient-error
-// retries, and rate-limit metadata all handled by uhttp).
-func NewIdentityProtectionClient(httpClient *uhttp.BaseHttpClient, host string) *IdentityProtectionClient {
+// retries, and rate-limit metadata all handled by uhttp). includePasswordRisk opts the entities
+// query into the password-attributes selection.
+func NewIdentityProtectionClient(httpClient *uhttp.BaseHttpClient, host string, includePasswordRisk bool) *IdentityProtectionClient {
 	return &IdentityProtectionClient{
-		httpClient: httpClient,
-		host:       host,
+		httpClient:          httpClient,
+		host:                host,
+		includePasswordRisk: includePasswordRisk,
 	}
 }
 
@@ -220,7 +231,7 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	}
 
 	reqBody := graphQLRequest{
-		Query:     identityRiskQuery,
+		Query:     buildIdentityRiskQuery(c.includePasswordRisk),
 		Variables: variables,
 	}
 
