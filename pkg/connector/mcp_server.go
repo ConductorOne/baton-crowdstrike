@@ -614,11 +614,17 @@ type mcpSource struct {
 	detClient *mcpDetectionsClient
 	ipClient  *IdentityProtectionClient
 
-	mu      sync.Mutex
-	detSync string
-	detData []mcpDetection
-	idxSync string
-	idxData map[string]*resolvedIdentity
+	mu sync.Mutex
+	// detFetched/idxFetched track whether the current sync's fetch has run, so an
+	// empty result still caches (a nil/empty slice or map is a valid cached value —
+	// gating on the data being non-nil would re-scan every caller when a sync finds
+	// nothing). detSync/idxSync scope the cache to a single sync.
+	detFetched bool
+	detSync    string
+	detData    []mcpDetection
+	idxFetched bool
+	idxSync    string
+	idxData    map[string]*resolvedIdentity
 }
 
 func newMCPSource(httpClient *uhttp.BaseHttpClient, host string, enabled bool) *mcpSource {
@@ -640,14 +646,14 @@ func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetecti
 	// sequentially, never nested, so there is no lock-ordering hazard.)
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.detData != nil && s.detSync == syncID {
+	if s.detFetched && s.detSync == syncID {
 		return s.detData, nil
 	}
 	d, err := s.detClient.fetchAll(ctx)
 	if err != nil {
 		return nil, err
 	}
-	s.detSync, s.detData = syncID, d
+	s.detFetched, s.detSync, s.detData = true, syncID, d
 	return d, nil
 }
 
@@ -658,14 +664,14 @@ func (s *mcpSource) identityIndex(ctx context.Context, syncID string) (map[strin
 	// Lock held across the build for the same one-build-per-sync reason as detections.
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.idxData != nil && s.idxSync == syncID {
+	if s.idxFetched && s.idxSync == syncID {
 		return s.idxData, nil
 	}
 	idx, err := buildIdentityIndex(ctx, s.ipClient)
 	if err != nil {
 		return nil, err
 	}
-	s.idxSync, s.idxData = syncID, idx
+	s.idxFetched, s.idxSync, s.idxData = true, syncID, idx
 	return idx, nil
 }
 
