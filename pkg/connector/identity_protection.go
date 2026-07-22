@@ -166,17 +166,16 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
 // IdentityProtectionClient provides methods to interact with CrowdStrike's Identity Protection API.
 type IdentityProtectionClient struct {
 	httpClient *uhttp.BaseHttpClient
-	endpoint   *url.URL
+	host       string
 }
 
 // NewIdentityProtectionClient creates a new Identity Protection client that talks to CrowdStrike's
 // GraphQL API over the given shared uhttp base client (OAuth2 client-credentials, transient-error
 // retries, and rate-limit metadata all handled by uhttp).
 func NewIdentityProtectionClient(httpClient *uhttp.BaseHttpClient, host string) *IdentityProtectionClient {
-	endpoint, _ := url.Parse("https://" + host + "/identity-protection/combined/graphql/v1")
 	return &IdentityProtectionClient{
 		httpClient: httpClient,
-		endpoint:   endpoint,
+		host:       host,
 	}
 }
 
@@ -196,7 +195,12 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 		Variables: variables,
 	}
 
-	req, err := c.httpClient.NewRequest(ctx, http.MethodPost, c.endpoint, uhttp.WithJSONBody(reqBody), uhttp.WithAcceptJSONHeader())
+	endpoint, err := url.Parse("https://" + c.host + "/identity-protection/combined/graphql/v1")
+	if err != nil {
+		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: invalid identity protection endpoint for host %q: %w", c.host, err)
+	}
+
+	req, err := c.httpClient.NewRequest(ctx, http.MethodPost, endpoint, uhttp.WithJSONBody(reqBody), uhttp.WithAcceptJSONHeader())
 	if err != nil {
 		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to create HTTP request: %w", err)
 	}

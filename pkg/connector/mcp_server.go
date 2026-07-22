@@ -349,6 +349,11 @@ func endpointUserResource(inst *mcpServerInstance, id *resolvedIdentity) (*v2.Re
 // or email local-part. Rather than silently letting the last one win (which would pin a
 // shadow-MCP finding on the wrong person), a key that maps to more than one identity is
 // marked ambiguous (nil) and resolves to no match.
+// mcpIdentityIndexMaxPages bounds the Identity Protection entity pages scanned when
+// building the endpoint-user→identity resolution index, so a very large tenant can't
+// turn a single sync into an unbounded sequence of sequential GraphQL round trips.
+const mcpIdentityIndexMaxPages = 100
+
 func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[string]*resolvedIdentity, error) {
 	index := map[string]*resolvedIdentity{}
 	// insert records key->ri, but collapses to nil (ambiguous) if the key already
@@ -371,7 +376,7 @@ func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[
 		}
 	}
 	cursor := ""
-	for {
+	for page := 0; page < mcpIdentityIndexMaxPages; page++ {
 		identities, next, hasNext, _, err := ip.GetIdentityRiskScores(ctx, securityInsightPageSize, cursor)
 		if err != nil {
 			return nil, err
@@ -396,10 +401,14 @@ func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[
 			}
 		}
 		if !hasNext || next == "" {
-			break
+			return index, nil
 		}
 		cursor = next
 	}
+	// Page cap reached with more identities remaining: the index is partial this sync,
+	// so some endpoint users may not resolve to an identity.
+	ctxzap.Extract(ctx).Warn("baton-crowdstrike: identity index hit page cap; not all identities indexed",
+		zap.Int("page_cap", mcpIdentityIndexMaxPages), zap.Int("indexed_keys", len(index)))
 	return index, nil
 }
 
@@ -624,20 +633,21 @@ func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetecti
 	if !s.enabled {
 		return nil, nil
 	}
+	// Hold the lock across the fetch so the mcp_server and endpoint_user syncers —
+	// which run in parallel and share this source — perform exactly ONE Alerts scan
+	// per sync: the first caller fetches while the sibling blocks, then both see the
+	// same cached snapshot. (The two syncers call detections/identityIndex
+	// sequentially, never nested, so there is no lock-ordering hazard.)
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	if s.detData != nil && s.detSync == syncID {
-		d := s.detData
-		s.mu.Unlock()
-		return d, nil
+		return s.detData, nil
 	}
-	s.mu.Unlock()
 	d, err := s.detClient.fetchAll(ctx)
 	if err != nil {
 		return nil, err
 	}
-	s.mu.Lock()
 	s.detSync, s.detData = syncID, d
-	s.mu.Unlock()
 	return d, nil
 }
 
@@ -645,20 +655,17 @@ func (s *mcpSource) identityIndex(ctx context.Context, syncID string) (map[strin
 	if !s.enabled {
 		return map[string]*resolvedIdentity{}, nil
 	}
+	// Lock held across the build for the same one-build-per-sync reason as detections.
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	if s.idxData != nil && s.idxSync == syncID {
-		idx := s.idxData
-		s.mu.Unlock()
-		return idx, nil
+		return s.idxData, nil
 	}
-	s.mu.Unlock()
 	idx, err := buildIdentityIndex(ctx, s.ipClient)
 	if err != nil {
 		return nil, err
 	}
-	s.mu.Lock()
 	s.idxSync, s.idxData = syncID, idx
-	s.mu.Unlock()
 	return idx, nil
 }
 
