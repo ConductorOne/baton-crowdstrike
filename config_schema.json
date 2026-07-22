@@ -134,8 +134,10 @@
     {
       "name": "crowdstrike-ingest-risk-scores",
       "displayName": "Ingest identity risk scores",
-      "description": "Opt-in (early access). When enabled, sync Falcon Identity Protection risk scores and risk factors as security insights on identities. Off by default; requires the Identity Protection scopes.",
-      "boolField": {}
+      "description": "On by default (early access). Syncs Falcon Identity Protection risk scores and risk factors as security insights on identities; requires the Identity Protection scopes. Turn off to disable.",
+      "boolField": {
+        "defaultValue": true
+      }
     },
     {
       "name": "crowdstrike-detect-shadow-mcp",

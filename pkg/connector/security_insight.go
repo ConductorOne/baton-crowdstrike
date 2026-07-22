@@ -21,8 +21,8 @@ type securityInsightResourceType struct {
 	resourceType *v2.ResourceType
 	client       *fClient.CrowdStrikeAPISpecification
 	ipClient     *IdentityProtectionClient
-	// enabled gates risk-score ingestion. When false (the default), List is a no-op
-	// that makes no Identity Protection API call — the capability is opt-in.
+	// enabled gates risk-score ingestion (on by default). When false, List is a
+	// no-op that makes no Identity Protection API call.
 	enabled bool
 }
 
@@ -103,8 +103,8 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 }
 
 func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
-	// Opt-in: when risk-score ingestion is disabled, sync nothing and make no
-	// Identity Protection API call.
+	// When risk-score ingestion is disabled, sync nothing and make no Identity
+	// Protection API call.
 	if !s.enabled {
 		return nil, &rs.SyncOpResults{}, nil
 	}
