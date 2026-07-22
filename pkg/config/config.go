@@ -31,6 +31,20 @@ var (
 		field.WithHidden(true),
 		field.WithExportTarget(field.ExportTargetCLIOnly),
 	)
+	IngestRiskScoresField = field.BoolField(
+		"crowdstrike-ingest-risk-scores",
+		field.WithDisplayName("Ingest identity risk scores"),
+		field.WithDescription("Opt-in (early access). When enabled, sync Falcon Identity Protection risk scores and risk factors "+
+			"as security insights on identities. Off by default; requires the Identity Protection scopes."),
+		field.WithDefaultValue(false),
+	)
+	DetectShadowMCPField = field.BoolField(
+		"crowdstrike-detect-shadow-mcp",
+		field.WithDisplayName("Detect shadow MCP servers"),
+		field.WithDescription("Opt-in. When enabled, scan EDR detections for shadow MCP servers and sync them — with the endpoint "+
+			"users that ran them, correlated to identities. Off by default; requires the Alerts read scope."),
+		field.WithDefaultValue(false),
+	)
 
 	// ConfigurationFields defines the external configuration required for the
 	// connector to run.
@@ -39,6 +53,8 @@ var (
 		ClientSecretField,
 		RegionField,
 		BaseURLField,
+		IngestRiskScoresField,
+		DetectShadowMCPField,
 	}
 )
 

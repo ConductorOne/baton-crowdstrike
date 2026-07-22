@@ -130,6 +130,18 @@
           ]
         }
       }
+    },
+    {
+      "name": "crowdstrike-ingest-risk-scores",
+      "displayName": "Ingest identity risk scores",
+      "description": "Opt-in (early access). When enabled, sync Falcon Identity Protection risk scores and risk factors as security insights on identities. Off by default; requires the Identity Protection scopes.",
+      "boolField": {}
+    },
+    {
+      "name": "crowdstrike-detect-shadow-mcp",
+      "displayName": "Detect shadow MCP servers",
+      "description": "Opt-in. When enabled, scan EDR detections for shadow MCP servers and sync them — with the endpoint users that ran them, correlated to identities. Off by default; requires the Alerts read scope.",
+      "boolField": {}
     }
   ],
   "displayName": "CrowdStrike",

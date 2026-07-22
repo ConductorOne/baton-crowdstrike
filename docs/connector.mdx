@@ -278,6 +278,10 @@ The CrowdStrike API client you created during connector setup needs additional s
   </Step>
 </Steps>
 
+### Turn on risk score ingestion
+
+In C1, open the connector's **Settings** and enable **Ingest identity risk scores** (off by default), then save.
+
 **Done.** Your CrowdStrike connector will now sync risk score data into C1. See [External insights](/product/admin/external-insights) for details on where to see this data in the UI.
 
 ## Detect shadow MCP servers
@@ -340,5 +344,9 @@ CrowdStrike doesn't flag MCP servers by default, so you author a Custom IOA rule
   Enable the rule and the rule group, then assign the group to the prevention policy that applies to those hosts.
   </Step>
 </Steps>
+
+### Turn on shadow MCP detection
+
+In C1, open the connector's **Settings** and enable **Detect shadow MCP servers** (off by default), then save.
 
 **Done.** As endpoints run MCP servers, CrowdStrike raises detections and the connector syncs them into C1 as `mcp_server` resources and `endpoint_user` accounts. Assign each endpoint-user account to a C1 identity to attribute the finding.

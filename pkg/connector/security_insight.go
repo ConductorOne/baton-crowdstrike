@@ -21,6 +21,9 @@ type securityInsightResourceType struct {
 	resourceType *v2.ResourceType
 	client       *fClient.CrowdStrikeAPISpecification
 	ipClient     *IdentityProtectionClient
+	// enabled gates risk-score ingestion. When false (the default), List is a no-op
+	// that makes no Identity Protection API call — the capability is opt-in.
+	enabled bool
 }
 
 func (s *securityInsightResourceType) ResourceType(_ context.Context) *v2.ResourceType {
@@ -100,6 +103,12 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 }
 
 func (s *securityInsightResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
+	// Opt-in: when risk-score ingestion is disabled, sync nothing and make no
+	// Identity Protection API call.
+	if !s.enabled {
+		return nil, &rs.SyncOpResults{}, nil
+	}
+
 	// Parse the page token to get the cursor
 	cursor := opts.PageToken.Token
 
@@ -174,10 +183,11 @@ func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
 	}
 }
 
-func securityInsightBuilder(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, clientID, clientSecret, host string) *securityInsightResourceType {
+func securityInsightBuilder(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, clientID, clientSecret, host string, enabled bool) *securityInsightResourceType {
 	return &securityInsightResourceType{
 		resourceType: resourceTypeSecurityInsight,
 		client:       client,
 		ipClient:     NewIdentityProtectionClient(ctx, clientID, clientSecret, host),
+		enabled:      enabled,
 	}
 }

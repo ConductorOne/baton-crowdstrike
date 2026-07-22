@@ -670,6 +670,11 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 // snapshot — avoiding redundant Alerts / Identity-Protection calls and the grant drift
 // that independent re-fetches would cause. Only the current sync's data is retained.
 type mcpSource struct {
+	// enabled gates shadow-MCP detection. When false (the default), detections and
+	// the identity index are no-ops that make no CrowdStrike API calls, so the
+	// mcp_server / endpoint_user syncers produce nothing — the capability is opt-in.
+	enabled bool
+
 	detClient *mcpDetectionsClient
 	ipClient  *IdentityProtectionClient
 
@@ -680,14 +685,18 @@ type mcpSource struct {
 	idxData map[string]*resolvedIdentity
 }
 
-func newMCPSource(ctx context.Context, clientID, clientSecret, host string) *mcpSource {
+func newMCPSource(ctx context.Context, clientID, clientSecret, host string, enabled bool) *mcpSource {
 	return &mcpSource{
+		enabled:   enabled,
 		detClient: newMCPDetectionsClient(ctx, clientID, clientSecret, host),
 		ipClient:  NewIdentityProtectionClient(ctx, clientID, clientSecret, host),
 	}
 }
 
 func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetection, error) {
+	if !s.enabled {
+		return nil, nil
+	}
 	s.mu.Lock()
 	if s.detData != nil && s.detSync == syncID {
 		d := s.detData
@@ -706,6 +715,9 @@ func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetecti
 }
 
 func (s *mcpSource) identityIndex(ctx context.Context, syncID string) (map[string]*resolvedIdentity, error) {
+	if !s.enabled {
+		return map[string]*resolvedIdentity{}, nil
+	}
 	s.mu.Lock()
 	if s.idxData != nil && s.idxSync == syncID {
 		idx := s.idxData

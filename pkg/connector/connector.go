@@ -17,21 +17,23 @@ import (
 )
 
 type Connector struct {
-	client       *fClient.CrowdStrikeAPISpecification
-	clientId     string
-	clientSecret string
-	host         string
+	client           *fClient.CrowdStrikeAPISpecification
+	clientId         string
+	clientSecret     string
+	host             string
+	ingestRiskScores bool
+	detectShadowMCP  bool
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
 	// One shared MCP data source so the mcp_server and endpoint_user syncers operate on
 	// a single per-sync detection snapshot + identity index (consistent grants, no
 	// redundant Alerts / Identity-Protection calls).
-	mcpSrc := newMCPSource(ctx, o.clientId, o.clientSecret, o.host)
+	mcpSrc := newMCPSource(ctx, o.clientId, o.clientSecret, o.host, o.detectShadowMCP)
 	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
-		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
+		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host, o.ingestRiskScores),
 		mcpServerBuilder(o.client, mcpSrc),
 		endpointUserBuilder(mcpSrc),
 	}
@@ -152,9 +154,11 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 	}
 
 	return &Connector{
-		client:       client,
-		clientId:     cc.CrowdstrikeClientId,
-		clientSecret: cc.CrowdstrikeClientSecret,
-		host:         host,
+		client:           client,
+		clientId:         cc.CrowdstrikeClientId,
+		clientSecret:     cc.CrowdstrikeClientSecret,
+		host:             host,
+		ingestRiskScores: cc.CrowdstrikeIngestRiskScores,
+		detectShadowMCP:  cc.CrowdstrikeDetectShadowMcp,
 	}, nil, nil
 }
