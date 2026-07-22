@@ -22,6 +22,19 @@ type AccountData struct {
 
 	// Azure AD / AWS IC SSO / Generic SSO fields
 	DataSourceParticipantIdentifier string `json:"dataSourceParticipantIdentifier,omitempty"`
+
+	// PasswordAttributes carries per-account password risk signals (present on user
+	// account descriptors). Nil when the descriptor type does not expose it.
+	PasswordAttributes *PasswordAttributes `json:"passwordAttributes,omitempty"`
+}
+
+// PasswordAttributes captures the password risk signals Identity Protection exposes
+// on a user account descriptor. "Exposed" is CrowdStrike's compromised-credential
+// signal (the password appears in a known breach/exposed set); "Strength" is the
+// PasswordStrength enum (UNKNOWN | WEAK | STRONG).
+type PasswordAttributes struct {
+	Exposed  bool   `json:"exposed"`
+	Strength string `json:"strength"`
 }
 
 // ExternalID returns the best external identifier for this account based on its type.
@@ -144,15 +157,31 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
           samAccountName
           domain
           objectGuid
+          passwordAttributes {
+            exposed
+            strength
+          }
         }
         ... on AzureSsoUserAccountDescriptor {
           dataSourceParticipantIdentifier
+          passwordAttributes {
+            exposed
+            strength
+          }
         }
         ... on AwsIcSsoUserAccountDescriptorImpl {
           dataSourceParticipantIdentifier
+          passwordAttributes {
+            exposed
+            strength
+          }
         }
         ... on SsoUserAccountDescriptorImpl {
           dataSourceParticipantIdentifier
+          passwordAttributes {
+            exposed
+            strength
+          }
         }
       }
       ... on UserEntity {

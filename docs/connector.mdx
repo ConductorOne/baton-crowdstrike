@@ -247,6 +247,8 @@ spec:
 
 The CrowdStrike connector can ingest Falcon identity risk scores and surface them in C1 during access reviews and access request approvals. See [External insights](/product/admin/external-insights) for an overview of where risk data appears.
 
+Alongside the overall risk score and Identity Protection risk factors, the connector also surfaces per-account **password risk** as risk factors on the insight: a compromised (exposed) password appears as a high-severity `EXPOSED_PASSWORD` factor, and a weak password as a medium-severity `WEAK_PASSWORD` factor. No additional scopes are required — this data comes through the same Identity Protection query.
+
 ### Before you begin
 
 Confirm that:
