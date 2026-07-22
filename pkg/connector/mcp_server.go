@@ -4,13 +4,10 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -19,10 +16,10 @@ import (
 	ent "github.com/conductorone/baton-sdk/pkg/types/entitlement"
 	"github.com/conductorone/baton-sdk/pkg/types/grant"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 // mcpRunnerEntitlement is the assignment entitlement on an mcp_server resource held
@@ -479,18 +476,11 @@ func parseMCPServer(cmdline string) (string, string, string, string, bool) {
 const mcpAlertMaxPages = 10
 
 type mcpDetectionsClient struct {
-	httpClient *http.Client
+	httpClient *uhttp.BaseHttpClient
 	host       string
 }
 
-func newMCPDetectionsClient(ctx context.Context, clientID, clientSecret, host string) *mcpDetectionsClient {
-	config := clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     "https://" + host + "/oauth2/token",
-	}
-	httpClient := config.Client(ctx)
-	httpClient.Timeout = 30 * time.Second
+func newMCPDetectionsClient(httpClient *uhttp.BaseHttpClient, host string) *mcpDetectionsClient {
 	return &mcpDetectionsClient{httpClient: httpClient, host: host}
 }
 
@@ -516,85 +506,6 @@ type alertsEntitiesResp struct {
 	} `json:"resources"`
 }
 
-// mcpMaxRetries is how many times doJSON retries a rate-limited (429) or transient
-// server (5xx) response before giving up.
-const mcpMaxRetries = 4
-
-func (c *mcpDetectionsClient) doJSON(ctx context.Context, method, reqURL, body string) ([]byte, error) {
-	var lastErr error
-	for attempt := 0; attempt <= mcpMaxRetries; attempt++ {
-		var rdr io.Reader
-		if body != "" {
-			rdr = strings.NewReader(body)
-		}
-		req, err := http.NewRequestWithContext(ctx, method, reqURL, rdr)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Accept", "application/json")
-		req.Header.Set("User-Agent", "baton-crowdstrike")
-		if body != "" {
-			req.Header.Set("Content-Type", "application/json")
-		}
-
-		resp, err := c.httpClient.Do(req)
-		if err != nil {
-			// Transient transport error — retry with backoff.
-			lastErr = err
-			if attempt < mcpMaxRetries && waitBackoff(ctx, attempt, 0) {
-				continue
-			}
-			return nil, err
-		}
-		b, _ := io.ReadAll(resp.Body)
-		_ = resp.Body.Close()
-
-		if resp.StatusCode == http.StatusOK {
-			return b, nil
-		}
-		// Retry on rate limiting and transient server errors, honoring Retry-After.
-		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= http.StatusInternalServerError {
-			lastErr = fmt.Errorf("%s alerts returned %d: %s", method, resp.StatusCode, string(b))
-			if attempt < mcpMaxRetries && waitBackoff(ctx, attempt, retryAfterSeconds(resp.Header)) {
-				continue
-			}
-			return nil, lastErr
-		}
-		return nil, fmt.Errorf("%s alerts returned %d: %s", method, resp.StatusCode, string(b))
-	}
-	return nil, lastErr
-}
-
-// retryAfterSeconds reads a Retry-After header expressed in seconds; 0 if absent/invalid.
-func retryAfterSeconds(h http.Header) int {
-	if v := h.Get("Retry-After"); v != "" {
-		if n, err := strconv.Atoi(strings.TrimSpace(v)); err == nil && n >= 0 {
-			return n
-		}
-	}
-	return 0
-}
-
-// waitBackoff sleeps before a retry — the larger of Retry-After and an exponential
-// backoff (1s, 2s, 4s, ... capped at 30s). Returns false if the context is cancelled.
-func waitBackoff(ctx context.Context, attempt, retryAfter int) bool {
-	backoff := time.Duration(1<<attempt) * time.Second
-	if backoff > 30*time.Second {
-		backoff = 30 * time.Second
-	}
-	if ra := time.Duration(retryAfter) * time.Second; ra > backoff {
-		backoff = ra
-	}
-	t := time.NewTimer(backoff)
-	defer t.Stop()
-	select {
-	case <-ctx.Done():
-		return false
-	case <-t.C:
-		return true
-	}
-}
-
 // fetchAll pulls endpoint-protection (epp) alerts, narrowed server-side by an FQL
 // product filter, paginating to exhaustion (bounded by mcpAlertMaxPages), then keeps
 // the ones whose command line matches the MCP signature. Detections missing an AID or
@@ -608,14 +519,21 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 			truncated = true
 			break
 		}
-		qURL := fmt.Sprintf("https://%s/alerts/queries/alerts/v2?filter=%s&limit=%d&offset=%d&sort=timestamp.desc",
-			c.host, filter, mcpServerAlertLimit, page*mcpServerAlertLimit)
-		b, err := c.doJSON(ctx, http.MethodGet, qURL, "")
+		qURL, err := url.Parse(fmt.Sprintf("https://%s/alerts/queries/alerts/v2?filter=%s&limit=%d&offset=%d&sort=timestamp.desc",
+			c.host, filter, mcpServerAlertLimit, page*mcpServerAlertLimit))
+		if err != nil {
+			return nil, err
+		}
+		req, err := c.httpClient.NewRequest(ctx, http.MethodGet, qURL, uhttp.WithAcceptJSONHeader())
 		if err != nil {
 			return nil, err
 		}
 		var q alertsQueryResp
-		if err := json.Unmarshal(b, &q); err != nil {
+		resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&q))
+		if resp != nil {
+			resp.Body.Close()
+		}
+		if err != nil {
 			return nil, err
 		}
 		ids = append(ids, q.Resources...)
@@ -631,19 +549,28 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 		return nil, nil
 	}
 
+	entitiesURL, err := url.Parse(fmt.Sprintf("https://%s/alerts/entities/alerts/v2", c.host))
+	if err != nil {
+		return nil, err
+	}
+
 	var out []mcpDetection
 	for start := 0; start < len(ids); start += mcpServerAlertLimit {
 		end := start + mcpServerAlertLimit
 		if end > len(ids) {
 			end = len(ids)
 		}
-		detBody, _ := json.Marshal(map[string]interface{}{"composite_ids": ids[start:end]})
-		b, err := c.doJSON(ctx, http.MethodPost, fmt.Sprintf("https://%s/alerts/entities/alerts/v2", c.host), string(detBody))
+		req, err := c.httpClient.NewRequest(ctx, http.MethodPost, entitiesURL,
+			uhttp.WithJSONBody(map[string]interface{}{"composite_ids": ids[start:end]}), uhttp.WithAcceptJSONHeader())
 		if err != nil {
 			return nil, err
 		}
 		var e alertsEntitiesResp
-		if err := json.Unmarshal(b, &e); err != nil {
+		resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&e))
+		if resp != nil {
+			resp.Body.Close()
+		}
+		if err != nil {
 			return nil, err
 		}
 		for _, a := range e.Resources {
@@ -685,11 +612,11 @@ type mcpSource struct {
 	idxData map[string]*resolvedIdentity
 }
 
-func newMCPSource(ctx context.Context, clientID, clientSecret, host string, enabled bool) *mcpSource {
+func newMCPSource(httpClient *uhttp.BaseHttpClient, host string, enabled bool) *mcpSource {
 	return &mcpSource{
 		enabled:   enabled,
-		detClient: newMCPDetectionsClient(ctx, clientID, clientSecret, host),
-		ipClient:  NewIdentityProtectionClient(ctx, clientID, clientSecret, host),
+		detClient: newMCPDetectionsClient(httpClient, host),
+		ipClient:  NewIdentityProtectionClient(httpClient, host),
 	}
 }
 

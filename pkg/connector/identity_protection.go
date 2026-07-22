@@ -1,16 +1,13 @@
 package connector
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"net/url"
 	"strings"
-	"time"
 
-	"golang.org/x/oauth2/clientcredentials"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 )
 
 // AccountData represents an external account descriptor associated with an identity entity.
@@ -168,61 +165,19 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
 
 // IdentityProtectionClient provides methods to interact with CrowdStrike's Identity Protection API.
 type IdentityProtectionClient struct {
-	httpClient *http.Client
-	endpoint   string
+	httpClient *uhttp.BaseHttpClient
+	endpoint   *url.URL
 }
 
-// NewIdentityProtectionClient creates a new Identity Protection client with OAuth2 authentication.
-func NewIdentityProtectionClient(ctx context.Context, clientID, clientSecret, host string) *IdentityProtectionClient {
-	// Create OAuth2 client credentials config
-	config := clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     "https://" + host + "/oauth2/token",
-	}
-
-	// Create the OAuth2 HTTP client
-	httpClient := config.Client(ctx)
-	httpClient.Timeout = 30 * time.Second
-
-	// Wrap the transport to add user-agent header
-	httpClient.Transport = &identityProtectionTransport{
-		base: httpClient.Transport,
-	}
-
+// NewIdentityProtectionClient creates a new Identity Protection client that talks to CrowdStrike's
+// GraphQL API over the given shared uhttp base client (OAuth2 client-credentials, transient-error
+// retries, and rate-limit metadata all handled by uhttp).
+func NewIdentityProtectionClient(httpClient *uhttp.BaseHttpClient, host string) *IdentityProtectionClient {
+	endpoint, _ := url.Parse("https://" + host + "/identity-protection/combined/graphql/v1")
 	return &IdentityProtectionClient{
 		httpClient: httpClient,
-		endpoint:   "https://" + host + "/identity-protection/combined/graphql/v1",
+		endpoint:   endpoint,
 	}
-}
-
-// identityProtectionTransport adds custom headers to requests.
-type identityProtectionTransport struct {
-	base http.RoundTripper
-}
-
-func (t *identityProtectionTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", "baton-crowdstrike")
-	if t.base == nil {
-		return http.DefaultTransport.RoundTrip(req)
-	}
-	return t.base.RoundTrip(req)
-}
-
-// RefreshContext updates the OAuth2 context used for token refresh.
-// This should be called before making requests to ensure the token can be refreshed.
-func (c *IdentityProtectionClient) RefreshContext(ctx context.Context, clientID, clientSecret, host string) {
-	config := clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     "https://" + host + "/oauth2/token",
-	}
-	httpClient := config.Client(ctx)
-	httpClient.Timeout = 30 * time.Second
-	httpClient.Transport = &identityProtectionTransport{
-		base: httpClient.Transport,
-	}
-	c.httpClient = httpClient
 }
 
 // GetIdentityRiskScores fetches identity risk scores from CrowdStrike Identity Protection.
@@ -241,45 +196,23 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 		Variables: variables,
 	}
 
-	// Create the request body
-	bodyBytes, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to marshal GraphQL request: %w", err)
-	}
-
-	// Create the HTTP request
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(bodyBytes))
+	req, err := c.httpClient.NewRequest(ctx, http.MethodPost, c.endpoint, uhttp.WithJSONBody(reqBody), uhttp.WithAcceptJSONHeader())
 	if err != nil {
 		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to create HTTP request: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to execute identity protection request: %w", err)
+	var graphQLResp graphQLResponse
+	resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&graphQLResp))
+	if resp == nil {
+		return nil, "", false, RateLimitInfo{}, err
 	}
 	defer resp.Body.Close()
 
-	// Extract rate limit info from response headers
+	// Extract rate limit info from response headers, even on error, so callers can
+	// still surface rate-limit annotations for a failed request.
 	rateLimitInfo := extractRateLimitInfo(resp)
-
-	// Check for error status codes
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: identity protection API returned status %d: %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	// Parse the response body
-	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: failed to read response body: %w", err)
-	}
-
-	var graphQLResp graphQLResponse
-	if err := json.Unmarshal(respBody, &graphQLResp); err != nil {
-		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: failed to parse GraphQL response: %w", err)
+		return nil, "", false, rateLimitInfo, err
 	}
 
 	// Check for GraphQL errors
