@@ -34,9 +34,9 @@ var (
 	IngestRiskScoresField = field.BoolField(
 		"crowdstrike-ingest-risk-scores",
 		field.WithDisplayName("Ingest identity risk scores"),
-		field.WithDescription("Opt-in (early access). When enabled, sync Falcon Identity Protection risk scores and risk factors "+
-			"as security insights on identities. Off by default; requires the Identity Protection scopes."),
-		field.WithDefaultValue(false),
+		field.WithDescription("On by default (early access). Syncs Falcon Identity Protection risk scores and risk factors as "+
+			"security insights on identities; requires the Identity Protection scopes. Turn off to disable."),
+		field.WithDefaultValue(true),
 	)
 	DetectShadowMCPField = field.BoolField(
 		"crowdstrike-detect-shadow-mcp",

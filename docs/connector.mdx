@@ -12,7 +12,7 @@ sidebarTitle: "CrowdStrike"
 | :--- | :--- | :--- |
 | Accounts | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> |
 | Roles | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> |
-| Insights (opt-in) | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> | |
+| Insights | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> | |
 | Shadow MCP servers (opt-in) | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> | |
 | Endpoint users (opt-in) | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> | |
 
@@ -278,9 +278,9 @@ The CrowdStrike API client you created during connector setup needs additional s
   </Step>
 </Steps>
 
-### Turn on risk score ingestion
+### Risk score ingestion setting
 
-In C1, open the connector's **Settings** and enable **Ingest identity risk scores** (off by default), then save.
+Risk score ingestion is **on by default**. Once the scopes above are in place, the connector syncs it automatically — no further action needed. To disable it, open the connector's **Settings** in C1, turn off **Ingest identity risk scores**, and save.
 
 **Done.** Your CrowdStrike connector will now sync risk score data into C1. See [External insights](/product/admin/external-insights) for details on where to see this data in the UI.
 
