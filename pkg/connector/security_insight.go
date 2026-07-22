@@ -9,6 +9,7 @@ import (
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 )
 
@@ -183,11 +184,11 @@ func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
 	}
 }
 
-func securityInsightBuilder(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, clientID, clientSecret, host string, enabled bool) *securityInsightResourceType {
+func securityInsightBuilder(client *fClient.CrowdStrikeAPISpecification, httpClient *uhttp.BaseHttpClient, host string, enabled bool) *securityInsightResourceType {
 	return &securityInsightResourceType{
 		resourceType: resourceTypeSecurityInsight,
 		client:       client,
-		ipClient:     NewIdentityProtectionClient(ctx, clientID, clientSecret, host),
+		ipClient:     NewIdentityProtectionClient(httpClient, host),
 		enabled:      enabled,
 	}
 }

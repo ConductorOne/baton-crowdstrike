@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	cfg "github.com/conductorone/baton-crowdstrike/pkg/config"
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
@@ -18,8 +19,7 @@ import (
 
 type Connector struct {
 	client           *fClient.CrowdStrikeAPISpecification
-	clientId         string
-	clientSecret     string
+	httpClient       *uhttp.BaseHttpClient
 	host             string
 	ingestRiskScores bool
 	detectShadowMCP  bool
@@ -29,11 +29,11 @@ func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.Reso
 	// One shared MCP data source so the mcp_server and endpoint_user syncers operate on
 	// a single per-sync detection snapshot + identity index (consistent grants, no
 	// redundant Alerts / Identity-Protection calls).
-	mcpSrc := newMCPSource(ctx, o.clientId, o.clientSecret, o.host, o.detectShadowMCP)
+	mcpSrc := newMCPSource(o.httpClient, o.host, o.detectShadowMCP)
 	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
-		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host, o.ingestRiskScores),
+		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestRiskScores),
 		mcpServerBuilder(o.client, mcpSrc),
 		endpointUserBuilder(mcpSrc),
 	}
@@ -153,10 +153,26 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		host = cc.BaseUrl
 	}
 
+	// The Identity Protection (GraphQL) and Alerts APIs share the same OAuth2
+	// client-credentials grant against the same host, so one uhttp base client
+	// serves both.
+	tokenURL, err := url.Parse("https://" + host + "/oauth2/token")
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to parse oauth2 token url: %w", err)
+	}
+	oauthCreds := uhttp.NewOAuth2ClientCredentials(cc.CrowdstrikeClientId, cc.CrowdstrikeClientSecret, tokenURL, nil)
+	oauthClient, err := oauthCreds.GetClient(ctx, uhttp.WithUserAgent("baton-crowdstrike"))
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create oauth2 http client: %w", err)
+	}
+	httpClient, err := uhttp.NewBaseHttpClientWithContext(ctx, oauthClient)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create base http client: %w", err)
+	}
+
 	return &Connector{
 		client:           client,
-		clientId:         cc.CrowdstrikeClientId,
-		clientSecret:     cc.CrowdstrikeClientSecret,
+		httpClient:       httpClient,
 		host:             host,
 		ingestRiskScores: cc.CrowdstrikeIngestRiskScores,
 		detectShadowMCP:  cc.CrowdstrikeDetectShadowMcp,
