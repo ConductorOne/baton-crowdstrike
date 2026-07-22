@@ -10,6 +10,7 @@ type Crowdstrike struct {
 	BaseUrl string `mapstructure:"base-url"`
 	CrowdstrikeIngestRiskScores bool `mapstructure:"crowdstrike-ingest-risk-scores"`
 	CrowdstrikeDetectShadowMcp bool `mapstructure:"crowdstrike-detect-shadow-mcp"`
+	CrowdstrikeIngestPasswordRisk bool `mapstructure:"crowdstrike-ingest-password-risk"`
 }
 
 func (c *Crowdstrike) findFieldByTag(tagValue string) (any, bool) {

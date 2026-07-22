@@ -213,11 +213,11 @@ func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
 	}
 }
 
-func securityInsightBuilder(client *fClient.CrowdStrikeAPISpecification, httpClient *uhttp.BaseHttpClient, host string, enabled bool) *securityInsightResourceType {
+func securityInsightBuilder(client *fClient.CrowdStrikeAPISpecification, httpClient *uhttp.BaseHttpClient, host string, enabled, includePasswordRisk bool) *securityInsightResourceType {
 	return &securityInsightResourceType{
 		resourceType: resourceTypeSecurityInsight,
 		client:       client,
-		ipClient:     NewIdentityProtectionClient(httpClient, host),
+		ipClient:     NewIdentityProtectionClient(httpClient, host, includePasswordRisk),
 		enabled:      enabled,
 	}
 }
