@@ -215,7 +215,8 @@ func aiToolResource(inst *aiToolInstance, id *resolvedIdentity) (*v2.Resource, e
 	}
 
 	opts := []rs.ResourceOption{
-		rs.WithAppTrait(rs.WithAppProfile(profile)),
+		rs.WithAppTrait(),
+		rs.WithResourceProfile(profile),
 	}
 
 	// Bind the observation to the identity as a low-severity insight so it associates

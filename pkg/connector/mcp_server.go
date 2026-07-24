@@ -184,7 +184,8 @@ func mcpServerResource(inst *mcpServerInstance, id *resolvedIdentity) (*v2.Resou
 	}
 
 	opts := []rs.ResourceOption{
-		rs.WithAppTrait(rs.WithAppProfile(profile)),
+		rs.WithAppTrait(),
+		rs.WithResourceProfile(profile),
 	}
 
 	// Bind the finding to the identity as a security insight (issue) so it flows into
@@ -330,7 +331,11 @@ func endpointUserResource(inst *mcpServerInstance, id *resolvedIdentity) (*v2.Re
 		"local_ip":      d.LocalIP,
 	}
 	displayName := fmt.Sprintf("%s@%s", d.UserName, d.Hostname)
-	traitOpts := []rs.UserTraitOption{rs.WithStatus(v2.UserTrait_Status_STATUS_ENABLED)}
+	var traitOpts []rs.UserTraitOption
+	resourceOpts := []rs.ResourceOption{
+		rs.WithResourceStatus(v2.Status_RESOURCE_STATUS_ENABLED, ""),
+		rs.WithResourceProfile(profile),
+	}
 	if id != nil {
 		if id.displayName != "" {
 			displayName = fmt.Sprintf("%s (%s@%s)", id.displayName, d.UserName, d.Hostname)
@@ -341,8 +346,7 @@ func endpointUserResource(inst *mcpServerInstance, id *resolvedIdentity) (*v2.Re
 			traitOpts = append(traitOpts, rs.WithEmail(id.email, true))
 		}
 	}
-	traitOpts = append(traitOpts, rs.WithUserProfile(profile))
-	return rs.NewUserResource(displayName, resourceTypeEndpointUser, inst.accountID(), traitOpts)
+	return rs.NewUserResource(displayName, resourceTypeEndpointUser, inst.accountID(), traitOpts, resourceOpts...)
 }
 
 // buildIdentityIndex fetches all Identity Protection entities and indexes them by

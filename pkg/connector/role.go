@@ -40,15 +40,12 @@ func roleResource(role *models.DomainRole) (*v2.Resource, error) {
 		"description": description,
 	}
 
-	roleTraitOptions := []rs.RoleTraitOption{
-		rs.WithRoleProfile(profile),
-	}
-
 	resource, err := rs.NewRoleResource(
 		displayName,
 		resourceTypeRole,
 		id,
-		roleTraitOptions,
+		nil,
+		rs.WithResourceProfile(profile),
 	)
 
 	if err != nil {
