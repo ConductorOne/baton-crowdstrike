@@ -31,34 +31,14 @@ var (
 		field.WithHidden(true),
 		field.WithExportTarget(field.ExportTargetCLIOnly),
 	)
-	IngestRiskScoresField = field.BoolField(
-		"crowdstrike-ingest-risk-scores",
-		field.WithDisplayName("Ingest identity risk scores"),
-		field.WithDescription("On by default (early access). Syncs Falcon Identity Protection risk scores and risk factors as "+
-			"security insights on identities; requires the Identity Protection scopes. Turn off to disable."),
-		field.WithDefaultValue(true),
-	)
-	DetectShadowMCPField = field.BoolField(
-		"crowdstrike-detect-shadow-mcp",
-		field.WithDisplayName("Detect shadow MCP servers"),
-		field.WithDescription("Opt-in. When enabled, scan EDR detections for shadow MCP servers and sync them — with the endpoint "+
-			"users that ran them, correlated to identities. Off by default; requires the Alerts read scope."),
-		field.WithDefaultValue(false),
-	)
+	// Password risk is an enrichment on security_insight rows (non-destructive filter),
+	// not a resource-type on/off switch. Optional types are gated by C1 OptInRequired.
 	IngestPasswordRiskField = field.BoolField(
 		"crowdstrike-ingest-password-risk",
 		field.WithDisplayName("Ingest identity password risk"),
 		field.WithDescription("Opt-in. When enabled, surface Identity Protection password risk on identity insights — a compromised "+
 			"(exposed) password as an EXPOSED_PASSWORD risk factor and a weak password as a WEAK_PASSWORD risk factor. "+
 			"Off by default; uses the same Identity Protection scopes as risk score ingestion."),
-		field.WithDefaultValue(false),
-	)
-	DetectAIToolsField = field.BoolField(
-		"crowdstrike-detect-ai-tools",
-		field.WithDisplayName("Detect AI coding tools"),
-		field.WithDescription("Opt-in. When enabled, scan EDR detections for AI coding tools (Claude Code, Cursor, codex, and "+
-			"similar) and sync them as an inventory correlated to the identities that ran them. Off by default; requires the "+
-			"Alerts read scope."),
 		field.WithDefaultValue(false),
 	)
 
@@ -69,10 +49,7 @@ var (
 		ClientSecretField,
 		RegionField,
 		BaseURLField,
-		IngestRiskScoresField,
-		DetectShadowMCPField,
 		IngestPasswordRiskField,
-		DetectAIToolsField,
 	}
 )
 

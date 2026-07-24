@@ -21,32 +21,28 @@ type Connector struct {
 	client             *fClient.CrowdStrikeAPISpecification
 	httpClient         *uhttp.BaseHttpClient
 	host               string
-	ingestRiskScores   bool
-	detectShadowMCP    bool
 	ingestPasswordRisk bool
-	detectAITools      bool
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
-	// One shared EDR-detection data source feeds the mcp_server, endpoint_user, and
-	// ai_tool syncers off a single per-sync snapshot + identity index (consistent
-	// grants, no redundant Alerts / Identity-Protection calls). The source scans when
-	// either detection capability is on; each syncer decides what it emits.
-	mcpSrc := newMCPSource(o.httpClient, o.host, o.detectShadowMCP || o.detectAITools)
+	// Shared EDR-detection snapshot + identity index for mcp_server, endpoint_user, and
+	// ai_tool. Optional types are gated by C1 OptInRequired (not connector config kill
+	// switches) so List always attempts upstream when C1 schedules the type.
+	mcpSrc := newMCPSource(o.httpClient, o.host)
 	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
-		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestRiskScores, o.ingestPasswordRisk),
-		mcpServerBuilder(o.client, mcpSrc, o.detectShadowMCP),
-		endpointUserBuilder(mcpSrc, o.detectShadowMCP),
-		aiToolBuilder(mcpSrc, o.detectAITools),
+		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestPasswordRisk),
+		mcpServerBuilder(o.client, mcpSrc),
+		endpointUserBuilder(mcpSrc),
+		aiToolBuilder(mcpSrc),
 	}
 }
 
 func (o *Connector) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
 	return &v2.ConnectorMetadata{
 		DisplayName: "CrowdStrike",
-		Description: "Connector syncing CrowdStrike users, roles, and identity risk scores to Baton.",
+		Description: "Connector syncing CrowdStrike users, roles, identity risk scores, optional shadow MCP / AI tool inventory, and endpoint users to Baton.",
 		AccountCreationSchema: &v2.ConnectorAccountCreationSchema{
 			FieldMap: map[string]*v2.ConnectorAccountCreationSchema_Field{
 				"email": {
@@ -178,9 +174,6 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		client:             client,
 		httpClient:         httpClient,
 		host:               host,
-		ingestRiskScores:   cc.CrowdstrikeIngestRiskScores,
-		detectShadowMCP:    cc.CrowdstrikeDetectShadowMcp,
 		ingestPasswordRisk: cc.CrowdstrikeIngestPasswordRisk,
-		detectAITools:      cc.CrowdstrikeDetectAiTools,
 	}, nil, nil
 }

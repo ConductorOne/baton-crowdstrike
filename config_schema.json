@@ -132,29 +132,9 @@
       }
     },
     {
-      "name": "crowdstrike-ingest-risk-scores",
-      "displayName": "Ingest identity risk scores",
-      "description": "On by default (early access). Syncs Falcon Identity Protection risk scores and risk factors as security insights on identities; requires the Identity Protection scopes. Turn off to disable.",
-      "boolField": {
-        "defaultValue": true
-      }
-    },
-    {
-      "name": "crowdstrike-detect-shadow-mcp",
-      "displayName": "Detect shadow MCP servers",
-      "description": "Opt-in. When enabled, scan EDR detections for shadow MCP servers and sync them — with the endpoint users that ran them, correlated to identities. Off by default; requires the Alerts read scope.",
-      "boolField": {}
-    },
-    {
       "name": "crowdstrike-ingest-password-risk",
       "displayName": "Ingest identity password risk",
       "description": "Opt-in. When enabled, surface Identity Protection password risk on identity insights — a compromised (exposed) password as an EXPOSED_PASSWORD risk factor and a weak password as a WEAK_PASSWORD risk factor. Off by default; uses the same Identity Protection scopes as risk score ingestion.",
-      "boolField": {}
-    },
-    {
-      "name": "crowdstrike-detect-ai-tools",
-      "displayName": "Detect AI coding tools",
-      "description": "Opt-in. When enabled, scan EDR detections for AI coding tools (Claude Code, Cursor, codex, and similar) and sync them as an inventory correlated to the identities that ran them. Off by default; requires the Alerts read scope.",
       "boolField": {}
     }
   ],

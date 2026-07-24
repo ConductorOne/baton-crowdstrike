@@ -285,7 +285,7 @@ The CrowdStrike API client you created during connector setup needs additional s
 
 ### Risk score ingestion setting
 
-Risk score ingestion is **on by default**. Once the scopes above are in place, the connector syncs it automatically — no further action needed. To disable it, open the connector's **Settings** in C1, turn off **Ingest identity risk scores**, and save.
+Identity risk scores use the **Identity Risk Score** (`security_insight`) capability, which is opt-in in C1. Once the scopes above are in place and the capability is enabled, the connector syncs risk scores automatically. There is no connector config flag that empties this resource type.
 
 **Done.** Your CrowdStrike connector will now sync risk score data into C1. See [External insights](/product/admin/external-insights) for details on where to see this data in the UI.
 
@@ -352,7 +352,7 @@ CrowdStrike doesn't flag MCP servers by default, so you author a Custom IOA rule
 
 ### Turn on shadow MCP detection
 
-In C1, open the connector's **Settings** and enable **Detect shadow MCP servers** (off by default), then save.
+In C1, enable the **Shadow MCP Server** and **Endpoint User** capabilities on the connector (these resource types are opt-in via C1 capability mediation, not a connector config flag), then save and re-sync.
 
 **Done.** As endpoints run MCP servers, CrowdStrike raises detections and the connector syncs them into C1 as `mcp_server` resources and `endpoint_user` accounts. Assign each endpoint-user account to a C1 identity to attribute the finding.
 
@@ -364,7 +364,7 @@ In C1, open the connector's **Settings** and enable **Detect shadow MCP servers*
 
 The CrowdStrike connector can inventory **AI coding tools** ("harnesses" — Claude Code, Claude Desktop, Cursor, Windsurf, OpenAI Codex, Gemini CLI, GitHub Copilot CLI, opencode, Aider, and similar) observed running on your endpoints, and correlate each to the identity that ran it. This gives you governance visibility into which people are using which AI tools on which hosts. It reads CrowdStrike endpoint detections and models each tool as an **`ai_tool`** resource describing the tool (name, vendor, category, host, sample command line, and the identity it resolved to), with a low-severity insight linking it to that identity.
 
-This shares the same detection pipeline as shadow MCP detection — it reads the Alerts API and resolves endpoint users to identities the same way — but is turned on and off independently.
+This shares the same detection pipeline as shadow MCP detection — it reads the Alerts API and resolves endpoint users to identities the same way — but is enabled independently via the **AI Coding Tool** C1 capability.
 
 ### Before you begin
 
@@ -405,6 +405,6 @@ CrowdStrike doesn't flag AI coding tools by default, so you author a Custom IOA 
 
 ### Turn on AI coding tool detection
 
-In C1, open the connector's **Settings** and enable **Detect AI coding tools** (off by default), then save.
+In C1, enable the **AI Coding Tool** capability on the connector (opt-in via C1 capability mediation, not a connector config flag), then save and re-sync.
 
 **Done.** As endpoints run AI coding tools, CrowdStrike raises detections and the connector syncs them into C1 as `ai_tool` resources correlated to the identities that ran them.

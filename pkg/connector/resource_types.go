@@ -69,6 +69,7 @@ var (
 			v2.ResourceType_TRAIT_SECURITY_INSIGHT,
 		},
 		Annotations: annotations.New(
+			&v2.OptInRequired{},
 			capabilityPermissions(
 				"Alerts: Read",
 				"Identity Protection Entities: Read",
@@ -87,6 +88,7 @@ var (
 		},
 		Annotations: annotations.New(
 			&v2.SkipEntitlementsAndGrants{},
+			&v2.OptInRequired{},
 			capabilityPermissions(
 				"Alerts: Read",
 				"Identity Protection Entities: Read",
@@ -107,6 +109,7 @@ var (
 		},
 		Annotations: annotations.New(
 			&v2.SkipEntitlementsAndGrants{},
+			&v2.OptInRequired{},
 			capabilityPermissions(
 				"Alerts: Read",
 				"Identity Protection Entities: Read",

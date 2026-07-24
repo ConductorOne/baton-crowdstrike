@@ -1,11 +1,8 @@
 package connector
 
 import (
-	"context"
 	"testing"
 	"time"
-
-	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
 )
 
 func TestClassifyHarness(t *testing.T) {
@@ -117,19 +114,6 @@ func TestBuildAIToolInstances(t *testing.T) {
 	}
 	if len(cc.objectID()) == 0 || cc.objectID()[:3] != "ai-" {
 		t.Errorf("objectID = %q, want ai- prefix", cc.objectID())
-	}
-}
-
-// A disabled ai_tool syncer must emit nothing and must not touch its source (so a nil
-// source is safe) — this is the opt-in, no-API-call guarantee.
-func TestAIToolDisabledEmitsNothing(t *testing.T) {
-	rt := aiToolBuilder(nil, false)
-	res, _, err := rt.List(context.Background(), nil, rs.SyncOpAttrs{})
-	if err != nil {
-		t.Fatalf("List returned error: %v", err)
-	}
-	if len(res) != 0 {
-		t.Fatalf("disabled List returned %d resources, want 0", len(res))
 	}
 }
 

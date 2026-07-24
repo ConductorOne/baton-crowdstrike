@@ -137,9 +137,6 @@ func buildAIToolInstances(dets []mcpDetection) map[string]*aiToolInstance {
 type aiToolResourceType struct {
 	resourceType *v2.ResourceType
 	src          *mcpSource
-	// enabled gates AI-tool inventory. The shared source may still scan for shadow-MCP;
-	// this flag decides whether ai_tool resources are emitted.
-	enabled bool
 }
 
 func (a *aiToolResourceType) ResourceType(_ context.Context) *v2.ResourceType {
@@ -149,9 +146,6 @@ func (a *aiToolResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 // List scans the shared EDR detection snapshot for AI-tool activity, correlates each to
 // an identity, and returns one ai_tool resource per unique (host, user, tool).
 func (a *aiToolResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
-	if !a.enabled {
-		return nil, &rs.SyncOpResults{}, nil
-	}
 	dets, err := a.src.detections(ctx, opts.SyncID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("baton-crowdstrike: ai_tool list: failed to fetch detections: %w", err)
@@ -246,6 +240,6 @@ func aiToolResource(inst *aiToolInstance, id *resolvedIdentity) (*v2.Resource, e
 	return rs.NewResource(displayName, resourceTypeAITool, inst.objectID(), opts...)
 }
 
-func aiToolBuilder(src *mcpSource, enabled bool) *aiToolResourceType {
-	return &aiToolResourceType{resourceType: resourceTypeAITool, src: src, enabled: enabled}
+func aiToolBuilder(src *mcpSource) *aiToolResourceType {
+	return &aiToolResourceType{resourceType: resourceTypeAITool, src: src}
 }

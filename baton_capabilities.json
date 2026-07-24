@@ -14,6 +14,9 @@
             "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
           },
           {
+            "@type": "type.googleapis.com/c1.connector.v2.OptInRequired"
+          },
+          {
             "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
             "permissions": [
               {
@@ -44,7 +47,8 @@
             "permission": "Identity Protection GraphQL: Write"
           }
         ]
-      }
+      },
+      "optInRequired": true
     },
     {
       "resourceType": {
@@ -58,6 +62,9 @@
             "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
           },
           {
+            "@type": "type.googleapis.com/c1.connector.v2.OptInRequired"
+          },
+          {
             "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
             "permissions": [
               {
@@ -82,7 +89,8 @@
             "permission": "Identity Protection Entities: Read"
           }
         ]
-      }
+      },
+      "optInRequired": true
     },
     {
       "resourceType": {
@@ -93,6 +101,9 @@
           "TRAIT_SECURITY_INSIGHT"
         ],
         "annotations": [
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.OptInRequired"
+          },
           {
             "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
             "permissions": [
@@ -124,7 +135,8 @@
             "permission": "Identity Protection GraphQL: Write"
           }
         ]
-      }
+      },
+      "optInRequired": true
     },
     {
       "resourceType": {

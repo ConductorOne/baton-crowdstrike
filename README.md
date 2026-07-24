@@ -67,17 +67,19 @@ baton resources
 
 - **Users** (`user`) — Falcon console users; `uuid` is the stable resource ID and `uid` is the login/email
 - **Roles** (`role`) — Falcon roles (e.g. `falcon_administrator`, `falcon_analyst`, `falcon_read_only`) with a `member` assignment entitlement
-- **Identity Risk Scores** (`security_insight`) — Falcon Identity Protection risk scores (opt-in, disabled by default)
-- **Shadow MCP Servers** (`mcp_server`) — unsanctioned [Model Context Protocol](https://modelcontextprotocol.io) servers observed running on endpoints via EDR detections, correlated to the identity that ran them (see below)
-- **Endpoint Users** (`endpoint_user`) — the endpoint OS users that ran a shadow MCP server, modeled as app accounts; each holds the `runner` grant on the servers it ran and is matched to a ConductorOne identity by email (or assigned manually)
+- **Identity Risk Scores** (`security_insight`) — Falcon Identity Protection risk scores (C1 opt-in capability)
+- **Shadow MCP Servers** (`mcp_server`) — unsanctioned [Model Context Protocol](https://modelcontextprotocol.io) servers observed running on endpoints via EDR detections, correlated to the identity that ran them (C1 opt-in capability)
+- **Endpoint Users** (`endpoint_user`) — the endpoint OS users that ran a shadow MCP server, modeled as app accounts; each holds the `runner` grant on the servers it ran and is matched to a ConductorOne identity by email (or assigned manually) (C1 opt-in capability)
+- **AI Coding Tools** (`ai_tool`) — AI harness inventory from EDR detections, correlated to identities (C1 opt-in capability)
 
 | Resource             | Sync | Provision                                          |
 | -------------------- | ---- | -------------------------------------------------- |
 | Users                | Yes  | Yes (create / delete, and update first/last name)  |
 | Roles                | Yes  | Yes (Grant / Revoke role membership)               |
-| Shadow MCP Servers   | Yes  | No                                                 |
-| Endpoint Users       | Yes  | No                                                 |
-| Identity Risk Scores | Yes  | No (synced read-only, opt-in)                      |
+| Shadow MCP Servers   | Yes (opt-in) | No                                                 |
+| Endpoint Users       | Yes (opt-in) | No                                                 |
+| AI Coding Tools      | Yes (opt-in) | No                                                 |
+| Identity Risk Scores | Yes (opt-in) | No (synced read-only)                              |
 
 # Provisioning
 
