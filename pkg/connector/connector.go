@@ -21,11 +21,19 @@ type Connector struct {
 	clientId     string
 	clientSecret string
 	host         string
+	// skipRoleGrants is the negation of "sync roles" (rather than a
+	// straightforward syncRoles bool) so that its zero value -- false, i.e.
+	// don't skip, do sync roles -- matches the correct default (no filter
+	// configured, sync everything). This matters because
+	// cmd/baton-crowdstrike/main.go's WithDefaultCapabilitiesConnectorBuilderV2
+	// probes capabilities using a bare &Connector{} that never goes through
+	// New(), so the zero value has to already be the right default.
+	skipRoleGrants bool
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
 	return []connectorbuilder.ResourceSyncerV2{
-		userBuilder(o.client),
+		userBuilder(o.client, !o.skipRoleGrants),
 		roleBuilder(o.client),
 		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
 	}
@@ -145,10 +153,21 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		host = cc.BaseUrl
 	}
 
+	// The user builder emits role-membership grants as a sync optimization
+	// (the combined-user-roles API already returns them alongside users), but
+	// only do so when the role resource type is actually going to be synced —
+	// otherwise it's a wasted API call and the emitted grants reference a type
+	// that isn't part of the sync.
+	skipRoleGrants := false
+	if opts != nil {
+		skipRoleGrants = !opts.WillSyncResourceType(resourceTypeRole.Id)
+	}
+
 	return &Connector{
-		client:       client,
-		clientId:     cc.CrowdstrikeClientId,
-		clientSecret: cc.CrowdstrikeClientSecret,
-		host:         host,
+		client:         client,
+		clientId:       cc.CrowdstrikeClientId,
+		clientSecret:   cc.CrowdstrikeClientSecret,
+		host:           host,
+		skipRoleGrants: skipRoleGrants,
 	}, nil, nil
 }
