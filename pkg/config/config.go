@@ -53,6 +53,14 @@ var (
 			"Off by default; uses the same Identity Protection scopes as risk score ingestion."),
 		field.WithDefaultValue(false),
 	)
+	DetectAIToolsField = field.BoolField(
+		"crowdstrike-detect-ai-tools",
+		field.WithDisplayName("Detect AI coding tools"),
+		field.WithDescription("Opt-in. When enabled, scan EDR detections for AI coding tools (Claude Code, Cursor, codex, and "+
+			"similar) and sync them as an inventory correlated to the identities that ran them. Off by default; requires the "+
+			"Alerts read scope."),
+		field.WithDefaultValue(false),
+	)
 
 	// ConfigurationFields defines the external configuration required for the
 	// connector to run.
@@ -64,6 +72,7 @@ var (
 		IngestRiskScoresField,
 		DetectShadowMCPField,
 		IngestPasswordRiskField,
+		DetectAIToolsField,
 	}
 )
 
