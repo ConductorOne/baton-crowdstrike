@@ -31,6 +31,16 @@ var (
 		field.WithHidden(true),
 		field.WithExportTarget(field.ExportTargetCLIOnly),
 	)
+	// Password risk is an enrichment on security_insight rows (non-destructive filter),
+	// not a resource-type on/off switch. Optional types are gated by C1 OptInRequired.
+	IngestPasswordRiskField = field.BoolField(
+		"crowdstrike-ingest-password-risk",
+		field.WithDisplayName("Ingest identity password risk"),
+		field.WithDescription("Opt-in. When enabled, surface Identity Protection password risk on identity insights — a compromised "+
+			"(exposed) password as an EXPOSED_PASSWORD risk factor and a weak password as a WEAK_PASSWORD risk factor. "+
+			"Off by default; uses the same Identity Protection scopes as risk score ingestion."),
+		field.WithDefaultValue(false),
+	)
 
 	// ConfigurationFields defines the external configuration required for the
 	// connector to run.
@@ -39,6 +49,7 @@ var (
 		ClientSecretField,
 		RegionField,
 		BaseURLField,
+		IngestPasswordRiskField,
 	}
 )
 

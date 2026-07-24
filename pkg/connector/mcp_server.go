@@ -1,0 +1,711 @@
+package connector
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"net/http"
+	"net/url"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+
+	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
+	ent "github.com/conductorone/baton-sdk/pkg/types/entitlement"
+	"github.com/conductorone/baton-sdk/pkg/types/grant"
+	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
+	fClient "github.com/crowdstrike/gofalcon/falcon/client"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
+	"go.uber.org/zap"
+)
+
+// mcpRunnerEntitlement is the assignment entitlement on an mcp_server resource held
+// by the endpoint user that ran the server.
+const mcpRunnerEntitlement = "runner"
+
+// launcherUnknown marks a detection whose command line doesn't name a known launcher.
+const launcherUnknown = "unknown"
+
+// mcpServerAlertLimit is how many recent alerts we pull to scan for shadow-MCP activity.
+const mcpServerAlertLimit = 1000
+
+// mcpSignature matches the command line of a Model Context Protocol server. MCP
+// servers are ordinary npx/uvx/node/python processes whose command line carries a
+// recognizable package: @modelcontextprotocol/server-*, mcp-server-*, mcp_server_*.
+var mcpSignature = regexp.MustCompile(`(?i)(@modelcontextprotocol/server-[\w.-]+|mcp-server-[\w.-]+|mcp_server_[\w.-]+)`)
+
+// mcpServerResourceType syncs unsanctioned ("shadow") MCP servers observed on
+// endpoints via CrowdStrike EDR detections, correlates each to the identity that
+// ran it, and emits a queryable resource plus an identity-risk insight.
+type mcpServerResourceType struct {
+	resourceType *v2.ResourceType
+	client       *fClient.CrowdStrikeAPISpecification
+	src          *mcpSource
+}
+
+func (m *mcpServerResourceType) ResourceType(_ context.Context) *v2.ResourceType {
+	return m.resourceType
+}
+
+// mcpDetection is a single shadow-MCP process-creation detection from the Alerts API.
+type mcpDetection struct {
+	Hostname    string
+	AID         string
+	LocalIP     string
+	UserName    string
+	CommandLine string
+	FilePath    string
+	Timestamp   time.Time
+	CompositeID string
+	FalconLink  string
+	IOARuleName string
+}
+
+// mcpServerInstance is a deduplicated (host, user, server) shadow-MCP server. The
+// same logical server surfaces under several command-line spellings across the
+// process tree; we collapse them and keep the most informative representation.
+type mcpServerInstance struct {
+	det         mcpDetection
+	serverName  string
+	pkg         string
+	launcher    string
+	transport   string
+	bestCmdline string // shortest signature-bearing command line (cleanest sample)
+	count       int
+}
+
+// resolvedIdentity carries the identity a detection's OS user maps to.
+type resolvedIdentity struct {
+	email       string
+	externalID  string
+	displayName string
+}
+
+// List scans recent EDR detections for shadow-MCP activity, correlates each to an
+// identity, and returns one mcp_server resource per unique server instance.
+func (m *mcpServerResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
+	dets, detRL, err := m.src.detections(ctx, opts.SyncID)
+	if err != nil {
+		return nil, nil, wrapCrowdStrikeError(err, "mcp_server list: failed to fetch detections")
+	}
+	if len(dets) == 0 {
+		return nil, &rs.SyncOpResults{Annotations: WithRateLimitAnnotations(detRL)}, nil
+	}
+
+	// Build an identity lookup keyed by lowercased samAccountName and email local-part.
+	idIndex, idxRL, err := m.src.identityIndex(ctx, opts.SyncID)
+	if err != nil {
+		return nil, nil, wrapCrowdStrikeError(err, "mcp_server list: failed to build identity index")
+	}
+
+	instances := buildInstances(dets)
+
+	resources := make([]*v2.Resource, 0, len(instances))
+	for _, inst := range instances {
+		id := resolveIdentity(idIndex, inst.det.UserName)
+		res, err := mcpServerResource(inst, id)
+		if err != nil {
+			return nil, nil, fmt.Errorf("baton-crowdstrike: failed to build mcp_server resource: %w", err)
+		}
+		resources = append(resources, res)
+	}
+
+	annos := WithRateLimitAnnotations(detRL, idxRL)
+	return resources, &rs.SyncOpResults{Annotations: annos}, nil
+}
+
+// Entitlements exposes a single "runner" assignment on each mcp_server resource,
+// grantable to the endpoint user that ran the server.
+func (m *mcpServerResourceType) Entitlements(_ context.Context, resource *v2.Resource, _ rs.SyncOpAttrs) ([]*v2.Entitlement, *rs.SyncOpResults, error) {
+	opts := []ent.EntitlementOption{
+		ent.WithGrantableTo(resourceTypeEndpointUser),
+		ent.WithDisplayName(fmt.Sprintf("%s runner", resource.DisplayName)),
+		ent.WithDescription("Endpoint user that ran this shadow MCP server"),
+	}
+	return []*v2.Entitlement{ent.NewAssignmentEntitlement(resource, mcpRunnerEntitlement, opts...)}, nil, nil
+}
+
+// Grants gives the endpoint-user account the "runner" entitlement on the mcp_server
+// resource it ran. The account is synced separately (see endpoint_user) and is
+// auto-matched to a c1 identity by email or assigned manually; this grant is what
+// surfaces it as the resource's principal.
+func (m *mcpServerResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
+	dets, detRL, err := m.src.detections(ctx, opts.SyncID)
+	if err != nil {
+		return nil, nil, wrapCrowdStrikeError(err, "mcp_server grants: failed to fetch detections")
+	}
+	annos := WithRateLimitAnnotations(detRL)
+	for _, inst := range buildInstances(dets) {
+		if inst.objectID() != resource.Id.Resource {
+			continue
+		}
+		principal := &v2.ResourceId{ResourceType: resourceTypeEndpointUser.Id, Resource: inst.accountID()}
+		return []*v2.Grant{grant.NewGrant(resource, mcpRunnerEntitlement, principal)}, &rs.SyncOpResults{Annotations: annos}, nil
+	}
+	return nil, &rs.SyncOpResults{Annotations: annos}, nil
+}
+
+// mcpServerResource builds an mcp_server resource: an App-trait profile carrying the
+// full server + endpoint + identity metadata, plus a security-insight annotation
+// that binds a shadow-MCP finding to the resolved identity (when one is found).
+func mcpServerResource(inst *mcpServerInstance, id *resolvedIdentity) (*v2.Resource, error) {
+	d := inst.det
+
+	displayName := fmt.Sprintf("Shadow MCP: %s @ %s", inst.serverName, d.Hostname)
+	if d.UserName != "" {
+		displayName = fmt.Sprintf("%s (%s)", displayName, d.UserName)
+	}
+
+	profile := map[string]interface{}{
+		"server_name":         inst.serverName,
+		"package":             inst.pkg,
+		"launcher":            inst.launcher,
+		"transport":           inst.transport,
+		"sanctioned":          false,
+		"endpoint_user":       d.UserName,
+		"host":                d.Hostname,
+		"aid":                 d.AID,
+		"local_ip":            d.LocalIP,
+		"sample_command_line": inst.bestCmdline,
+		"detection_count":     inst.count,
+		"ioa_rule":            d.IOARuleName,
+		"falcon_link":         d.FalconLink,
+	}
+	if !d.Timestamp.IsZero() {
+		profile["first_seen"] = d.Timestamp.UTC().Format(time.RFC3339)
+	}
+	if id != nil {
+		profile["identity_email"] = id.email
+		profile["identity_external_id"] = id.externalID
+		profile["identity_display_name"] = id.displayName
+	}
+
+	opts := []rs.ResourceOption{
+		rs.WithAppTrait(),
+		rs.WithResourceProfile(profile),
+	}
+
+	// Bind the finding to the identity as a security insight (issue) so it flows into
+	// c1 identity risk. Requires a resolved identity with an external ID.
+	if id != nil && id.externalID != "" {
+		issueVal := fmt.Sprintf("Shadow MCP server '%s' (%s via %s/%s) running on %s as %s",
+			inst.serverName, inst.pkg, inst.launcher, inst.transport, d.Hostname, d.UserName)
+		insightOpts := []rs.SecurityInsightTraitOption{
+			rs.WithIssue(issueVal),
+			rs.WithIssueSeverity("High"),
+			rs.WithInsightAppUserTarget(id.email, id.externalID),
+		}
+		if !d.Timestamp.IsZero() {
+			insightOpts = append(insightOpts, rs.WithInsightObservedAt(d.Timestamp))
+		}
+		insight, err := rs.NewSecurityInsightTrait(insightOpts...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build security insight trait: %w", err)
+		}
+		opts = append(opts, rs.WithAnnotation(insight))
+	}
+
+	return rs.NewResource(displayName, resourceTypeMCPServer, inst.objectID(), opts...)
+}
+
+// buildInstances deduplicates detections into unique server instances, keyed by the
+// logical server (host, user, server name) so the different command-line spellings of
+// the same server (e.g. "node ... @modelcontextprotocol/server-everything" and
+// "sh -c mcp-server-everything") collapse into one resource.
+func buildInstances(dets []mcpDetection) map[string]*mcpServerInstance {
+	instances := map[string]*mcpServerInstance{}
+	for _, d := range dets {
+		if d.AID == "" || d.UserName == "" {
+			continue // unattributable — avoid collapsing distinct hosts/users into one id
+		}
+		name, pkg, launcher, transport, ok := parseMCPServer(d.CommandLine)
+		if !ok {
+			continue
+		}
+		key := strings.Join([]string{d.AID, strings.ToLower(d.UserName), name}, "|")
+		inst, seen := instances[key]
+		if !seen {
+			instances[key] = &mcpServerInstance{
+				det: d, serverName: name, pkg: pkg, launcher: launcher, transport: transport,
+				bestCmdline: d.CommandLine, count: 1,
+			}
+			continue
+		}
+		inst.count++
+		if !d.Timestamp.IsZero() && (inst.det.Timestamp.IsZero() || d.Timestamp.Before(inst.det.Timestamp)) {
+			inst.det.Timestamp = d.Timestamp
+		}
+		if inst.launcher == launcherUnknown && launcher != launcherUnknown {
+			inst.launcher = launcher
+			inst.transport = transport
+		}
+		if strings.HasPrefix(pkg, "@modelcontextprotocol/") {
+			inst.pkg = pkg
+		}
+		if len(d.CommandLine) < len(inst.bestCmdline) {
+			inst.bestCmdline = d.CommandLine
+		}
+	}
+	return instances
+}
+
+// objectID is the stable mcp_server resource ID. It hashes aid|user|serverName — the
+// same fields buildInstances dedups on — so the ID is stable across syncs regardless of
+// which command-line spelling (mcp-server-x vs @modelcontextprotocol/server-x) happens
+// to appear in a given alert window, and always agrees with the dedup key.
+func (inst *mcpServerInstance) objectID() string {
+	sum := sha256.Sum256([]byte(strings.Join([]string{inst.det.AID, strings.ToLower(inst.det.UserName), inst.serverName}, "|")))
+	return "mcp-" + hex.EncodeToString(sum[:])[:24]
+}
+
+// accountID is the stable endpoint_user account ID (sha256 of aid|user), shared by
+// every server the same user ran on the same host.
+func (inst *mcpServerInstance) accountID() string {
+	sum := sha256.Sum256([]byte(strings.Join([]string{inst.det.AID, strings.ToLower(inst.det.UserName)}, "|")))
+	return "eu-" + hex.EncodeToString(sum[:])[:24]
+}
+
+// endpointUserResourceType syncs the endpoint OS users that ran shadow MCP servers as
+// app accounts, so they can be assigned to a ConductorOne identity and shown against
+// the mcp_server resources they ran.
+type endpointUserResourceType struct {
+	resourceType *v2.ResourceType
+	src          *mcpSource
+}
+
+func (e *endpointUserResourceType) ResourceType(_ context.Context) *v2.ResourceType {
+	return e.resourceType
+}
+
+func (e *endpointUserResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
+	dets, detRL, err := e.src.detections(ctx, opts.SyncID)
+	if err != nil {
+		return nil, nil, wrapCrowdStrikeError(err, "endpoint_user list: failed to fetch detections")
+	}
+	if len(dets) == 0 {
+		return nil, &rs.SyncOpResults{Annotations: WithRateLimitAnnotations(detRL)}, nil
+	}
+	idIndex, idxRL, err := e.src.identityIndex(ctx, opts.SyncID)
+	if err != nil {
+		return nil, nil, wrapCrowdStrikeError(err, "endpoint_user list: failed to build identity index")
+	}
+
+	seen := map[string]bool{}
+	var rv []*v2.Resource
+	for _, inst := range buildInstances(dets) {
+		acctID := inst.accountID()
+		if seen[acctID] {
+			continue
+		}
+		seen[acctID] = true
+		res, err := endpointUserResource(inst, resolveIdentity(idIndex, inst.det.UserName))
+		if err != nil {
+			return nil, nil, fmt.Errorf("baton-crowdstrike: failed to build endpoint_user resource: %w", err)
+		}
+		rv = append(rv, res)
+	}
+	annos := WithRateLimitAnnotations(detRL, idxRL)
+	return rv, &rs.SyncOpResults{Annotations: annos}, nil
+}
+
+func (e *endpointUserResourceType) Entitlements(context.Context, *v2.Resource, rs.SyncOpAttrs) ([]*v2.Entitlement, *rs.SyncOpResults, error) {
+	return nil, nil, nil
+}
+
+func (e *endpointUserResourceType) Grants(context.Context, *v2.Resource, rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
+	return nil, nil, nil
+}
+
+// endpointUserResource builds a user-trait account for an endpoint OS user. When the
+// user resolves to an Identity Protection entity, its email is attached so c1 can
+// auto-match; otherwise the account stays unmatched for manual assignment.
+func endpointUserResource(inst *mcpServerInstance, id *resolvedIdentity) (*v2.Resource, error) {
+	d := inst.det
+	profile := map[string]interface{}{
+		"endpoint_user": d.UserName,
+		"host":          d.Hostname,
+		"aid":           d.AID,
+		"local_ip":      d.LocalIP,
+	}
+	displayName := fmt.Sprintf("%s@%s", d.UserName, d.Hostname)
+	var traitOpts []rs.UserTraitOption
+	resourceOpts := []rs.ResourceOption{
+		rs.WithResourceStatus(v2.Status_RESOURCE_STATUS_ENABLED, ""),
+		rs.WithResourceProfile(profile),
+	}
+	if id != nil {
+		if id.displayName != "" {
+			displayName = fmt.Sprintf("%s (%s@%s)", id.displayName, d.UserName, d.Hostname)
+		}
+		profile["resolved_identity"] = id.displayName
+		profile["identity_external_id"] = id.externalID
+		if id.email != "" {
+			traitOpts = append(traitOpts, rs.WithEmail(id.email, true))
+		}
+	}
+	return rs.NewUserResource(displayName, resourceTypeEndpointUser, inst.accountID(), traitOpts, resourceOpts...)
+}
+
+// buildIdentityIndex fetches all Identity Protection entities and indexes them by
+// lowercased samAccountName and email local-part for endpoint-user resolution.
+//
+// Endpoint usernames are ambiguous: two distinct identities can share a samAccountName
+// or email local-part. Rather than silently letting the last one win (which would pin a
+// shadow-MCP finding on the wrong person), a key that maps to more than one identity is
+// marked ambiguous (nil) and resolves to no match.
+// mcpIdentityIndexMaxPages bounds the Identity Protection entity pages scanned when
+// building the endpoint-user→identity resolution index, so a very large tenant can't
+// turn a single sync into an unbounded sequence of sequential GraphQL round trips.
+const mcpIdentityIndexMaxPages = 100
+
+func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[string]*resolvedIdentity, RateLimitInfo, error) {
+	index := map[string]*resolvedIdentity{}
+	var rl RateLimitInfo
+	// insert records key->ri, but collapses to nil (ambiguous) if the key already
+	// resolves to a different identity.
+	insert := func(key string, ri *resolvedIdentity) {
+		key = strings.ToLower(key)
+		if key == "" {
+			return
+		}
+		existing, seen := index[key]
+		if !seen {
+			index[key] = ri
+			return
+		}
+		if existing == nil {
+			return // already ambiguous
+		}
+		if existing.externalID != ri.externalID {
+			index[key] = nil // collision between distinct identities
+		}
+	}
+	cursor := ""
+	for page := 0; page < mcpIdentityIndexMaxPages; page++ {
+		identities, next, hasNext, pageRL, err := ip.GetIdentityRiskScores(ctx, securityInsightPageSize, cursor)
+		rl = worseRateLimit(rl, pageRL)
+		if err != nil {
+			return nil, rl, err
+		}
+		for i := range identities {
+			id := identities[i]
+			email := ""
+			if len(id.EmailAddresses) > 0 {
+				email = id.EmailAddresses[0]
+			} else if validateEmail(id.SecondaryDisplayName) {
+				email = id.SecondaryDisplayName
+			}
+			for _, acct := range id.Accounts {
+				if acct.SamAccountName != "" {
+					insert(acct.SamAccountName, &resolvedIdentity{email: email, externalID: acct.ExternalID(), displayName: id.PrimaryDisplayName})
+				}
+			}
+			if email != "" {
+				if local := strings.SplitN(email, "@", 2)[0]; local != "" {
+					insert(local, &resolvedIdentity{email: email, externalID: firstExternalID(id), displayName: id.PrimaryDisplayName})
+				}
+			}
+		}
+		if !hasNext || next == "" {
+			return index, rl, nil
+		}
+		cursor = next
+	}
+	// Page cap reached with more identities remaining: the index is partial this sync,
+	// so some endpoint users may not resolve to an identity.
+	ctxzap.Extract(ctx).Warn("baton-crowdstrike: identity index hit page cap; not all identities indexed",
+		zap.Int("page_cap", mcpIdentityIndexMaxPages), zap.Int("indexed_keys", len(index)))
+	return index, rl, nil
+}
+
+// worseRateLimit prefers the response with the lower remaining budget when both
+// carry rate-limit headers (worst-case across multi-call paths). Empty infos are ignored.
+func worseRateLimit(a, b RateLimitInfo) RateLimitInfo {
+	aEmpty := a.Limit == 0 && a.Remaining == 0
+	bEmpty := b.Limit == 0 && b.Remaining == 0
+	switch {
+	case aEmpty && bEmpty:
+		return RateLimitInfo{}
+	case aEmpty:
+		return b
+	case bEmpty:
+		return a
+	case b.Remaining < a.Remaining:
+		return b
+	default:
+		return a
+	}
+}
+
+func firstExternalID(id IdentityRiskData) string {
+	for _, acct := range id.Accounts {
+		if ext := acct.ExternalID(); ext != "" {
+			return ext
+		}
+	}
+	return ""
+}
+
+// resolveIdentity maps an endpoint OS username to an identity via samAccountName or email local-part.
+func resolveIdentity(index map[string]*resolvedIdentity, userName string) *resolvedIdentity {
+	if userName == "" {
+		return nil
+	}
+	if ri, ok := index[strings.ToLower(userName)]; ok {
+		return ri
+	}
+	return nil
+}
+
+// parseMCPServer extracts the MCP server identity from a process command line,
+// returning (name, package, launcher, transport, matched).
+func parseMCPServer(cmdline string) (string, string, string, string, bool) {
+	match := mcpSignature.FindString(cmdline)
+	if match == "" {
+		return "", "", "", "", false
+	}
+	// A bare .js entrypoint (e.g. mcp-server-fetch.js) and its package name are the same
+	// logical server; drop the extension so they don't split into two resources.
+	pkg := strings.TrimSuffix(match, ".js")
+
+	// Derive a short logical name from the package suffix.
+	var name string
+	switch {
+	case strings.HasPrefix(pkg, "@modelcontextprotocol/server-"):
+		name = strings.TrimPrefix(pkg, "@modelcontextprotocol/server-")
+	case strings.HasPrefix(pkg, "mcp-server-"):
+		name = strings.TrimPrefix(pkg, "mcp-server-")
+	case strings.HasPrefix(pkg, "mcp_server_"):
+		name = strings.TrimPrefix(pkg, "mcp_server_")
+	default:
+		name = pkg
+	}
+
+	lc := strings.ToLower(cmdline)
+	launcher := launcherUnknown
+	switch {
+	case strings.Contains(lc, "npx"):
+		launcher = "npx"
+	case strings.Contains(lc, "uvx"):
+		launcher = "uvx"
+	case strings.Contains(lc, "python"):
+		launcher = "python"
+	case strings.Contains(lc, "node"):
+		launcher = "node"
+	}
+
+	transport := "stdio"
+	if strings.Contains(lc, "--sse") || strings.Contains(lc, "transport sse") || strings.Contains(lc, "--port") {
+		transport = "sse/http"
+	}
+	return name, pkg, launcher, transport, true
+}
+
+// ---- Alerts API client (shadow-MCP detections) ----
+
+// mcpAlertMaxPages bounds how many pages of epp alerts we scan on very large tenants.
+// Each page holds up to mcpServerAlertLimit alerts. Capped at 10 so the largest offset
+// stays below CrowdStrike's ~10,000-record deep-pagination limit on the alerts query
+// endpoint (a request at offset >= 10000 is rejected).
+const mcpAlertMaxPages = 10
+
+type mcpDetectionsClient struct {
+	httpClient *uhttp.BaseHttpClient
+	host       string
+}
+
+func newMCPDetectionsClient(httpClient *uhttp.BaseHttpClient, host string) *mcpDetectionsClient {
+	return &mcpDetectionsClient{httpClient: httpClient, host: host}
+}
+
+type alertsQueryResp struct {
+	Resources []string `json:"resources"`
+}
+
+type alertsEntitiesResp struct {
+	Resources []struct {
+		Product     string `json:"product"`
+		UserName    string `json:"user_name"`
+		Cmdline     string `json:"cmdline"`
+		Filepath    string `json:"filepath"`
+		Timestamp   string `json:"timestamp"`
+		CompositeID string `json:"composite_id"`
+		FalconHost  string `json:"falcon_host_link"`
+		PatternName string `json:"name"`
+		Device      struct {
+			Hostname string `json:"hostname"`
+			DeviceID string `json:"device_id"`
+			LocalIP  string `json:"local_ip"`
+		} `json:"device"`
+	} `json:"resources"`
+}
+
+// fetchAll pulls endpoint-protection (epp) alerts, narrowed server-side by an FQL
+// product filter, paginating to exhaustion (bounded by mcpAlertMaxPages), then keeps
+// the ones whose command line matches the MCP signature. Detections missing an AID or
+// user name are dropped — they cannot be attributed to a host or identity.
+// Rate-limit headers from Alerts responses are aggregated (worst remaining).
+func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, RateLimitInfo, error) {
+	filter := url.QueryEscape("product:'epp'")
+	var ids []string
+	var rl RateLimitInfo
+	truncated := false
+	for page := 0; ; page++ {
+		if page >= mcpAlertMaxPages {
+			truncated = true
+			break
+		}
+		qURL, err := url.Parse(fmt.Sprintf("https://%s/alerts/queries/alerts/v2?filter=%s&limit=%d&offset=%d&sort=timestamp.desc",
+			c.host, filter, mcpServerAlertLimit, page*mcpServerAlertLimit))
+		if err != nil {
+			return nil, rl, err
+		}
+		req, err := c.httpClient.NewRequest(ctx, http.MethodGet, qURL, uhttp.WithAcceptJSONHeader())
+		if err != nil {
+			return nil, rl, err
+		}
+		var q alertsQueryResp
+		resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&q))
+		if resp != nil {
+			rl = worseRateLimit(rl, extractRateLimitInfo(resp))
+			resp.Body.Close()
+		}
+		if err != nil {
+			return nil, rl, err
+		}
+		ids = append(ids, q.Resources...)
+		if len(q.Resources) < mcpServerAlertLimit {
+			break
+		}
+	}
+	if truncated {
+		ctxzap.Extract(ctx).Warn("baton-crowdstrike: mcp detection scan hit page cap; older epp alerts not scanned",
+			zap.Int("scanned_alerts", len(ids)), zap.Int("page_cap", mcpAlertMaxPages))
+	}
+	if len(ids) == 0 {
+		return nil, rl, nil
+	}
+
+	entitiesURL, err := url.Parse(fmt.Sprintf("https://%s/alerts/entities/alerts/v2", c.host))
+	if err != nil {
+		return nil, rl, err
+	}
+
+	var out []mcpDetection
+	for start := 0; start < len(ids); start += mcpServerAlertLimit {
+		end := start + mcpServerAlertLimit
+		if end > len(ids) {
+			end = len(ids)
+		}
+		req, err := c.httpClient.NewRequest(ctx, http.MethodPost, entitiesURL,
+			uhttp.WithJSONBody(map[string]interface{}{"composite_ids": ids[start:end]}), uhttp.WithAcceptJSONHeader())
+		if err != nil {
+			return nil, rl, err
+		}
+		var e alertsEntitiesResp
+		resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&e))
+		if resp != nil {
+			rl = worseRateLimit(rl, extractRateLimitInfo(resp))
+			resp.Body.Close()
+		}
+		if err != nil {
+			return nil, rl, err
+		}
+		for _, a := range e.Resources {
+			// Keep an alert if its command line looks like a shadow MCP server OR a
+			// known AI coding tool/harness — both capabilities read this one shared
+			// scan and each re-classifies the snapshot downstream.
+			aiRelated := mcpSignature.MatchString(a.Cmdline) || matchesHarness(a.Cmdline)
+			if a.Product != "epp" || !aiRelated {
+				continue
+			}
+			if a.Device.DeviceID == "" || a.UserName == "" {
+				continue // unattributable to a host/identity
+			}
+			ts, _ := time.Parse(time.RFC3339, a.Timestamp)
+			out = append(out, mcpDetection{
+				Hostname: a.Device.Hostname, AID: a.Device.DeviceID, LocalIP: a.Device.LocalIP,
+				UserName: a.UserName, CommandLine: a.Cmdline, FilePath: a.Filepath, Timestamp: ts,
+				CompositeID: a.CompositeID, FalconLink: a.FalconHost, IOARuleName: a.PatternName,
+			})
+		}
+	}
+	return out, rl, nil
+}
+
+// mcpSource is a per-connector data source shared by the mcp_server, endpoint_user, and
+// ai_tool syncers. It memoizes the detection snapshot and identity index per sync (keyed
+// by SyncID) so every List/Grants call across those resource types sees one consistent
+// snapshot — avoiding redundant Alerts / Identity-Protection calls and the grant drift
+// that independent re-fetches would cause. Only the current sync's data is retained.
+type mcpSource struct {
+	detClient *mcpDetectionsClient
+	ipClient  *IdentityProtectionClient
+
+	mu sync.Mutex
+	// detFetched/idxFetched track whether the current sync's fetch has run, so an
+	// empty result still caches (a nil/empty slice or map is a valid cached value —
+	// gating on the data being non-nil would re-scan every caller when a sync finds
+	// nothing). detSync/idxSync scope the cache to a single sync.
+	detFetched bool
+	detSync    string
+	detData    []mcpDetection
+	detRL      RateLimitInfo
+	idxFetched bool
+	idxSync    string
+	idxData    map[string]*resolvedIdentity
+	idxRL      RateLimitInfo
+}
+
+func newMCPSource(httpClient *uhttp.BaseHttpClient, host string) *mcpSource {
+	return &mcpSource{
+		detClient: newMCPDetectionsClient(httpClient, host),
+		// Shadow-MCP identity resolution never needs password risk — keep it off.
+		ipClient: NewIdentityProtectionClient(httpClient, host, false),
+	}
+}
+
+func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetection, RateLimitInfo, error) {
+	// Hold the lock across the fetch so the mcp_server and endpoint_user syncers —
+	// which run in parallel and share this source — perform exactly ONE Alerts scan
+	// per sync: the first caller fetches while the sibling blocks, then both see the
+	// same cached snapshot. (The two syncers call detections/identityIndex
+	// sequentially, never nested, so there is no lock-ordering hazard.)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.detFetched && s.detSync == syncID {
+		return s.detData, s.detRL, nil
+	}
+	d, rl, err := s.detClient.fetchAll(ctx)
+	if err != nil {
+		return nil, rl, err
+	}
+	s.detFetched, s.detSync, s.detData, s.detRL = true, syncID, d, rl
+	return d, rl, nil
+}
+
+func (s *mcpSource) identityIndex(ctx context.Context, syncID string) (map[string]*resolvedIdentity, RateLimitInfo, error) {
+	// Lock held across the build for the same one-build-per-sync reason as detections.
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.idxFetched && s.idxSync == syncID {
+		return s.idxData, s.idxRL, nil
+	}
+	idx, rl, err := buildIdentityIndex(ctx, s.ipClient)
+	if err != nil {
+		return nil, rl, err
+	}
+	s.idxFetched, s.idxSync, s.idxData, s.idxRL = true, syncID, idx, rl
+	return idx, rl, nil
+}
+
+func mcpServerBuilder(client *fClient.CrowdStrikeAPISpecification, src *mcpSource) *mcpServerResourceType {
+	return &mcpServerResourceType{resourceType: resourceTypeMCPServer, client: client, src: src}
+}
+
+func endpointUserBuilder(src *mcpSource) *endpointUserResourceType {
+	return &endpointUserResourceType{resourceType: resourceTypeEndpointUser, src: src}
+}

@@ -3,6 +3,7 @@ package connector
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	cfg "github.com/conductorone/baton-crowdstrike/pkg/config"
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
@@ -17,24 +18,31 @@ import (
 )
 
 type Connector struct {
-	client       *fClient.CrowdStrikeAPISpecification
-	clientId     string
-	clientSecret string
-	host         string
+	client             *fClient.CrowdStrikeAPISpecification
+	httpClient         *uhttp.BaseHttpClient
+	host               string
+	ingestPasswordRisk bool
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
+	// Shared EDR-detection snapshot + identity index for mcp_server, endpoint_user, and
+	// ai_tool. Optional types are gated by C1 OptInRequired (not connector config kill
+	// switches) so List always attempts upstream when C1 schedules the type.
+	mcpSrc := newMCPSource(o.httpClient, o.host)
 	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
-		securityInsightBuilder(ctx, o.client, o.clientId, o.clientSecret, o.host),
+		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestPasswordRisk),
+		mcpServerBuilder(o.client, mcpSrc),
+		endpointUserBuilder(mcpSrc),
+		aiToolBuilder(mcpSrc),
 	}
 }
 
 func (o *Connector) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
 	return &v2.ConnectorMetadata{
 		DisplayName: "CrowdStrike",
-		Description: "Connector syncing CrowdStrike users, roles, and identity risk scores to Baton.",
+		Description: "Connector syncing CrowdStrike users, roles, identity risk scores, optional shadow MCP / AI tool inventory, and endpoint users to Baton.",
 		AccountCreationSchema: &v2.ConnectorAccountCreationSchema{
 			FieldMap: map[string]*v2.ConnectorAccountCreationSchema_Field{
 				"email": {
@@ -145,10 +153,27 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		host = cc.BaseUrl
 	}
 
+	// The Identity Protection (GraphQL) and Alerts APIs share the same OAuth2
+	// client-credentials grant against the same host, so one uhttp base client
+	// serves both.
+	tokenURL, err := url.Parse("https://" + host + "/oauth2/token")
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to parse oauth2 token url: %w", err)
+	}
+	oauthCreds := uhttp.NewOAuth2ClientCredentials(cc.CrowdstrikeClientId, cc.CrowdstrikeClientSecret, tokenURL, nil)
+	oauthClient, err := oauthCreds.GetClient(ctx, uhttp.WithUserAgent("baton-crowdstrike"))
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create oauth2 http client: %w", err)
+	}
+	httpClient, err := uhttp.NewBaseHttpClientWithContext(ctx, oauthClient)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create base http client: %w", err)
+	}
+
 	return &Connector{
-		client:       client,
-		clientId:     cc.CrowdstrikeClientId,
-		clientSecret: cc.CrowdstrikeClientSecret,
-		host:         host,
+		client:             client,
+		httpClient:         httpClient,
+		host:               host,
+		ingestPasswordRisk: cc.CrowdstrikeIngestPasswordRisk,
 	}, nil, nil
 }

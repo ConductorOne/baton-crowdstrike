@@ -9,12 +9,21 @@ import (
 
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 	fClient "github.com/crowdstrike/gofalcon/falcon/client"
 )
 
 const (
 	// securityInsightPageSize is the number of identity risk scores to fetch per page.
 	securityInsightPageSize = 100
+
+	// Risk-factor type labels derived from Identity Protection password attributes.
+	// CrowdStrike does not model these as RiskFactorType enum values, so they are
+	// surfaced as descriptive risk factors on the account's security insight.
+	riskFactorExposedPassword = "EXPOSED_PASSWORD"
+	riskFactorWeakPassword    = "WEAK_PASSWORD"
+
+	passwordStrengthWeak = "WEAK"
 )
 
 type securityInsightResourceType struct {
@@ -73,12 +82,15 @@ func securityInsightResource(identity IdentityRiskData, account AccountData) (*v
 		rs.WithNormalizedRiskScore(normalizedScore, sourceScore),
 	}
 
-	// Add structured risk factors if present
-	if len(identity.RiskFactors) > 0 {
-		factors := make([]*v2.RiskFactor, 0, len(identity.RiskFactors))
-		for _, rf := range identity.RiskFactors {
-			factors = append(factors, rs.NewRiskFactor(rf.Type, mapRiskFactorSeverity(rf.Severity)))
-		}
+	// Add structured risk factors: the entity-level factors from Identity Protection,
+	// plus per-account password risk (compromised/weak) derived from the account's
+	// password attributes.
+	factors := make([]*v2.RiskFactor, 0, len(identity.RiskFactors)+2)
+	for _, rf := range identity.RiskFactors {
+		factors = append(factors, rs.NewRiskFactor(rf.Type, mapRiskFactorSeverity(rf.Severity)))
+	}
+	factors = append(factors, passwordRiskFactors(account)...)
+	if len(factors) > 0 {
 		traitOpts = append(traitOpts, rs.WithRiskFactors(factors...))
 	}
 
@@ -159,6 +171,24 @@ func (s *securityInsightResourceType) Grants(ctx context.Context, resource *v2.R
 	return nil, nil, nil
 }
 
+// passwordRiskFactors derives risk factors from an account's password attributes:
+// an exposed (compromised/breached) password is a HIGH risk factor, a weak password
+// is MEDIUM. Returns nil when the account exposes no password attributes or no signal.
+func passwordRiskFactors(account AccountData) []*v2.RiskFactor {
+	pa := account.PasswordAttributes
+	if pa == nil {
+		return nil
+	}
+	var factors []*v2.RiskFactor
+	if pa.Exposed {
+		factors = append(factors, rs.NewRiskFactor(riskFactorExposedPassword, v2.RiskFactor_SEVERITY_HIGH))
+	}
+	if strings.EqualFold(pa.Strength, passwordStrengthWeak) {
+		factors = append(factors, rs.NewRiskFactor(riskFactorWeakPassword, v2.RiskFactor_SEVERITY_MEDIUM))
+	}
+	return factors
+}
+
 // mapRiskFactorSeverity maps CrowdStrike's ScoreSeverity enum (NORMAL, MEDIUM, HIGH)
 // to the SDK's RiskFactor_Severity enum.
 func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
@@ -174,10 +204,10 @@ func mapRiskFactorSeverity(severity string) v2.RiskFactor_Severity {
 	}
 }
 
-func securityInsightBuilder(ctx context.Context, client *fClient.CrowdStrikeAPISpecification, clientID, clientSecret, host string) *securityInsightResourceType {
+func securityInsightBuilder(client *fClient.CrowdStrikeAPISpecification, httpClient *uhttp.BaseHttpClient, host string, includePasswordRisk bool) *securityInsightResourceType {
 	return &securityInsightResourceType{
 		resourceType: resourceTypeSecurityInsight,
 		client:       client,
-		ipClient:     NewIdentityProtectionClient(ctx, clientID, clientSecret, host),
+		ipClient:     NewIdentityProtectionClient(httpClient, host, includePasswordRisk),
 	}
 }

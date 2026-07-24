@@ -55,19 +55,20 @@ func userResource(user *models.DomainUser) (*v2.Resource, error) {
 		profileFieldLastName:  user.LastName,
 	}
 
-	var status v2.UserTrait_Status_Status
+	var status v2.Status_ResourceStatus
 	switch user.Status {
 	case "active":
-		status = v2.UserTrait_Status_STATUS_ENABLED
+		status = v2.Status_RESOURCE_STATUS_ENABLED
 	case "inactive":
-		status = v2.UserTrait_Status_STATUS_DISABLED
+		status = v2.Status_RESOURCE_STATUS_DISABLED
 	default:
-		status = v2.UserTrait_Status_STATUS_UNSPECIFIED
+		status = v2.Status_RESOURCE_STATUS_UNSPECIFIED
 	}
 
-	userTraitOptions := []rs.UserTraitOption{
-		rs.WithUserProfile(profile),
-		rs.WithStatus(status),
+	var userTraitOptions []rs.UserTraitOption
+	resourceOpts := []rs.ResourceOption{
+		rs.WithResourceProfile(profile),
+		rs.WithResourceStatus(status, ""),
 	}
 
 	if !user.LastLoginAt.IsZero() {
@@ -83,6 +84,7 @@ func userResource(user *models.DomainUser) (*v2.Resource, error) {
 		resourceTypeUser,
 		user.UUID,
 		userTraitOptions,
+		resourceOpts...,
 	)
 
 	if err != nil {

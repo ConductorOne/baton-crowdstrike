@@ -1,16 +1,13 @@
 package connector
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"net/url"
 	"strings"
-	"time"
 
-	"golang.org/x/oauth2/clientcredentials"
+	"github.com/conductorone/baton-sdk/pkg/uhttp"
 )
 
 // AccountData represents an external account descriptor associated with an identity entity.
@@ -25,6 +22,19 @@ type AccountData struct {
 
 	// Azure AD / AWS IC SSO / Generic SSO fields
 	DataSourceParticipantIdentifier string `json:"dataSourceParticipantIdentifier,omitempty"`
+
+	// PasswordAttributes carries per-account password risk signals (present on user
+	// account descriptors). Nil when the descriptor type does not expose it.
+	PasswordAttributes *PasswordAttributes `json:"passwordAttributes,omitempty"`
+}
+
+// PasswordAttributes captures the password risk signals Identity Protection exposes
+// on a user account descriptor. "Exposed" is CrowdStrike's compromised-credential
+// signal (the password appears in a known breach/exposed set); "Strength" is the
+// PasswordStrength enum (UNKNOWN | WEAK | STRONG).
+type PasswordAttributes struct {
+	Exposed  bool   `json:"exposed"`
+	Strength string `json:"strength"`
 }
 
 // ExternalID returns the best external identifier for this account based on its type.
@@ -124,7 +134,19 @@ type graphQLError struct {
 	Message string `json:"message"`
 }
 
-const identityRiskQuery = `
+// passwordAttributesSelection is the account-descriptor sub-selection that fetches
+// password risk. It is injected into each account fragment of the query ONLY when
+// password-risk ingestion is opted in; otherwise the query does not request it and
+// no password attributes are returned.
+const passwordAttributesSelection = `
+          passwordAttributes {
+            exposed
+            strength
+          }`
+
+// identityRiskQueryTmpl is the entities query with a single injection point (%[1]s)
+// in each user account descriptor fragment for the optional password selection.
+const identityRiskQueryTmpl = `
 query GetIdentityRiskScores($first: Int, $after: Cursor) {
   entities(types: [USER], sortKey: PRIMARY_DISPLAY_NAME, first: $first, after: $after) {
     pageInfo {
@@ -146,16 +168,16 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
           objectSid
           samAccountName
           domain
-          objectGuid
+          objectGuid%[1]s
         }
         ... on AzureSsoUserAccountDescriptor {
-          dataSourceParticipantIdentifier
+          dataSourceParticipantIdentifier%[1]s
         }
         ... on AwsIcSsoUserAccountDescriptorImpl {
-          dataSourceParticipantIdentifier
+          dataSourceParticipantIdentifier%[1]s
         }
         ... on SsoUserAccountDescriptorImpl {
-          dataSourceParticipantIdentifier
+          dataSourceParticipantIdentifier%[1]s
         }
       }
       ... on UserEntity {
@@ -166,63 +188,35 @@ query GetIdentityRiskScores($first: Int, $after: Cursor) {
 }
 `
 
+// buildIdentityRiskQuery returns the entities query, including the password risk
+// selection only when password-risk ingestion is opted in.
+func buildIdentityRiskQuery(includePasswordRisk bool) string {
+	sel := ""
+	if includePasswordRisk {
+		sel = passwordAttributesSelection
+	}
+	return fmt.Sprintf(identityRiskQueryTmpl, sel)
+}
+
 // IdentityProtectionClient provides methods to interact with CrowdStrike's Identity Protection API.
 type IdentityProtectionClient struct {
-	httpClient *http.Client
-	endpoint   string
+	httpClient *uhttp.BaseHttpClient
+	host       string
+	// includePasswordRisk gates the optional password-attributes selection in the
+	// entities query (opt-in; off by default).
+	includePasswordRisk bool
 }
 
-// NewIdentityProtectionClient creates a new Identity Protection client with OAuth2 authentication.
-func NewIdentityProtectionClient(ctx context.Context, clientID, clientSecret, host string) *IdentityProtectionClient {
-	// Create OAuth2 client credentials config
-	config := clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     "https://" + host + "/oauth2/token",
-	}
-
-	// Create the OAuth2 HTTP client
-	httpClient := config.Client(ctx)
-	httpClient.Timeout = 30 * time.Second
-
-	// Wrap the transport to add user-agent header
-	httpClient.Transport = &identityProtectionTransport{
-		base: httpClient.Transport,
-	}
-
+// NewIdentityProtectionClient creates a new Identity Protection client that talks to CrowdStrike's
+// GraphQL API over the given shared uhttp base client (OAuth2 client-credentials, transient-error
+// retries, and rate-limit metadata all handled by uhttp). includePasswordRisk opts the entities
+// query into the password-attributes selection.
+func NewIdentityProtectionClient(httpClient *uhttp.BaseHttpClient, host string, includePasswordRisk bool) *IdentityProtectionClient {
 	return &IdentityProtectionClient{
-		httpClient: httpClient,
-		endpoint:   "https://" + host + "/identity-protection/combined/graphql/v1",
+		httpClient:          httpClient,
+		host:                host,
+		includePasswordRisk: includePasswordRisk,
 	}
-}
-
-// identityProtectionTransport adds custom headers to requests.
-type identityProtectionTransport struct {
-	base http.RoundTripper
-}
-
-func (t *identityProtectionTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", "baton-crowdstrike")
-	if t.base == nil {
-		return http.DefaultTransport.RoundTrip(req)
-	}
-	return t.base.RoundTrip(req)
-}
-
-// RefreshContext updates the OAuth2 context used for token refresh.
-// This should be called before making requests to ensure the token can be refreshed.
-func (c *IdentityProtectionClient) RefreshContext(ctx context.Context, clientID, clientSecret, host string) {
-	config := clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     "https://" + host + "/oauth2/token",
-	}
-	httpClient := config.Client(ctx)
-	httpClient.Timeout = 30 * time.Second
-	httpClient.Transport = &identityProtectionTransport{
-		base: httpClient.Transport,
-	}
-	c.httpClient = httpClient
 }
 
 // GetIdentityRiskScores fetches identity risk scores from CrowdStrike Identity Protection.
@@ -237,49 +231,32 @@ func (c *IdentityProtectionClient) GetIdentityRiskScores(ctx context.Context, pa
 	}
 
 	reqBody := graphQLRequest{
-		Query:     identityRiskQuery,
+		Query:     buildIdentityRiskQuery(c.includePasswordRisk),
 		Variables: variables,
 	}
 
-	// Create the request body
-	bodyBytes, err := json.Marshal(reqBody)
+	endpoint, err := url.Parse("https://" + c.host + "/identity-protection/combined/graphql/v1")
 	if err != nil {
-		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to marshal GraphQL request: %w", err)
+		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: invalid identity protection endpoint for host %q: %w", c.host, err)
 	}
 
-	// Create the HTTP request
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(bodyBytes))
+	req, err := c.httpClient.NewRequest(ctx, http.MethodPost, endpoint, uhttp.WithJSONBody(reqBody), uhttp.WithAcceptJSONHeader())
 	if err != nil {
 		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to create HTTP request: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, "", false, RateLimitInfo{}, fmt.Errorf("baton-crowdstrike: failed to execute identity protection request: %w", err)
+	var graphQLResp graphQLResponse
+	resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&graphQLResp))
+	if resp == nil {
+		return nil, "", false, RateLimitInfo{}, err
 	}
 	defer resp.Body.Close()
 
-	// Extract rate limit info from response headers
+	// Extract rate limit info from response headers, even on error, so callers can
+	// still surface rate-limit annotations for a failed request.
 	rateLimitInfo := extractRateLimitInfo(resp)
-
-	// Check for error status codes
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: identity protection API returned status %d: %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	// Parse the response body
-	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: failed to read response body: %w", err)
-	}
-
-	var graphQLResp graphQLResponse
-	if err := json.Unmarshal(respBody, &graphQLResp); err != nil {
-		return nil, "", false, rateLimitInfo, fmt.Errorf("baton-crowdstrike: failed to parse GraphQL response: %w", err)
+		return nil, "", false, rateLimitInfo, err
 	}
 
 	// Check for GraphQL errors
