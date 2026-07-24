@@ -3,6 +3,48 @@
   "resourceTypeCapabilities": [
     {
       "resourceType": {
+        "id": "ai_tool",
+        "displayName": "AI Coding Tool",
+        "traits": [
+          "TRAIT_APP",
+          "TRAIT_SECURITY_INSIGHT"
+        ],
+        "annotations": [
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
+              {
+                "permission": "Alerts: Read"
+              },
+              {
+                "permission": "Identity Protection Entities: Read"
+              },
+              {
+                "permission": "Identity Protection GraphQL: Write"
+              }
+            ]
+          }
+        ]
+      },
+      "capabilities": [
+        "CAPABILITY_SYNC"
+      ],
+      "permissions": {
+        "permissions": [
+          {
+            "permission": "Alerts: Read"
+          },
+          {
+            "permission": "Identity Protection Entities: Read"
+          },
+          {
+            "permission": "Identity Protection GraphQL: Write"
+          }
+        ]
+      }
+    },
+    {
+      "resourceType": {
         "id": "endpoint_user",
         "displayName": "Endpoint User",
         "traits": [

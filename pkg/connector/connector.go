@@ -23,19 +23,22 @@ type Connector struct {
 	host             string
 	ingestRiskScores bool
 	detectShadowMCP  bool
+	detectAITools    bool
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
-	// One shared MCP data source so the mcp_server and endpoint_user syncers operate on
-	// a single per-sync detection snapshot + identity index (consistent grants, no
-	// redundant Alerts / Identity-Protection calls).
-	mcpSrc := newMCPSource(o.httpClient, o.host, o.detectShadowMCP)
+	// One shared EDR-detection data source feeds the mcp_server, endpoint_user, and
+	// ai_tool syncers off a single per-sync snapshot + identity index (consistent
+	// grants, no redundant Alerts / Identity-Protection calls). The source scans when
+	// either detection capability is on; each syncer decides what it emits.
+	mcpSrc := newMCPSource(o.httpClient, o.host, o.detectShadowMCP || o.detectAITools)
 	return []connectorbuilder.ResourceSyncerV2{
 		userBuilder(o.client),
 		roleBuilder(o.client),
 		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestRiskScores),
-		mcpServerBuilder(o.client, mcpSrc),
-		endpointUserBuilder(mcpSrc),
+		mcpServerBuilder(o.client, mcpSrc, o.detectShadowMCP),
+		endpointUserBuilder(mcpSrc, o.detectShadowMCP),
+		aiToolBuilder(mcpSrc, o.detectAITools),
 	}
 }
 
@@ -176,5 +179,6 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		host:             host,
 		ingestRiskScores: cc.CrowdstrikeIngestRiskScores,
 		detectShadowMCP:  cc.CrowdstrikeDetectShadowMcp,
+		detectAITools:    cc.CrowdstrikeDetectAiTools,
 	}, nil, nil
 }

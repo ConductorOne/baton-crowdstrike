@@ -44,6 +44,10 @@ type mcpServerResourceType struct {
 	resourceType *v2.ResourceType
 	client       *fClient.CrowdStrikeAPISpecification
 	src          *mcpSource
+	// enabled gates shadow-MCP detection specifically. The shared source may still run
+	// its scan for a sibling capability (AI-tool inventory), so this flag — not the
+	// source's — decides whether shadow-MCP resources are emitted.
+	enabled bool
 }
 
 func (m *mcpServerResourceType) ResourceType(_ context.Context) *v2.ResourceType {
@@ -87,6 +91,9 @@ type resolvedIdentity struct {
 // List scans recent EDR detections for shadow-MCP activity, correlates each to an
 // identity, and returns one mcp_server resource per unique server instance.
 func (m *mcpServerResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
+	if !m.enabled {
+		return nil, &rs.SyncOpResults{}, nil
+	}
 	dets, err := m.src.detections(ctx, opts.SyncID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("baton-crowdstrike: mcp_server list: failed to fetch detections: %w", err)
@@ -271,6 +278,9 @@ func (inst *mcpServerInstance) accountID() string {
 type endpointUserResourceType struct {
 	resourceType *v2.ResourceType
 	src          *mcpSource
+	// enabled gates the endpoint-user accounts that back shadow-MCP resources; tied to
+	// the shadow-MCP capability, not the shared source (see mcpServerResourceType).
+	enabled bool
 }
 
 func (e *endpointUserResourceType) ResourceType(_ context.Context) *v2.ResourceType {
@@ -278,6 +288,9 @@ func (e *endpointUserResourceType) ResourceType(_ context.Context) *v2.ResourceT
 }
 
 func (e *endpointUserResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
+	if !e.enabled {
+		return nil, &rs.SyncOpResults{}, nil
+	}
 	dets, err := e.src.detections(ctx, opts.SyncID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("baton-crowdstrike: endpoint_user list: failed to fetch detections: %w", err)
@@ -583,7 +596,11 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 			return nil, err
 		}
 		for _, a := range e.Resources {
-			if a.Product != "epp" || !mcpSignature.MatchString(a.Cmdline) {
+			// Keep an alert if its command line looks like a shadow MCP server OR a
+			// known AI coding tool/harness — both capabilities read this one shared
+			// scan and each re-classifies the snapshot downstream.
+			aiRelated := mcpSignature.MatchString(a.Cmdline) || matchesHarness(a.Cmdline)
+			if a.Product != "epp" || !aiRelated {
 				continue
 			}
 			if a.Device.DeviceID == "" || a.UserName == "" {
@@ -600,15 +617,17 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 	return out, nil
 }
 
-// mcpSource is a per-connector data source shared by the mcp_server and endpoint_user
-// syncers. It memoizes the detection snapshot and identity index per sync (keyed by
-// SyncID) so every List/Grants call across both resource types sees one consistent
+// mcpSource is a per-connector data source shared by the mcp_server, endpoint_user, and
+// ai_tool syncers. It memoizes the detection snapshot and identity index per sync (keyed
+// by SyncID) so every List/Grants call across those resource types sees one consistent
 // snapshot — avoiding redundant Alerts / Identity-Protection calls and the grant drift
 // that independent re-fetches would cause. Only the current sync's data is retained.
 type mcpSource struct {
-	// enabled gates shadow-MCP detection. When false (the default), detections and
-	// the identity index are no-ops that make no CrowdStrike API calls, so the
-	// mcp_server / endpoint_user syncers produce nothing — the capability is opt-in.
+	// enabled gates the shared scan. It is the OR of the shadow-MCP and AI-tool
+	// capabilities: when both are off (the default) detections and the identity index
+	// are no-ops that make no CrowdStrike API calls. Which resources actually get
+	// emitted is decided per-syncer (see the enabled flag on each resource type), since
+	// one capability can be on while the other is off.
 	enabled bool
 
 	detClient *mcpDetectionsClient
@@ -675,10 +694,10 @@ func (s *mcpSource) identityIndex(ctx context.Context, syncID string) (map[strin
 	return idx, nil
 }
 
-func mcpServerBuilder(client *fClient.CrowdStrikeAPISpecification, src *mcpSource) *mcpServerResourceType {
-	return &mcpServerResourceType{resourceType: resourceTypeMCPServer, client: client, src: src}
+func mcpServerBuilder(client *fClient.CrowdStrikeAPISpecification, src *mcpSource, enabled bool) *mcpServerResourceType {
+	return &mcpServerResourceType{resourceType: resourceTypeMCPServer, client: client, src: src, enabled: enabled}
 }
 
-func endpointUserBuilder(src *mcpSource) *endpointUserResourceType {
-	return &endpointUserResourceType{resourceType: resourceTypeEndpointUser, src: src}
+func endpointUserBuilder(src *mcpSource, enabled bool) *endpointUserResourceType {
+	return &endpointUserResourceType{resourceType: resourceTypeEndpointUser, src: src, enabled: enabled}
 }

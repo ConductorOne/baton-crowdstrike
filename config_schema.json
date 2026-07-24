@@ -144,6 +144,12 @@
       "displayName": "Detect shadow MCP servers",
       "description": "Opt-in. When enabled, scan EDR detections for shadow MCP servers and sync them — with the endpoint users that ran them, correlated to identities. Off by default; requires the Alerts read scope.",
       "boolField": {}
+    },
+    {
+      "name": "crowdstrike-detect-ai-tools",
+      "displayName": "Detect AI coding tools",
+      "description": "Opt-in. When enabled, scan EDR detections for AI coding tools (Claude Code, Cursor, codex, and similar) and sync them as an inventory correlated to the identities that ran them. Off by default; requires the Alerts read scope.",
+      "boolField": {}
     }
   ],
   "displayName": "CrowdStrike",

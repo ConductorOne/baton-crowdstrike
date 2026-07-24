@@ -93,4 +93,24 @@ var (
 			),
 		),
 	}
+	// resourceTypeAITool models an AI coding tool ("harness" — Claude Code, Cursor,
+	// codex, etc.) observed running on an endpoint via CrowdStrike EDR detections. It
+	// carries an App-trait inventory profile (tool, endpoint, and resolved-identity
+	// metadata) and a low-severity security-insight annotation associating the tool with
+	// the identity that ran it. This is governance visibility, not a threat finding.
+	resourceTypeAITool = &v2.ResourceType{
+		Id:          "ai_tool",
+		DisplayName: "AI Coding Tool",
+		Traits: []v2.ResourceType_Trait{
+			v2.ResourceType_TRAIT_APP,
+			v2.ResourceType_TRAIT_SECURITY_INSIGHT,
+		},
+		Annotations: annotations.New(
+			capabilityPermissions(
+				"Alerts: Read",
+				"Identity Protection Entities: Read",
+				"Identity Protection GraphQL: Write",
+			),
+		),
+	}
 )
