@@ -14,13 +14,39 @@ func capabilityPermissions(perms ...string) *v2.CapabilityPermissions {
 	return cp
 }
 
-// userResourceTypeDef builds the user resource type, varying its
-// skip-sync annotation based on whether the role resource type will be
-// synced. The user builder emits role-membership grants as a cross-type
-// optimization (see Grants() in user.go); when role sync is disabled it has
-// no entitlements AND no grants of its own to report, so it can skip both
-// rather than just entitlements.
+// userResourceTypeBase carries the fields and annotations common to every
+// user resourceType, minus the skip-sync annotation that varies with
+// syncRoles -- see userResourceTypeDef.
+var userResourceTypeBase = &v2.ResourceType{
+	Id:          "user",
+	DisplayName: "User",
+	Traits: []v2.ResourceType_Trait{
+		v2.ResourceType_TRAIT_USER,
+	},
+	Annotations: annotations.New(
+		capabilityPermissions(
+			"User Management: Read",
+			"User Management: Write",
+		),
+	),
+}
+
+// userResourceTypeDef clones userResourceTypeBase and prepends a skip-sync
+// annotation based on whether the role resource type will be synced. The
+// user builder emits role-membership grants as a cross-type optimization
+// (see Grants() in user.go); when role sync is disabled it has no
+// entitlements AND no grants of its own to report, so the sync engine can
+// skip calling Entitlements()/Grants() for user resources entirely
+// (SkipEntitlementsAndGrants) rather than just Entitlements()
+// (SkipEntitlements). Cloning -- rather than mutating userResourceTypeBase
+// in place -- keeps every other resourceType consumer (and the package-level
+// resourceTypeUser default below) unaffected.
 func userResourceTypeDef(syncRoles bool) *v2.ResourceType {
+	rt, ok := proto.Clone(userResourceTypeBase).(*v2.ResourceType)
+	if !ok {
+		panic("baton-crowdstrike: proto.Clone returned unexpected type for *v2.ResourceType")
+	}
+
 	var skipAnno proto.Message
 	if syncRoles {
 		skipAnno = &v2.SkipEntitlements{}
@@ -28,20 +54,11 @@ func userResourceTypeDef(syncRoles bool) *v2.ResourceType {
 		skipAnno = &v2.SkipEntitlementsAndGrants{}
 	}
 
-	return &v2.ResourceType{
-		Id:          "user",
-		DisplayName: "User",
-		Traits: []v2.ResourceType_Trait{
-			v2.ResourceType_TRAIT_USER,
-		},
-		Annotations: annotations.New(
-			skipAnno,
-			capabilityPermissions(
-				"User Management: Read",
-				"User Management: Write",
-			),
-		),
-	}
+	// Prepend (not append) so the skip annotation leads, matching the
+	// ordering every other resourceType in this file uses.
+	rt.Annotations = append(annotations.New(skipAnno), rt.GetAnnotations()...)
+
+	return rt
 }
 
 var (

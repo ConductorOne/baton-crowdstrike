@@ -38,7 +38,6 @@ var (
 type userResourceType struct {
 	resourceType *v2.ResourceType
 	client       *fClient.CrowdStrikeAPISpecification
-	syncRoles    bool
 }
 
 func (u *userResourceType) ResourceType(_ context.Context) *v2.ResourceType {
@@ -190,13 +189,11 @@ func (u *userResourceType) Entitlements(ctx context.Context, resource *v2.Resour
 
 // Grants emits role memberships assigned to the CrowdStrike user. This is a
 // cross-resource-type sync optimization (the combined-user-roles API already
-// returns role assignments alongside users), so it's skipped entirely when
-// the role resource type isn't being synced.
+// returns role assignments alongside users). When the role resource type
+// isn't being synced, the sync engine itself skips calling this method
+// entirely -- see userResourceTypeDef's SkipEntitlementsAndGrants annotation
+// in resource_types.go.
 func (u *userResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
-	if !u.syncRoles {
-		return nil, nil, nil
-	}
-
 	userID := resource.Id.Resource
 
 	bag, offset, err := parsePageToken(opts.PageToken.Token, resource.Id)
@@ -443,6 +440,5 @@ func userBuilder(client *fClient.CrowdStrikeAPISpecification, syncRoles bool) *u
 	return &userResourceType{
 		resourceType: userResourceTypeDef(syncRoles), // not the package var, so the per-instance annotation reflects the actual gate state
 		client:       client,
-		syncRoles:    syncRoles,
 	}
 }

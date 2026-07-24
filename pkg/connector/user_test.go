@@ -17,25 +17,53 @@ import (
 	rs "github.com/conductorone/baton-sdk/pkg/types/resource"
 	"github.com/crowdstrike/gofalcon/falcon"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
-// TestUserResourceType_Grants_SyncRolesFalse asserts that when the role
-// resource type is excluded from the sync (e.g. via
-// --sync-resource-types user), Grants() returns immediately without ever
-// touching the API client. Passing a nil client proves this: if the guard
-// were anything less than a true early return, the nil client would panic
-// before the assertion could run.
-func TestUserResourceType_Grants_SyncRolesFalse(t *testing.T) {
-	u := userBuilder(nil, false)
+// hasAnnotationType reports whether annos contains a message of the given
+// fully-qualified protobuf type URL (e.g.
+// "type.googleapis.com/c1.connector.v2.SkipEntitlements").
+func hasAnnotationType(annos []*anypb.Any, typeURL string) bool {
+	for _, a := range annos {
+		if a.GetTypeUrl() == typeURL {
+			return true
+		}
+	}
+	return false
+}
 
-	resourceID, err := rs.NewResourceID(resourceTypeUser, "test-user-uuid")
-	require.NoError(t, err)
-	resource := v2.Resource_builder{Id: resourceID}.Build()
+const (
+	skipEntitlementsTypeURL          = "type.googleapis.com/c1.connector.v2.SkipEntitlements"
+	skipEntitlementsAndGrantsTypeURL = "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
+)
 
-	grants, results, err := u.Grants(context.Background(), resource, rs.SyncOpAttrs{})
-	require.NoError(t, err)
-	require.Nil(t, grants)
-	require.Nil(t, results)
+// TestUserResourceTypeDef_SyncRolesTrue asserts that when role sync is
+// enabled, the user resource type carries SkipEntitlements only -- the sync
+// engine will still call Grants() so it can emit role-membership grants (see
+// user.go's Grants(), which is unconditional), but Entitlements() is
+// correctly skipped since user has no entitlements of its own.
+func TestUserResourceTypeDef_SyncRolesTrue(t *testing.T) {
+	rt := userBuilder(nil, true).ResourceType(context.Background())
+
+	annos := rt.GetAnnotations()
+	require.True(t, hasAnnotationType(annos, skipEntitlementsTypeURL))
+	require.False(t, hasAnnotationType(annos, skipEntitlementsAndGrantsTypeURL))
+}
+
+// TestUserResourceTypeDef_SyncRolesFalse asserts that when the role resource
+// type is excluded from the sync (e.g. via --sync-resource-types user), the
+// user resource type carries SkipEntitlementsAndGrants -- the sync engine's
+// syncer (pkg/sync/syncer.go's shouldSkipGrants/shouldSkipEntitlementsAndGrants)
+// reads this resource-type-level annotation and skips scheduling the
+// SyncGrantsOp/SyncEntitlementsOp actions for user resources entirely, so
+// Grants() is never even called (see user.go's Grants(), which has no
+// in-method guard -- the sync engine is the sole enforcement point).
+func TestUserResourceTypeDef_SyncRolesFalse(t *testing.T) {
+	rt := userBuilder(nil, false).ResourceType(context.Background())
+
+	annos := rt.GetAnnotations()
+	require.True(t, hasAnnotationType(annos, skipEntitlementsAndGrantsTypeURL))
+	require.False(t, hasAnnotationType(annos, skipEntitlementsTypeURL))
 }
 
 // TestConnector_ZeroValueDefaultsToSyncingRoles guards against a zero-value
@@ -62,18 +90,10 @@ func TestConnector_ZeroValueDefaultsToSyncingRoles(t *testing.T) {
 	require.NotNil(t, userRT, "expected a user resource syncer")
 
 	annos := userRT.GetAnnotations()
-	require.NotEmpty(t, annos)
-
-	var sawSkipEntitlementsOnly bool
-	for _, a := range annos {
-		switch a.GetTypeUrl() {
-		case "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants":
-			t.Fatal("zero-value Connector produced SkipEntitlementsAndGrants; role sync must default to enabled")
-		case "type.googleapis.com/c1.connector.v2.SkipEntitlements":
-			sawSkipEntitlementsOnly = true
-		}
-	}
-	require.True(t, sawSkipEntitlementsOnly, "expected the default (role-syncing) SkipEntitlements annotation")
+	require.True(t, hasAnnotationType(annos, skipEntitlementsTypeURL),
+		"expected the default (role-syncing) SkipEntitlements annotation")
+	require.False(t, hasAnnotationType(annos, skipEntitlementsAndGrantsTypeURL),
+		"zero-value Connector produced SkipEntitlementsAndGrants; role sync must default to enabled")
 }
 
 // combinedUserRolesTestServer stands up a minimal HTTPS mock of the two
@@ -140,9 +160,10 @@ func combinedUserRolesTestServer(t *testing.T, userUUID, roleID string) *httptes
 	return server
 }
 
-// TestUserResourceType_Grants_SyncRolesTrue asserts that when role sync is
-// enabled, Grants() proceeds past the guard and returns the role-membership
-// grant reported by the combined-user-roles API.
+// TestUserResourceType_Grants_SyncRolesTrue asserts that Grants() returns the
+// role-membership grant reported by the combined-user-roles API. Grants()
+// has no sync-state guard of its own (see TestUserResourceTypeDef_* above for
+// where that's actually enforced), so this exercises its unconditional body.
 func TestUserResourceType_Grants_SyncRolesTrue(t *testing.T) {
 	const (
 		userUUID = "11111111-1111-1111-1111-111111111111"
