@@ -19,7 +19,7 @@ func TestClassifyHarness(t *testing.T) {
 		{"claude code shim", "claude-code --print hello", "Claude Code"},
 		// Claude Desktop (Electron app).
 		{"claude desktop exe", `C:\Users\a\AppData\Local\AnthropicClaude\app-0.1\Claude.exe --type=renderer`, "Claude Desktop"},
-		{"claude desktop path only", `/Applications/Claude.app/Contents/MacOS/claude.exe`, "Claude Desktop"},
+		{"claude desktop macos bundle", `/Applications/Claude.app/Contents/MacOS/Claude`, "Claude Desktop"},
 		// IDEs.
 		{"cursor exe", `C:\Users\a\AppData\Local\Programs\cursor\Cursor.exe`, "Cursor"},
 		{"cursor agent cli", "cursor-agent --resume", "Cursor"},
@@ -31,13 +31,21 @@ func TestClassifyHarness(t *testing.T) {
 		{"gemini cli scope", "npx @google/gemini-cli chat", "Gemini CLI"},
 		{"github copilot cli", "npx @github/copilot suggest", "GitHub Copilot CLI"},
 		{"opencode", "/usr/local/bin/opencode", "opencode"},
-		{"aider python", "python -m aider --model gpt-4o", "Aider"},
+		{"aider python module", "python -m aider --model gpt-4o", "Aider"},
+		// Homebrew / curl installs invoke the CLI as a bare binary (no npm scope).
+		{"codex homebrew binary", "/opt/homebrew/bin/codex --model o3", "Codex CLI"},
+		{"copilot homebrew binary", "/usr/local/bin/copilot suggest", "GitHub Copilot CLI"},
+		{"aider console script", "/usr/local/bin/aider --model gpt-4o", "Aider"},
 
 		// Negatives — guard the bare-word / broad patterns against false positives.
 		{"shadow mcp server is not a harness", "npx -y @modelcontextprotocol/server-filesystem /tmp", ""},
 		{"bare codex word does not match", "run the codex please", ""},
+		{"codex as a filename does not match", "7z x /downloads/game.CODEX.iso", ""},
 		{"bare gemini word does not match", "gemini horoscope generator", ""},
 		{"bare copilot word does not match", "microsoft copilot app", ""},
+		{"windows copilot app is not the cli", `C:\Windows\SystemApps\MicrosoftWindows.Client.Copilot\Copilot.exe`, ""},
+		{"aider unrelated wrapper script does not match", "aider.sh deploy prod", ""},
+		{"opencode as a substring does not match", "tar -xf opencode-backup.tar", ""},
 		{"plain node app", "node /srv/app/index.js", ""},
 		{"db cursor usage", "psql -c 'DECLARE cur CURSOR FOR SELECT 1'", ""},
 	}

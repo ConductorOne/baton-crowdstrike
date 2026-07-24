@@ -106,6 +106,7 @@ var (
 			v2.ResourceType_TRAIT_SECURITY_INSIGHT,
 		},
 		Annotations: annotations.New(
+			&v2.SkipEntitlementsAndGrants{},
 			capabilityPermissions(
 				"Alerts: Read",
 				"Identity Protection Entities: Read",

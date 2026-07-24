@@ -36,16 +36,35 @@ type harnessEntry struct {
 // package names (@vendor/tool) or path-qualified executables rather than bare words, to
 // keep common English tokens (e.g. "gemini", "copilot") from matching unrelated
 // processes. This is not meant to be exhaustive — it covers the popular harnesses.
+// cmdToken matches a bare CLI name only where a real invocation puts it: at the start
+// of the command line, right after a path separator (an installed binary), or after a
+// "-m " / "-m=" Python module flag — and only when it ends the token (end-of-string or
+// whitespace/quote). This deliberately rejects the name appearing mid-prose ("run the
+// codex"), as a substring of a longer word, or as a file with an extension
+// ("aider.sh", "Copilot.exe"), which is where bare \bword\b matching produces false
+// positives. %s is the tool name (already regex-safe here).
+func cmdToken(name string) string {
+	return `(^|[\\/]|-m[= ])` + name + `($|[\s"'])`
+}
+
 var harnessCatalog = []harnessEntry{
+	// Claude Code always runs as node against its package path, so match that (works on
+	// every OS); listed before Claude Desktop so the CLI never falls through to it.
 	{"Claude Code", "Anthropic", harnessKindCLI, regexp.MustCompile(`(?i)(@anthropic-ai[\\/]claude-code|claude-code)`)},
-	{"Claude Desktop", "Anthropic", harnessKindDesktop, regexp.MustCompile(`(?i)(anthropicclaude|[\\/]claude\.exe)`)},
-	{"Cursor", "Anysphere", harnessKindIDE, regexp.MustCompile(`(?i)([\\/]cursor\.exe|cursor-agent|[\\/]cursor-tunnel)`)},
-	{"Windsurf", "Codeium", harnessKindIDE, regexp.MustCompile(`(?i)([\\/]windsurf\.exe|\bwindsurf\b)`)},
-	{"Codex CLI", "OpenAI", harnessKindCLI, regexp.MustCompile(`(?i)(@openai[\\/]codex|codex-cli|[\\/]codex\.(exe|cmd|js))`)},
+	// Claude Desktop: Windows AnthropicClaude\...\Claude.exe, macOS Claude.app bundle.
+	{"Claude Desktop", "Anthropic", harnessKindDesktop, regexp.MustCompile(`(?i)(anthropicclaude|claude\.app|[\\/]claude\.exe)`)},
+	// Cursor / Windsurf: Windows .exe, macOS .app, plus Cursor's agent/tunnel CLIs. Bare
+	// "cursor" is intentionally NOT matched (collides with SQL cursors); Windsurf's name
+	// is distinctive enough to token-match its bare binary (Linux AppImage).
+	{"Cursor", "Anysphere", harnessKindIDE, regexp.MustCompile(`(?i)([\\/]cursor\.exe|[\\/]cursor\.app|cursor-agent|[\\/]cursor-tunnel)`)},
+	{"Windsurf", "Codeium", harnessKindIDE, regexp.MustCompile(`(?i)([\\/]windsurf\.(exe|app)|` + cmdToken("windsurf") + `)`)},
+	// CLIs: match the npm scope/package form AND the bare installed binary (Homebrew /
+	// curl installs invoke it as just "codex", "copilot", etc.).
+	{"Codex CLI", "OpenAI", harnessKindCLI, regexp.MustCompile(`(?i)(@openai[\\/]codex|codex-cli|` + cmdToken("codex") + `)`)},
 	{"Gemini CLI", "Google", harnessKindCLI, regexp.MustCompile(`(?i)(@google[\\/]gemini-cli|gemini-cli)`)},
-	{"GitHub Copilot CLI", "GitHub", harnessKindCLI, regexp.MustCompile(`(?i)(@github[\\/]copilot|copilot-cli)`)},
-	{"opencode", "opencode", harnessKindCLI, regexp.MustCompile(`(?i)\bopencode\b`)},
-	{"Aider", "Aider", harnessKindCLI, regexp.MustCompile(`(?i)\baider\b`)},
+	{"GitHub Copilot CLI", "GitHub", harnessKindCLI, regexp.MustCompile(`(?i)(@github[\\/]copilot|copilot-cli|` + cmdToken("copilot") + `)`)},
+	{"opencode", "opencode", harnessKindCLI, regexp.MustCompile(`(?i)` + cmdToken("opencode"))},
+	{"Aider", "Aider", harnessKindCLI, regexp.MustCompile(`(?i)` + cmdToken("aider"))},
 }
 
 // classifyHarness returns the AI tool a command line belongs to, or nil if none match.
