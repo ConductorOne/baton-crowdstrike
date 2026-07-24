@@ -68,8 +68,8 @@ baton resources
 - **Users** (`user`) — Falcon console users; `uuid` is the stable resource ID and `uid` is the login/email
 - **Roles** (`role`) — Falcon roles (e.g. `falcon_administrator`, `falcon_analyst`, `falcon_read_only`) with a `member` assignment entitlement
 - **Identity Risk Scores** (`security_insight`) — Falcon Identity Protection risk scores (C1 opt-in capability)
-- **Shadow MCP Servers** (`mcp_server`) — unsanctioned [Model Context Protocol](https://modelcontextprotocol.io) servers observed running on endpoints via EDR detections, correlated to the identity that ran them (C1 opt-in capability)
-- **Endpoint Users** (`endpoint_user`) — the endpoint OS users that ran a shadow MCP server, modeled as app accounts; each holds the `runner` grant on the servers it ran and is matched to a ConductorOne identity by email (or assigned manually) (C1 opt-in capability)
+- **Shadow MCP Servers** (`mcp_server`) — unsanctioned [Model Context Protocol](https://modelcontextprotocol.io) servers observed running on endpoints via EDR detections, correlated to the identity that ran them (C1 opt-in capability; enable together with `endpoint_user` so runner grants resolve)
+- **Endpoint Users** (`endpoint_user`) — the endpoint OS users that ran a shadow MCP server, modeled as app accounts; each holds the `runner` grant on the servers it ran and is matched to a ConductorOne identity by email (or assigned manually) (C1 opt-in capability; enable together with `mcp_server`)
 - **AI Coding Tools** (`ai_tool`) — AI harness inventory from EDR detections, correlated to identities (C1 opt-in capability)
 
 | Resource             | Sync | Provision                                          |
@@ -177,7 +177,9 @@ Correlation is also modeled as a normal account/entitlement/grant chain, so a sh
 
 The result is a **c1 identity → `endpoint_user` account → `runner` grant → `mcp_server`** chain, alongside the identity-risk security insight above.
 
-To detect the servers natively, author a **Custom IOA** rule (Process Creation, Detect disposition) matching the command-line signature `(@modelcontextprotocol/server-|mcp-server-|mcp_server_)` so CrowdStrike raises a detection the connector can read. Endpoint users are resolved to identities via Identity Protection `samAccountName` (or email local-part). The `mcp_server` and `endpoint_user` resource types both require the **Alerts: Read** scope (plus the Identity Protection scopes above for correlation).
+To detect the servers natively, author a **Custom IOA** rule (Process Creation, Detect disposition) matching the command-line signature `(@modelcontextprotocol/server-|mcp-server-|mcp_server_)` so CrowdStrike raises a detection the connector can read. Endpoint users are resolved to identities via Identity Protection `samAccountName` (or email local-part). The `mcp_server` and `endpoint_user` resource types both require the **Alerts: Read** scope (plus the Identity Protection scopes above for correlation). Enable **both** capabilities in C1 so the runner grant graph resolves.
+
+Inventory is a recent epp Alerts scan window (capped by page limits), not full historical state — high alert volume can shorten lookback and drop older detections from a later sync without a hard failure.
 
 # Contributing, Support and Issues
 

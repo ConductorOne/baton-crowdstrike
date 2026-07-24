@@ -72,6 +72,9 @@
               },
               {
                 "permission": "Identity Protection Entities: Read"
+              },
+              {
+                "permission": "Identity Protection GraphQL: Write"
               }
             ]
           }
@@ -87,6 +90,9 @@
           },
           {
             "permission": "Identity Protection Entities: Read"
+          },
+          {
+            "permission": "Identity Protection GraphQL: Write"
           }
         ]
       },

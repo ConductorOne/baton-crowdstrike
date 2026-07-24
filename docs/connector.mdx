@@ -352,7 +352,18 @@ CrowdStrike doesn't flag MCP servers by default, so you author a Custom IOA rule
 
 ### Turn on shadow MCP detection
 
-In C1, enable the **Shadow MCP Server** and **Endpoint User** capabilities on the connector (these resource types are opt-in via C1 capability mediation, not a connector config flag), then save and re-sync.
+In C1, enable **both** the **Shadow MCP Server** and **Endpoint User** capabilities on the connector (these resource types are opt-in via C1 capability mediation, not a connector config flag), then save and re-sync.
+
+**Enable them together.** Shadow MCP `runner` grants use `endpoint_user` principals. If only Shadow MCP Server is enabled and Endpoint User is off, C1 will not list those principals and the runner grant graph will not fully resolve.
+
+### Detection inventory window (page caps)
+
+Shadow MCP inventory is a **recent endpoint-protection (epp) alert scan window**, not full historical state:
+
+- Alerts are scanned newest-first, bounded by `mcpAlertMaxPages` (10 pages × 1000 alerts per page).
+- Identity correlation indexes Identity Protection entities up to `mcpIdentityIndexMaxPages` pages.
+
+If epp volume is high, the effective lookback shortens. Detections (and thus `mcp_server` / `endpoint_user` resources) that fall outside the scanned window can drop from a later sync **without a hard sync failure** — the connector logs a warning when a page cap is hit and continues with partial results. Re-enablement or lower epp noise restores visibility when those detections reappear in the window.
 
 **Done.** As endpoints run MCP servers, CrowdStrike raises detections and the connector syncs them into C1 as `mcp_server` resources and `endpoint_user` accounts. Assign each endpoint-user account to a C1 identity to attribute the finding.
 
@@ -406,5 +417,9 @@ CrowdStrike doesn't flag AI coding tools by default, so you author a Custom IOA 
 ### Turn on AI coding tool detection
 
 In C1, enable the **AI Coding Tool** capability on the connector (opt-in via C1 capability mediation, not a connector config flag), then save and re-sync.
+
+### Detection inventory window (page caps)
+
+AI coding tool inventory shares the same Alerts scan as shadow MCP detection. Inventory is a **recent epp alert scan window** bounded by `mcpAlertMaxPages` (and identity correlation by `mcpIdentityIndexMaxPages`), not full historical state. High epp volume shortens effective lookback; tools that fall outside the window can disappear from a later sync without a hard failure (a warning is logged when the page cap is hit). See [Detect shadow MCP servers](#detect-shadow-mcp-servers) for the same semantics.
 
 **Done.** As endpoints run AI coding tools, CrowdStrike raises detections and the connector syncs them into C1 as `ai_tool` resources correlated to the identities that ran them.

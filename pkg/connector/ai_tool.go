@@ -146,16 +146,16 @@ func (a *aiToolResourceType) ResourceType(_ context.Context) *v2.ResourceType {
 // List scans the shared EDR detection snapshot for AI-tool activity, correlates each to
 // an identity, and returns one ai_tool resource per unique (host, user, tool).
 func (a *aiToolResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
-	dets, err := a.src.detections(ctx, opts.SyncID)
+	dets, detRL, err := a.src.detections(ctx, opts.SyncID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("baton-crowdstrike: ai_tool list: failed to fetch detections: %w", err)
+		return nil, nil, wrapCrowdStrikeError(err, "ai_tool list: failed to fetch detections")
 	}
 	if len(dets) == 0 {
-		return nil, &rs.SyncOpResults{}, nil
+		return nil, &rs.SyncOpResults{Annotations: WithRateLimitAnnotations(detRL)}, nil
 	}
-	idIndex, err := a.src.identityIndex(ctx, opts.SyncID)
+	idIndex, idxRL, err := a.src.identityIndex(ctx, opts.SyncID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("baton-crowdstrike: ai_tool list: failed to build identity index: %w", err)
+		return nil, nil, wrapCrowdStrikeError(err, "ai_tool list: failed to build identity index")
 	}
 
 	instances := buildAIToolInstances(dets)
@@ -167,7 +167,8 @@ func (a *aiToolResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs
 		}
 		resources = append(resources, res)
 	}
-	return resources, &rs.SyncOpResults{}, nil
+	annos := WithRateLimitAnnotations(detRL, idxRL)
+	return resources, &rs.SyncOpResults{Annotations: annos}, nil
 }
 
 func (a *aiToolResourceType) Entitlements(context.Context, *v2.Resource, rs.SyncOpAttrs) ([]*v2.Entitlement, *rs.SyncOpResults, error) {

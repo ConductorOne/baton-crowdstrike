@@ -87,18 +87,18 @@ type resolvedIdentity struct {
 // List scans recent EDR detections for shadow-MCP activity, correlates each to an
 // identity, and returns one mcp_server resource per unique server instance.
 func (m *mcpServerResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
-	dets, err := m.src.detections(ctx, opts.SyncID)
+	dets, detRL, err := m.src.detections(ctx, opts.SyncID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("baton-crowdstrike: mcp_server list: failed to fetch detections: %w", err)
+		return nil, nil, wrapCrowdStrikeError(err, "mcp_server list: failed to fetch detections")
 	}
 	if len(dets) == 0 {
-		return nil, &rs.SyncOpResults{}, nil
+		return nil, &rs.SyncOpResults{Annotations: WithRateLimitAnnotations(detRL)}, nil
 	}
 
 	// Build an identity lookup keyed by lowercased samAccountName and email local-part.
-	idIndex, err := m.src.identityIndex(ctx, opts.SyncID)
+	idIndex, idxRL, err := m.src.identityIndex(ctx, opts.SyncID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("baton-crowdstrike: mcp_server list: failed to build identity index: %w", err)
+		return nil, nil, wrapCrowdStrikeError(err, "mcp_server list: failed to build identity index")
 	}
 
 	instances := buildInstances(dets)
@@ -113,7 +113,8 @@ func (m *mcpServerResourceType) List(ctx context.Context, _ *v2.ResourceId, opts
 		resources = append(resources, res)
 	}
 
-	return resources, &rs.SyncOpResults{}, nil
+	annos := WithRateLimitAnnotations(detRL, idxRL)
+	return resources, &rs.SyncOpResults{Annotations: annos}, nil
 }
 
 // Entitlements exposes a single "runner" assignment on each mcp_server resource,
@@ -132,18 +133,19 @@ func (m *mcpServerResourceType) Entitlements(_ context.Context, resource *v2.Res
 // auto-matched to a c1 identity by email or assigned manually; this grant is what
 // surfaces it as the resource's principal.
 func (m *mcpServerResourceType) Grants(ctx context.Context, resource *v2.Resource, opts rs.SyncOpAttrs) ([]*v2.Grant, *rs.SyncOpResults, error) {
-	dets, err := m.src.detections(ctx, opts.SyncID)
+	dets, detRL, err := m.src.detections(ctx, opts.SyncID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("baton-crowdstrike: mcp_server grants: failed to fetch detections: %w", err)
+		return nil, nil, wrapCrowdStrikeError(err, "mcp_server grants: failed to fetch detections")
 	}
+	annos := WithRateLimitAnnotations(detRL)
 	for _, inst := range buildInstances(dets) {
 		if inst.objectID() != resource.Id.Resource {
 			continue
 		}
 		principal := &v2.ResourceId{ResourceType: resourceTypeEndpointUser.Id, Resource: inst.accountID()}
-		return []*v2.Grant{grant.NewGrant(resource, mcpRunnerEntitlement, principal)}, nil, nil
+		return []*v2.Grant{grant.NewGrant(resource, mcpRunnerEntitlement, principal)}, &rs.SyncOpResults{Annotations: annos}, nil
 	}
-	return nil, nil, nil
+	return nil, &rs.SyncOpResults{Annotations: annos}, nil
 }
 
 // mcpServerResource builds an mcp_server resource: an App-trait profile carrying the
@@ -278,16 +280,16 @@ func (e *endpointUserResourceType) ResourceType(_ context.Context) *v2.ResourceT
 }
 
 func (e *endpointUserResourceType) List(ctx context.Context, _ *v2.ResourceId, opts rs.SyncOpAttrs) ([]*v2.Resource, *rs.SyncOpResults, error) {
-	dets, err := e.src.detections(ctx, opts.SyncID)
+	dets, detRL, err := e.src.detections(ctx, opts.SyncID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("baton-crowdstrike: endpoint_user list: failed to fetch detections: %w", err)
+		return nil, nil, wrapCrowdStrikeError(err, "endpoint_user list: failed to fetch detections")
 	}
 	if len(dets) == 0 {
-		return nil, &rs.SyncOpResults{}, nil
+		return nil, &rs.SyncOpResults{Annotations: WithRateLimitAnnotations(detRL)}, nil
 	}
-	idIndex, err := e.src.identityIndex(ctx, opts.SyncID)
+	idIndex, idxRL, err := e.src.identityIndex(ctx, opts.SyncID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("baton-crowdstrike: endpoint_user list: failed to build identity index: %w", err)
+		return nil, nil, wrapCrowdStrikeError(err, "endpoint_user list: failed to build identity index")
 	}
 
 	seen := map[string]bool{}
@@ -304,7 +306,8 @@ func (e *endpointUserResourceType) List(ctx context.Context, _ *v2.ResourceId, o
 		}
 		rv = append(rv, res)
 	}
-	return rv, &rs.SyncOpResults{}, nil
+	annos := WithRateLimitAnnotations(detRL, idxRL)
+	return rv, &rs.SyncOpResults{Annotations: annos}, nil
 }
 
 func (e *endpointUserResourceType) Entitlements(context.Context, *v2.Resource, rs.SyncOpAttrs) ([]*v2.Entitlement, *rs.SyncOpResults, error) {
@@ -354,8 +357,9 @@ func endpointUserResource(inst *mcpServerInstance, id *resolvedIdentity) (*v2.Re
 // turn a single sync into an unbounded sequence of sequential GraphQL round trips.
 const mcpIdentityIndexMaxPages = 100
 
-func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[string]*resolvedIdentity, error) {
+func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[string]*resolvedIdentity, RateLimitInfo, error) {
 	index := map[string]*resolvedIdentity{}
+	var rl RateLimitInfo
 	// insert records key->ri, but collapses to nil (ambiguous) if the key already
 	// resolves to a different identity.
 	insert := func(key string, ri *resolvedIdentity) {
@@ -377,9 +381,10 @@ func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[
 	}
 	cursor := ""
 	for page := 0; page < mcpIdentityIndexMaxPages; page++ {
-		identities, next, hasNext, _, err := ip.GetIdentityRiskScores(ctx, securityInsightPageSize, cursor)
+		identities, next, hasNext, pageRL, err := ip.GetIdentityRiskScores(ctx, securityInsightPageSize, cursor)
+		rl = worseRateLimit(rl, pageRL)
 		if err != nil {
-			return nil, err
+			return nil, rl, err
 		}
 		for i := range identities {
 			id := identities[i]
@@ -401,7 +406,7 @@ func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[
 			}
 		}
 		if !hasNext || next == "" {
-			return index, nil
+			return index, rl, nil
 		}
 		cursor = next
 	}
@@ -409,7 +414,26 @@ func buildIdentityIndex(ctx context.Context, ip *IdentityProtectionClient) (map[
 	// so some endpoint users may not resolve to an identity.
 	ctxzap.Extract(ctx).Warn("baton-crowdstrike: identity index hit page cap; not all identities indexed",
 		zap.Int("page_cap", mcpIdentityIndexMaxPages), zap.Int("indexed_keys", len(index)))
-	return index, nil
+	return index, rl, nil
+}
+
+// worseRateLimit prefers the response with the lower remaining budget when both
+// carry rate-limit headers (worst-case across multi-call paths). Empty infos are ignored.
+func worseRateLimit(a, b RateLimitInfo) RateLimitInfo {
+	aEmpty := a.Limit == 0 && a.Remaining == 0
+	bEmpty := b.Limit == 0 && b.Remaining == 0
+	switch {
+	case aEmpty && bEmpty:
+		return RateLimitInfo{}
+	case aEmpty:
+		return b
+	case bEmpty:
+		return a
+	case b.Remaining < a.Remaining:
+		return b
+	default:
+		return a
+	}
 }
 
 func firstExternalID(id IdentityRiskData) string {
@@ -519,9 +543,11 @@ type alertsEntitiesResp struct {
 // product filter, paginating to exhaustion (bounded by mcpAlertMaxPages), then keeps
 // the ones whose command line matches the MCP signature. Detections missing an AID or
 // user name are dropped — they cannot be attributed to a host or identity.
-func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, error) {
+// Rate-limit headers from Alerts responses are aggregated (worst remaining).
+func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, RateLimitInfo, error) {
 	filter := url.QueryEscape("product:'epp'")
 	var ids []string
+	var rl RateLimitInfo
 	truncated := false
 	for page := 0; ; page++ {
 		if page >= mcpAlertMaxPages {
@@ -531,19 +557,20 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 		qURL, err := url.Parse(fmt.Sprintf("https://%s/alerts/queries/alerts/v2?filter=%s&limit=%d&offset=%d&sort=timestamp.desc",
 			c.host, filter, mcpServerAlertLimit, page*mcpServerAlertLimit))
 		if err != nil {
-			return nil, err
+			return nil, rl, err
 		}
 		req, err := c.httpClient.NewRequest(ctx, http.MethodGet, qURL, uhttp.WithAcceptJSONHeader())
 		if err != nil {
-			return nil, err
+			return nil, rl, err
 		}
 		var q alertsQueryResp
 		resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&q))
 		if resp != nil {
+			rl = worseRateLimit(rl, extractRateLimitInfo(resp))
 			resp.Body.Close()
 		}
 		if err != nil {
-			return nil, err
+			return nil, rl, err
 		}
 		ids = append(ids, q.Resources...)
 		if len(q.Resources) < mcpServerAlertLimit {
@@ -555,12 +582,12 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 			zap.Int("scanned_alerts", len(ids)), zap.Int("page_cap", mcpAlertMaxPages))
 	}
 	if len(ids) == 0 {
-		return nil, nil
+		return nil, rl, nil
 	}
 
 	entitiesURL, err := url.Parse(fmt.Sprintf("https://%s/alerts/entities/alerts/v2", c.host))
 	if err != nil {
-		return nil, err
+		return nil, rl, err
 	}
 
 	var out []mcpDetection
@@ -572,15 +599,16 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 		req, err := c.httpClient.NewRequest(ctx, http.MethodPost, entitiesURL,
 			uhttp.WithJSONBody(map[string]interface{}{"composite_ids": ids[start:end]}), uhttp.WithAcceptJSONHeader())
 		if err != nil {
-			return nil, err
+			return nil, rl, err
 		}
 		var e alertsEntitiesResp
 		resp, err := c.httpClient.Do(req, uhttp.WithJSONResponse(&e))
 		if resp != nil {
+			rl = worseRateLimit(rl, extractRateLimitInfo(resp))
 			resp.Body.Close()
 		}
 		if err != nil {
-			return nil, err
+			return nil, rl, err
 		}
 		for _, a := range e.Resources {
 			// Keep an alert if its command line looks like a shadow MCP server OR a
@@ -601,7 +629,7 @@ func (c *mcpDetectionsClient) fetchAll(ctx context.Context) ([]mcpDetection, err
 			})
 		}
 	}
-	return out, nil
+	return out, rl, nil
 }
 
 // mcpSource is a per-connector data source shared by the mcp_server, endpoint_user, and
@@ -621,9 +649,11 @@ type mcpSource struct {
 	detFetched bool
 	detSync    string
 	detData    []mcpDetection
+	detRL      RateLimitInfo
 	idxFetched bool
 	idxSync    string
 	idxData    map[string]*resolvedIdentity
+	idxRL      RateLimitInfo
 }
 
 func newMCPSource(httpClient *uhttp.BaseHttpClient, host string) *mcpSource {
@@ -634,7 +664,7 @@ func newMCPSource(httpClient *uhttp.BaseHttpClient, host string) *mcpSource {
 	}
 }
 
-func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetection, error) {
+func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetection, RateLimitInfo, error) {
 	// Hold the lock across the fetch so the mcp_server and endpoint_user syncers —
 	// which run in parallel and share this source — perform exactly ONE Alerts scan
 	// per sync: the first caller fetches while the sibling blocks, then both see the
@@ -643,29 +673,29 @@ func (s *mcpSource) detections(ctx context.Context, syncID string) ([]mcpDetecti
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.detFetched && s.detSync == syncID {
-		return s.detData, nil
+		return s.detData, s.detRL, nil
 	}
-	d, err := s.detClient.fetchAll(ctx)
+	d, rl, err := s.detClient.fetchAll(ctx)
 	if err != nil {
-		return nil, err
+		return nil, rl, err
 	}
-	s.detFetched, s.detSync, s.detData = true, syncID, d
-	return d, nil
+	s.detFetched, s.detSync, s.detData, s.detRL = true, syncID, d, rl
+	return d, rl, nil
 }
 
-func (s *mcpSource) identityIndex(ctx context.Context, syncID string) (map[string]*resolvedIdentity, error) {
+func (s *mcpSource) identityIndex(ctx context.Context, syncID string) (map[string]*resolvedIdentity, RateLimitInfo, error) {
 	// Lock held across the build for the same one-build-per-sync reason as detections.
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.idxFetched && s.idxSync == syncID {
-		return s.idxData, nil
+		return s.idxData, s.idxRL, nil
 	}
-	idx, err := buildIdentityIndex(ctx, s.ipClient)
+	idx, rl, err := buildIdentityIndex(ctx, s.ipClient)
 	if err != nil {
-		return nil, err
+		return nil, rl, err
 	}
-	s.idxFetched, s.idxSync, s.idxData = true, syncID, idx
-	return idx, nil
+	s.idxFetched, s.idxSync, s.idxData, s.idxRL = true, syncID, idx, rl
+	return idx, rl, nil
 }
 
 func mcpServerBuilder(client *fClient.CrowdStrikeAPISpecification, src *mcpSource) *mcpServerResourceType {

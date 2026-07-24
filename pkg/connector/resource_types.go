@@ -92,6 +92,8 @@ var (
 			capabilityPermissions(
 				"Alerts: Read",
 				"Identity Protection Entities: Read",
+				// Identity index for endpoint-user→identity resolution uses GraphQL.
+				"Identity Protection GraphQL: Write",
 			),
 		),
 	}
