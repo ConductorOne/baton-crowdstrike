@@ -3,7 +3,7 @@ module github.com/conductorone/baton-crowdstrike
 go 1.25.2
 
 require (
-	github.com/conductorone/baton-sdk v0.20.4
+	github.com/conductorone/baton-sdk v0.20.5
 	github.com/crowdstrike/gofalcon v0.6.1-0.20240426204036-ac8ce2b4f2d7
 	github.com/ennyjfrick/ruleguard-logfatal v0.0.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
