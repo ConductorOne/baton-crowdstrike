@@ -13,7 +13,12 @@ func capabilityPermissions(perms ...string) *v2.CapabilityPermissions {
 	return cp
 }
 
+// RoleResourceTypeID is referenced when gating cross-type role grants.
+const RoleResourceTypeID = "role"
+
 var (
+	// userBuilder clones this and adds SkipEntitlements, or
+	// SkipEntitlementsAndGrants when role isn't synced.
 	resourceTypeUser = &v2.ResourceType{
 		Id:          "user",
 		DisplayName: "User",
@@ -21,7 +26,6 @@ var (
 			v2.ResourceType_TRAIT_USER,
 		},
 		Annotations: annotations.New(
-			&v2.SkipEntitlements{},
 			capabilityPermissions(
 				"User Management: Read",
 				"User Management: Write",
@@ -29,7 +33,7 @@ var (
 		),
 	}
 	resourceTypeRole = &v2.ResourceType{
-		Id:          "role",
+		Id:          RoleResourceTypeID,
 		DisplayName: "Role",
 		Traits: []v2.ResourceType_Trait{
 			v2.ResourceType_TRAIT_ROLE,

@@ -3,8 +3,8 @@ package connector
 import (
 	"testing"
 
-	"github.com/conductorone/baton-sdk/pkg/annotations"
 	v2 "github.com/conductorone/baton-sdk/pb/c1/connector/v2"
+	"github.com/conductorone/baton-sdk/pkg/annotations"
 )
 
 type wantFactor struct {

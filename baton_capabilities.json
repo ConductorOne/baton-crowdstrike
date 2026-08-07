@@ -234,9 +234,6 @@
         ],
         "annotations": [
           {
-            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlements"
-          },
-          {
             "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
             "permissions": [
               {
@@ -246,6 +243,9 @@
                 "permission": "User Management: Write"
               }
             ]
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlements"
           }
         ]
       },
