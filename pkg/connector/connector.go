@@ -22,6 +22,10 @@ type Connector struct {
 	httpClient         *uhttp.BaseHttpClient
 	host               string
 	ingestPasswordRisk bool
+	// skipRoleResourceType reports whether role is excluded from the sync
+	// filter. Named for the skip condition so the zero value is safe: main.go
+	// registers a zero-value Connector{} as the capabilities factory.
+	skipRoleResourceType bool
 }
 
 func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
@@ -30,7 +34,7 @@ func (o *Connector) ResourceSyncers(ctx context.Context) []connectorbuilder.Reso
 	// switches) so List always attempts upstream when C1 schedules the type.
 	mcpSrc := newMCPSource(o.httpClient, o.host)
 	return []connectorbuilder.ResourceSyncerV2{
-		userBuilder(o.client),
+		userBuilder(o.client, o.skipRoleResourceType),
 		roleBuilder(o.client),
 		securityInsightBuilder(o.client, o.httpClient, o.host, o.ingestPasswordRisk),
 		mcpServerBuilder(o.client, mcpSrc),
@@ -175,5 +179,7 @@ func New(ctx context.Context, cc *cfg.Crowdstrike, opts *cli.ConnectorOpts) (con
 		httpClient:         httpClient,
 		host:               host,
 		ingestPasswordRisk: cc.CrowdstrikeIngestPasswordRisk,
+		// nil opts means no filter, so nothing is skipped.
+		skipRoleResourceType: opts != nil && !opts.WillSyncResourceType(RoleResourceTypeID),
 	}, nil, nil
 }

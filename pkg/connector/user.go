@@ -15,6 +15,7 @@ import (
 	"github.com/crowdstrike/gofalcon/falcon/client/user_management"
 	"github.com/crowdstrike/gofalcon/falcon/models"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/proto"
 )
 
 var userGrantsPageSize int64 = 500
@@ -433,9 +434,21 @@ func (u *userResourceType) Delete(ctx context.Context, resourceId *v2.ResourceId
 	return annos, nil
 }
 
-func userBuilder(client *fClient.CrowdStrikeAPISpecification) *userResourceType {
+// userBuilder returns the user syncer. Users have no entitlements of their own,
+// and their only grants are cross-type role grants, so when role is excluded
+// from the sync the grants pass is skipped too.
+func userBuilder(client *fClient.CrowdStrikeAPISpecification, skipRoleResourceType bool) *userResourceType {
+	rt := proto.Clone(resourceTypeUser).(*v2.ResourceType)
+	annos := annotations.Annotations(rt.GetAnnotations())
+	if skipRoleResourceType {
+		annos.Update(&v2.SkipEntitlementsAndGrants{})
+	} else {
+		annos.Update(&v2.SkipEntitlements{})
+	}
+	rt.Annotations = annos
+
 	return &userResourceType{
-		resourceType: resourceTypeUser,
+		resourceType: rt,
 		client:       client,
 	}
 }
