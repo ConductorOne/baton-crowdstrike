@@ -36,7 +36,7 @@ baton resources
 ## docker
 
 ```
-docker run --rm -v $(pwd):/out -e BATON_CROWDSTRIKE_CLIENT_ID=client_id -e BATON_CROWDSTRIKE_CLIENT_SECRET=client_secret ghcr.io/conductorone/baton-crowdstrike:latest -f "/out/sync.c1z"
+docker run --rm -v $(pwd):/out -e BATON_CROWDSTRIKE_CLIENT_ID=client_id -e BATON_CROWDSTRIKE_CLIENT_SECRET=client_secret public.ecr.aws/conductorone/baton-crowdstrike:latest -f "/out/sync.c1z"
 docker run --rm -v $(pwd):/out ghcr.io/conductorone/baton:latest -f "/out/sync.c1z" resources
 ```
 
