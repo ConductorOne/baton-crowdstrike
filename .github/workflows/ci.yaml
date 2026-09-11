@@ -24,7 +24,8 @@ jobs:
       - name: Build baton-crowdstrike
         run: go build -o baton-crowdstrike ./cmd/baton-crowdstrike
       - name: Download Baton
-        uses: ConductorOne/github-workflows/actions/get-baton@v2
+        # Temporary pin to validate the v2 get-baton backport; restore @v2 once the tag floats.
+        uses: ConductorOne/github-workflows/actions/get-baton@jugonzalez/v2-get-baton-from-sdk
       - name: Run sync
         run: ./baton-crowdstrike
       - name: Verify sync produced data
