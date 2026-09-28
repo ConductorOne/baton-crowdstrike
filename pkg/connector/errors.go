@@ -6,9 +6,17 @@ import (
 	"strings"
 
 	"github.com/conductorone/baton-sdk/pkg/uhttp"
-	"github.com/crowdstrike/gofalcon/falcon/models"
+	openAPIRuntime "github.com/go-openapi/runtime"
 	"google.golang.org/grpc/codes"
 )
+
+// httpCoder is satisfied by all typed gofalcon SDK error responses
+// (e.g. QueryUserV1InternalServerError, QueryUserV1Forbidden, etc.)
+// which expose the HTTP status code via Code().
+type httpCoder interface {
+	error
+	Code() int
+}
 
 // wrapCrowdStrikeError maps CrowdStrike gofalcon errors into Baton-friendly
 // gRPC codes, falling back to message inspection when the SDK hides status data.
@@ -29,11 +37,13 @@ func wrapCrowdStrikeError(err error, operation string) error {
 	}
 
 	// Fallback: Inspect error message for common HTTP status code patterns
-	// This is necessary because gofalcon SDK doesn't always expose structured errors
+	// This is necessary because some errors (e.g. OAuth2 token failures,
+	// identity protection GraphQL errors) bypass the gofalcon SDK client.
 	errMsg := strings.ToLower(err.Error())
 
 	// Authentication errors
-	if strings.Contains(errMsg, "401") || strings.Contains(errMsg, "unauthorized") {
+	if strings.Contains(errMsg, "401") || strings.Contains(errMsg, "unauthorized") ||
+		strings.Contains(errMsg, "access_denied") || strings.Contains(errMsg, "invalid client") {
 		return uhttp.WrapErrors(codes.Unauthenticated, fmt.Sprintf("%s: authentication failed", operation), err)
 	}
 
@@ -53,8 +63,10 @@ func wrapCrowdStrikeError(err error, operation string) error {
 	}
 
 	// Server errors (5xx)
-	if strings.Contains(errMsg, "500") || strings.Contains(errMsg, "503") ||
-		strings.Contains(errMsg, "internal server error") || strings.Contains(errMsg, "service unavailable") {
+	if strings.Contains(errMsg, "500") || strings.Contains(errMsg, "502") ||
+		strings.Contains(errMsg, "503") || strings.Contains(errMsg, "504") ||
+		strings.Contains(errMsg, "internal server error") || strings.Contains(errMsg, "service unavailable") ||
+		strings.Contains(errMsg, "bad gateway") || strings.Contains(errMsg, "gateway timeout") {
 		return uhttp.WrapErrors(codes.Unavailable, fmt.Sprintf("%s: service unavailable", operation), err)
 	}
 
@@ -73,27 +85,34 @@ func wrapCrowdStrikeError(err error, operation string) error {
 	return uhttp.WrapErrors(codes.Unknown, fmt.Sprintf("%s: unknown error", operation), err)
 }
 
-// extractCrowdStrikeError extracts the first structured CrowdStrike API error
-// when the gofalcon response exposes its errors payload.
+// extractCrowdStrikeError extracts the HTTP status code from gofalcon SDK
+// error responses. The SDK uses two error patterns:
+//
+//  1. Typed response errors (e.g. QueryUserV1InternalServerError) for known
+//     status codes — these implement the httpCoder interface via Code() int.
+//
+//  2. Generic runtime.APIError for status codes not covered by the swagger
+//     spec — these carry the code in the APIError.Code field.
 func extractCrowdStrikeError(err error) (int, string) {
 	if err == nil {
 		return 0, ""
 	}
 
-	type csError interface {
-		GetErrors() []models.MsaAPIError
+	// Typed gofalcon SDK errors expose HTTP status via Code().
+	var coder httpCoder
+	if errors.As(err, &coder) {
+		code := coder.Code()
+		if code >= 400 {
+			return code, coder.Error()
+		}
 	}
 
-	var csErr csError
-	if errors.As(err, &csErr) {
-		errs := csErr.GetErrors()
-		if len(errs) > 0 {
-			firstErr := errs[0]
-			if firstErr.Code != nil && firstErr.Message != nil {
-				code := int(*firstErr.Code)
-				message := *firstErr.Message
-				return code, message
-			}
+	// Generic go-openapi runtime.APIError for unhandled status codes
+	// (e.g. 401 or 502 when the swagger spec only lists 200/400/403/429/500).
+	var apiErr *openAPIRuntime.APIError
+	if errors.As(err, &apiErr) {
+		if apiErr.Code >= 400 {
+			return apiErr.Code, apiErr.Error()
 		}
 	}
 
